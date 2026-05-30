@@ -1,0 +1,435 @@
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+/* ─── Sidebar ─── */
+#sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #16213e;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  border-right: 2px solid #0f3460;
+  z-index: 10;
+}
+
+#sidebar h2 {
+  font-size: 1.1rem;
+  text-align: center;
+  color: #e94560;
+  border-bottom: 1px solid #0f3460;
+  padding-bottom: 10px;
+}
+
+#sidebar h3 {
+  font-size: 0.85rem;
+  color: #a0a0c0;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  background: #0f3460;
+  color: #e0e0e0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #1a5276;
+}
+
+.btn.danger {
+  background: #5c1a1a;
+}
+
+.btn.danger:hover {
+  background: #7a2525;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.row label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75rem;
+  color: #a0a0c0;
+  flex: 1;
+}
+
+.row input[type="number"] {
+  width: 100%;
+  padding: 4px 6px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  border-radius: 3px;
+  font-size: 0.85rem;
+}
+
+.row input[type="text"] {
+  flex: 1;
+  padding: 6px 8px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+#map-upload, #char-upload, #load-input {
+  display: none;
+}
+
+#sidebar hr {
+  border: none;
+  border-top: 1px solid #0f3460;
+  margin: 4px 0;
+}
+
+/* ─── Character list in sidebar ─── */
+#char-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.char-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.char-item:hover {
+  background: #16213e;
+  border-color: #e94560;
+}
+
+.char-item:active {
+  cursor: grabbing;
+}
+
+.char-item img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.char-item span {
+  font-size: 0.8rem;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.char-item .remove-char {
+  background: none;
+  border: none;
+  color: #e94560;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 4px;
+}
+
+/* ─── Zoom section ─── */
+#zoom-section span {
+  display: block;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #a0a0c0;
+  margin-top: 4px;
+}
+
+/* ─── Map container ─── */
+#map-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+}
+
+#map-container.panning {
+  cursor: grabbing;
+}
+
+#map-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+#map-bg {
+  position: absolute;
+  inset: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #0d0d1a;
+}
+
+#grid-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  pointer-events: none;
+}
+
+#grid-overlay.has-grid {
+  pointer-events: auto;
+}
+
+/* ─── Fog of War ─── */
+#fog-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.fog-cell {
+  transition: background 0.3s;
+}
+
+.fog-cell.hidden {
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.fog-cell.visible {
+  background: rgba(0, 0, 0, 0);
+}
+
+.fog-cell.revealed {
+  background: rgba(0, 0, 0, 0);
+}
+
+.grid-cell {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  position: relative;
+  transition: background 0.15s;
+}
+
+.grid-cell.drag-over {
+  background: rgba(233, 69, 96, 0.25);
+}
+
+/* ─── Tokens on grid ─── */
+.token {
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  cursor: grab;
+  z-index: 5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  transition: border-color 0.15s;
+}
+
+.token:hover {
+  border-color: #e94560;
+}
+
+.token:active {
+  cursor: grabbing;
+}
+
+.token.dragging {
+  opacity: 0.5;
+  z-index: 10;
+}
+
+.token .remove-token {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.token:hover .remove-token {
+  display: flex;
+}
+
+/* ─── Token Editor Modal ─── */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 480px;
+  max-width: 560px;
+}
+
+.modal-content h3 {
+  margin-bottom: 16px;
+  color: #e94560;
+  text-align: center;
+}
+
+.editor-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.editor-preview {
+  flex: 1;
+  background: #0d0d1a;
+  border-radius: 4px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-preview img {
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+}
+
+.editor-controls {
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editor-controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  color: #a0a0c0;
+  gap: 4px;
+}
+
+.editor-controls select {
+  width: 100%;
+  padding: 6px 8px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.editor-controls select option {
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+.editor-controls input[type="color"] {
+  width: 100%;
+  height: 36px;
+  padding: 2px;
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.editor-controls input[type="number"] {
+  width: 100%;
+  padding: 6px 8px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.editor-controls input[type="range"] {
+  width: 100%;
+  accent-color: #e94560;
+}
+
+.editor-preview-token {
+  display: flex;
+  justify-content: center;
+}
+
+#editor-canvas {
+  border-radius: 50%;
+  border: 2px solid #0f3460;
+  background: transparent;
+  cursor: grab;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DnD Battle Map</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <aside id="sidebar">
+    <h2>DnD Battle Map</h2>
+
+    <section id="map-section">
+      <h3>Mapa</h3>
+      <input type="file" id="map-upload" accept="image/*">
+      <label for="map-upload" class="btn">Cargar mapa</label>
+    </section>
+
+    <section id="grid-section">
+      <h3>Cuadrícula</h3>
+      <div class="row">
+        <label>Filas: <input type="number" id="grid-rows" value="15" min="1" max="50"></label>
+        <label>Cols: <input type="number" id="grid-cols" value="20" min="1" max="50"></label>
+      </div>
+      <button id="grid-generate" class="btn">Generar cuadrícula</button>
+    </section>
+
+    <section id="char-section">
+      <h3>Personajes</h3>
+      <input type="file" id="char-upload" accept="image/*">
+      <div class="row">
+        <label for="char-upload" class="btn">Seleccionar imagen</label>
+        <input type="text" id="char-name" placeholder="Nombre">
+      </div>
+      <button id="char-add" class="btn">Añadir personaje</button>
+      <div id="char-list"></div>
+    </section>
+
+    <hr>
+    <div class="row">
+      <button id="save-state" class="btn">Guardar partida</button>
+      <button id="load-state" class="btn">Cargar partida</button>
+    </div>
+    <input type="file" id="load-input" accept=".dndmap">
+    <button id="clear-all" class="btn danger">Limpiar todo</button>
+  </aside>
+
+  <main id="map-container">
+    <div id="map-wrapper">
+      <div id="map-bg"></div>
+      <div id="grid-overlay"></div>
+      <div id="fog-overlay"></div>
+    </div>
+  </main>
+
+  <div id="token-editor" class="modal hidden">
+    <div class="modal-content">
+      <h3>Editor de ficha</h3>
+      <div class="editor-layout">
+        <div class="editor-preview">
+          <img id="editor-source" alt="Original">
+        </div>
+        <div class="editor-controls">
+          <label>
+            Clase:
+            <select id="editor-class">
+              <option value="">— Custom —</option>
+              <option value="#C41E3A">Caballero de la Muerte</option>
+              <option value="#A330C9">Cazador de Demonios</option>
+              <option value="#FF7C0A">Druida</option>
+              <option value="#33937F">Evocador</option>
+              <option value="#AAD372">Cazador</option>
+              <option value="#3FC7EB">Mago</option>
+              <option value="#00FF98">Monje</option>
+              <option value="#F48CBA">Paladín</option>
+              <option value="#FFFFFF">Sacerdote</option>
+              <option value="#FFF468">Pícaro</option>
+              <option value="#0070DD">Chamán</option>
+              <option value="#8788EE">Brujo</option>
+              <option value="#C69B6D">Guerrero</option>
+            </select>
+          </label>
+          <label>
+            Color del borde:
+            <input type="color" id="editor-color" value="#e94560">
+          </label>
+          <label>
+            Zoom:
+            <input type="range" id="editor-zoom" min="50" max="300" value="100">
+          </label>
+          <label>
+            Visión (casillas):
+            <input type="number" id="editor-vision" value="5" min="1" max="50">
+          </label>
+          <div class="editor-preview-token">
+            <canvas id="editor-canvas" width="150" height="150"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="editor-actions">
+        <button id="editor-confirm" class="btn">Añadir ficha</button>
+        <button id="editor-cancel" class="btn danger">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
