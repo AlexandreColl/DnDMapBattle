@@ -78,10 +78,9 @@ $('#map-upload').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const url = URL.createObjectURL(file);
-  if (state.mapImage) URL.revokeObjectURL(state.mapImage);
+  if (state.mapImage && state.mapImage.startsWith('blob:')) URL.revokeObjectURL(state.mapImage);
   state.mapImage = url;
   mapBg.style.backgroundImage = `url(${url})`;
-  // Capture data URL for save
   const reader = new FileReader();
   reader.onload = () => { saveMapDataURL = reader.result; };
   reader.readAsDataURL(file);
@@ -185,7 +184,7 @@ function calculateVision() {
 
   for (const token of state.tokens) {
     const char = state.characters.find(c => c.id === token.characterId);
-    if (!char) continue;
+    if (!char || char.isEnemy) continue;
     const radius = char.visionRadius;
     for (let r = Math.max(0, token.row - radius); r <= Math.min(state.gridRows - 1, token.row + radius); r++) {
       for (let c = Math.max(0, token.col - radius); c <= Math.min(state.gridCols - 1, token.col + radius); c++) {
@@ -220,12 +219,14 @@ const editorModal = $('#token-editor');
 const editorSource = $('#editor-source');
 const editorCanvas = $('#editor-canvas');
 const editorColor = $('#editor-color');
-const editorZoom = $('#editor-zoom');
 const editorClass = $('#editor-class');
+const editorEnemy = $('#editor-enemy');
+const editorVisionLabel = $('#editor-vision-label');
 
 let editorPendingFile = null;
 let editorPendingName = '';
 let editorSourceImg = null;
+let editorZoomLevel = 1;
 let editorPanX = 0;
 let editorPanY = 0;
 let editorPanState = null;
@@ -233,7 +234,7 @@ let editorPanState = null;
 function renderTokenPreview() {
   if (!editorSourceImg) return;
   const color = editorColor.value;
-  const zoom = parseInt(editorZoom.value) / 100;
+  const zoom = editorZoomLevel;
   createTokenImage(editorSourceImg, color, zoom, editorPanX, editorPanY, (dataUrl) => {
     const ctx = editorCanvas.getContext('2d');
     const img = new Image();
@@ -255,9 +256,18 @@ editorClass.addEventListener('change', () => {
     renderTokenPreview();
   }
 });
-editorZoom.addEventListener('input', renderTokenPreview);
+editorEnemy.addEventListener('change', () => {
+  editorVisionLabel.style.display = editorEnemy.checked ? 'none' : '';
+});
 
-// Pan image within the circle
+// Zoom with wheel on canvas, pan with drag
+editorCanvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const dir = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+  editorZoomLevel = Math.min(3, Math.max(0.5, editorZoomLevel * dir));
+  renderTokenPreview();
+});
+
 editorCanvas.addEventListener('mousedown', (e) => {
   if (e.button !== 0) return;
   editorPanState = { startX: e.clientX, startY: e.clientY, panX: editorPanX, panY: editorPanY };
@@ -280,7 +290,7 @@ document.addEventListener('mouseup', () => {
 
 $('#editor-cancel').addEventListener('click', () => {
   editorModal.classList.add('hidden');
-  editorPanX = 0; editorPanY = 0;
+  editorZoomLevel = 1; editorPanX = 0; editorPanY = 0;
   editorPendingFile = null;
   editorSourceImg = null;
 });
@@ -288,7 +298,7 @@ $('#editor-cancel').addEventListener('click', () => {
 $('#editor-confirm').addEventListener('click', () => {
   if (!editorSourceImg) return;
   const color = editorColor.value;
-  const zoom = parseInt(editorZoom.value) / 100;
+  const zoom = editorZoomLevel;
 
   createTokenImage(editorSourceImg, color, zoom, editorPanX, editorPanY, (dataUrl) => {
     const char = {
@@ -296,13 +306,14 @@ $('#editor-confirm').addEventListener('click', () => {
       name: editorPendingName,
       imageUrl: dataUrl,
       visionRadius: parseInt($('#editor-vision').value) || 5,
+      isEnemy: $('#editor-enemy').checked,
     };
     state.characters.push(char);
     renderCharacters();
     editorModal.classList.add('hidden');
     $('#char-upload').value = '';
     $('#char-name').value = '';
-    editorPanX = 0; editorPanY = 0;
+    editorZoomLevel = 1; editorPanX = 0; editorPanY = 0;
     editorPendingFile = null;
     editorSourceImg = null;
   });
@@ -381,7 +392,7 @@ function renderCharacters() {
     img.alt = char.name;
 
     const span = document.createElement('span');
-    span.textContent = char.name;
+    span.textContent = (char.isEnemy ? '[E] ' : '[A] ') + char.name;
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'remove-char';
@@ -515,6 +526,7 @@ function saveState() {
       name: c.name,
       imageUrl: c.imageUrl,
       visionRadius: c.visionRadius,
+      isEnemy: c.isEnemy || false,
     })),
     tokens: state.tokens.map(t => ({
       id: t.id,
@@ -561,20 +573,19 @@ function loadState(file) {
       // Restore map
       if (data.mapImage) {
         saveMapDataURL = data.mapImage;
-        const imgUrl = URL.createObjectURL(dataURLtoBlob(data.mapImage));
-        state.mapImage = imgUrl;
-        mapBg.style.backgroundImage = `url(${imgUrl})`;
+        state.mapImage = data.mapImage;
+        mapBg.style.backgroundImage = `url(${data.mapImage})`;
       }
 
       // Restore characters
       state.nextCharId = 1;
       for (const c of data.characters) {
-        const imgUrl = URL.createObjectURL(dataURLtoBlob(c.imageUrl));
         state.characters.push({
           id: c.id,
           name: c.name,
-          imageUrl: imgUrl,
+          imageUrl: c.imageUrl,
           visionRadius: c.visionRadius || 5,
+          isEnemy: c.isEnemy || false,
         });
         if (c.id >= state.nextCharId) state.nextCharId = c.id + 1;
       }
@@ -618,24 +629,71 @@ $('#load-input').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
-function dataURLtoBlob(dataURL) {
-  const parts = dataURL.split(',');
-  const mime = parts[0].match(/:(.*?);/)[1];
-  const bytes = atob(parts[1]);
-  const ab = new ArrayBuffer(bytes.length);
-  const ia = new Uint8Array(ab);
-  for (let i = 0; i < bytes.length; i++) ia[i] = bytes.charCodeAt(i);
-  return new Blob([ab], { type: mime });
-}
+// ─── Export / Import characters ───
+$('#export-chars').addEventListener('click', () => {
+  if (state.characters.length === 0) {
+    alert('No hay personajes para exportar.');
+    return;
+  }
+  const data = state.characters.map(c => ({
+    id: c.id,
+    name: c.name,
+    imageUrl: c.imageUrl,
+    visionRadius: c.visionRadius,
+    isEnemy: c.isEnemy || false,
+  }));
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'personajes.dndchars';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+$('#import-chars').addEventListener('click', () => {
+  $('#import-chars-input').click();
+});
+
+$('#import-chars-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const chars = JSON.parse(reader.result);
+      if (!Array.isArray(chars)) throw new Error('Formato no válido');
+      for (const c of chars) {
+        state.characters.push({
+          id: state.nextCharId++,
+          name: c.name,
+          imageUrl: c.imageUrl,
+          visionRadius: c.visionRadius || 5,
+          isEnemy: c.isEnemy || false,
+        });
+      }
+      renderCharacters();
+    } catch (err) {
+      alert('Error al importar personajes: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
 
 // ─── Clear all ───
 $('#clear-all').addEventListener('click', () => {
   if (!confirm('¿Limpiar todo?')) return;
-  state.characters.forEach(c => URL.revokeObjectURL(c.imageUrl));
+  state.characters.forEach(c => {
+    if (c.imageUrl.startsWith('blob:')) URL.revokeObjectURL(c.imageUrl);
+  });
   state.characters = [];
   state.tokens = [];
   if (state.mapImage) {
-    URL.revokeObjectURL(state.mapImage);
+    if (state.mapImage.startsWith('blob:')) URL.revokeObjectURL(state.mapImage);
     state.mapImage = null;
     saveMapDataURL = null;
     mapBg.style.backgroundImage = '';

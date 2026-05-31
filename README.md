@@ -40,6 +40,16 @@ Simulador de batallas de DnD sobre mapa digital. Funciona completamente en local
 - **Revelado manual**: clic central (rueda) o Shift+clic en una celda la destapa permanentemente. Otro clic central la vuelve a tapar.
 - Las celdas destapadas manualmente no se vuelven a tapar aunque los personajes se alejen.
 
+### Aliados y Enemigos
+- En el editor de fichas, marca **"¿Es enemigo?"** para que un personaje **no revele niebla**.
+- Los aliados (`[A]`) destapan las casillas dentro de su radio de visión al colocarlos en el mapa.
+- Los enemigos (`[E]`) no destapan niebla, ideales para monstruos o PNJ hostiles.
+
+### Exportar / Importar personajes
+- **Export personajes**: descarga un archivo `.dndchars` con todos los personajes creados (fichas, clase, visión, aliado/enemigo).
+- **Import personajes**: carga un archivo `.dndchars` y añade los personajes a la lista actual.
+- Útil para mantener una **biblioteca de personajes** reutilizable entre partidas.
+
 ### Guardar / Cargar partida
 - **Guardar partida**: descarga un archivo `.dndmap` con todo el estado del juego (mapa, personajes, fichas, niebla, zoom y posición).
 - **Cargar partida**: selecciona un archivo `.dndmap` guardado previamente y restaura el estado completo.

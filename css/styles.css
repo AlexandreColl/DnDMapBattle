@@ -105,7 +105,7 @@ body {
   font-size: 0.8rem;
 }
 
-#map-upload, #char-upload, #load-input {
+#map-upload, #char-upload, #load-input, #import-chars-input {
   display: none;
 }
 
@@ -408,6 +408,18 @@ body {
   border: 1px solid #0f3460;
   border-radius: 4px;
   font-size: 0.85rem;
+}
+
+.checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #e94560;
 }
 
 .editor-controls input[type="range"] {
