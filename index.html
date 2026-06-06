@@ -52,6 +52,7 @@
   <button id="sidebar-toggle" title="Mostrar/ocultar panel">◀</button>
 
   <main id="map-container">
+    <div id="initiative-bar"></div>
     <div id="map-wrapper">
       <div id="map-bg"></div>
       <div id="grid-overlay"></div>
@@ -97,6 +98,10 @@
           <label id="editor-vision-label">
             Visión (casillas):
             <input type="number" id="editor-vision" value="5" min="1" max="50">
+          </label>
+          <label>
+            Iniciativa:
+            <input type="number" id="editor-initiative" value="" min="0" max="999" placeholder="— sin iniciativa">
           </label>
           <div class="editor-preview-token">
             <canvas id="editor-canvas" width="150" height="150"></canvas>

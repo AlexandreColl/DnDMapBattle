@@ -53,7 +53,7 @@ function receiveFullState(data) {
 
     state.nextCharId = 1;
     for (const c of data.characters) {
-      state.characters.push({ id: c.id, name: c.name, imageUrl: c.imageUrl, visionRadius: c.visionRadius || 5, isEnemy: c.isEnemy || false });
+      state.characters.push({ id: c.id, name: c.name, imageUrl: c.imageUrl, visionRadius: c.visionRadius || 5, isEnemy: c.isEnemy || false, initiative: c.initiative || null });
       if (c.id >= state.nextCharId) state.nextCharId = c.id + 1;
     }
 
@@ -110,12 +110,12 @@ socket.on('character:added', (data) => {
   renderCharacters();
 });
 
-socket.on('character:removed', (data) => {
-  if (socketIgnoreNext) return;
-  state.characters = state.characters.filter(c => c.id !== data.charId);
-  state.tokens = state.tokens.filter(t => t.characterId !== data.charId);
-  renderCharacters(); renderTokens(); calculateVision();
-});
+  socket.on('character:removed', (data) => {
+    if (socketIgnoreNext) return;
+    state.characters = state.characters.filter(c => c.id !== data.charId);
+    state.tokens = state.tokens.filter(t => t.characterId !== data.charId);
+    renderCharacters(); renderTokens(); calculateVision(); renderInitiativeBar();
+  });
 
 socket.on('token:placed', (data) => {
   if (socketIgnoreNext) return;
@@ -153,6 +153,16 @@ socket.on('view:changed', (data) => {
   applyTransform();
 });
 
+socket.on('initiative:changed', (data) => {
+  if (socketIgnoreNext) return;
+  const char = state.characters.find(c => c.id === data.charId);
+  if (char) {
+    char.initiative = data.initiative;
+    renderCharacters();
+    renderInitiativeBar();
+  }
+});
+
 socket.on('state:cleared', () => {
   if (socketIgnoreNext) return;
   state.characters.forEach(c => { if (c.imageUrl.startsWith('blob:')) URL.revokeObjectURL(c.imageUrl); });
@@ -161,7 +171,7 @@ socket.on('state:cleared', () => {
   gridOverlay.innerHTML = ''; gridOverlay.classList.remove('has-grid');
   fogOverlay.innerHTML = ''; state.cellStates = [];
   state.zoom = 1; state.panX = 0; state.panY = 0; applyTransform();
-  renderCharacters();
+  renderCharacters(); renderInitiativeBar();
 });
 
 // ─── Zoom / Pan ───
@@ -352,6 +362,56 @@ function toggleReveal(row, col) {
   if (!socketIgnoreNext) socket.emit('fog:revealed', { cells: [{ row, col }] });
 }
 
+// ─── Initiative ───
+function editInitiative(char) {
+  const newVal = prompt(`Iniciativa para ${char.name}:`, char.initiative != null ? char.initiative : '');
+  if (newVal === null) return;
+  const trimmed = newVal.trim();
+  char.initiative = trimmed ? parseInt(trimmed) : null;
+  if (isNaN(char.initiative)) char.initiative = null;
+  renderInitiativeBar();
+  renderCharacters();
+  if (!socketIgnoreNext) socket.emit('initiative:changed', { charId: char.id, initiative: char.initiative });
+}
+
+function renderInitiativeBar() {
+  const bar = $('#initiative-bar');
+  if (!bar) return;
+  bar.innerHTML = '';
+
+  const entries = [];
+  for (const token of state.tokens) {
+    const char = state.characters.find(c => c.id === token.characterId);
+    if (char && char.initiative != null) {
+      entries.push({ token, char });
+    }
+  }
+
+  entries.sort((a, b) => b.char.initiative - a.char.initiative);
+
+  for (const { char } of entries) {
+    const item = document.createElement('div');
+    item.className = 'initiative-item';
+    item.title = `${char.name} (Init: ${char.initiative})`;
+
+    const img = document.createElement('div');
+    img.className = 'initiative-image';
+    img.style.backgroundImage = `url(${char.imageUrl})`;
+
+    const value = document.createElement('span');
+    value.className = 'initiative-value';
+    value.textContent = char.initiative;
+    value.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editInitiative(char);
+    });
+
+    item.appendChild(img);
+    item.appendChild(value);
+    bar.appendChild(item);
+  }
+}
+
 $('#grid-generate').addEventListener('click', () => {
   const rows = parseInt($('#grid-rows').value) || 15;
   const cols = parseInt($('#grid-cols').value) || 20;
@@ -441,6 +501,7 @@ $('#editor-cancel').addEventListener('click', () => {
   editorZoomLevel = 1; editorPanX = 0; editorPanY = 0;
   editorPendingFile = null;
   editorSourceImg = null;
+  $('#editor-initiative').value = '';
 });
 
 $('#editor-confirm').addEventListener('click', () => {
@@ -449,12 +510,14 @@ $('#editor-confirm').addEventListener('click', () => {
   const zoom = editorZoomLevel;
 
   createTokenImage(editorSourceImg, color, zoom, editorPanX, editorPanY, (dataUrl) => {
+    const initVal = $('#editor-initiative').value.trim();
     const char = {
       id: state.nextCharId,
       name: editorPendingName,
       imageUrl: dataUrl,
       visionRadius: parseInt($('#editor-vision').value) || 5,
       isEnemy: $('#editor-enemy').checked,
+      initiative: initVal ? parseInt(initVal) : null,
     };
     state.nextCharId++;
     state.characters.push(char);
@@ -462,6 +525,7 @@ $('#editor-confirm').addEventListener('click', () => {
     editorModal.classList.add('hidden');
     $('#char-upload').value = '';
     $('#char-name').value = '';
+    $('#editor-initiative').value = '';
     editorZoomLevel = 1; editorPanX = 0; editorPanY = 0;
     editorPendingFile = null;
     editorSourceImg = null;
@@ -544,6 +608,16 @@ function renderCharacters() {
     const span = document.createElement('span');
     span.textContent = (char.isEnemy ? '[E] ' : '[A] ') + char.name;
 
+    const initSpan = document.createElement('span');
+    initSpan.className = 'char-initiative';
+    initSpan.textContent = char.initiative != null ? char.initiative : '—';
+    if (char.initiative == null) initSpan.classList.add('none');
+    initSpan.title = 'Click para editar iniciativa';
+    initSpan.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editInitiative(char);
+    });
+
     const removeBtn = document.createElement('button');
     removeBtn.className = 'remove-char';
     removeBtn.textContent = '×';
@@ -554,6 +628,7 @@ function renderCharacters() {
 
     div.appendChild(img);
     div.appendChild(span);
+    div.appendChild(initSpan);
     div.appendChild(removeBtn);
 
     div.addEventListener('dragstart', (e) => {
@@ -576,6 +651,7 @@ function removeCharacter(charId) {
   renderCharacters();
   renderTokens();
   calculateVision();
+  renderInitiativeBar();
   if (!socketIgnoreNext) socket.emit('character:removed', { charId });
 }
 
@@ -655,12 +731,14 @@ function renderTokens() {
 
     cell.appendChild(el);
   }
+  renderInitiativeBar();
 }
 
 function removeToken(tokenId) {
   state.tokens = state.tokens.filter(t => t.id !== tokenId);
   renderTokens();
   calculateVision();
+  renderInitiativeBar();
   if (!socketIgnoreNext) socket.emit('token:removed', { tokenId });
 }
 
@@ -682,6 +760,7 @@ function saveState() {
       imageUrl: c.imageUrl,
       visionRadius: c.visionRadius,
       isEnemy: c.isEnemy || false,
+      initiative: c.initiative || null,
     })),
     tokens: state.tokens.map(t => ({
       id: t.id,
@@ -741,6 +820,7 @@ function loadState(file) {
           imageUrl: c.imageUrl,
           visionRadius: c.visionRadius || 5,
           isEnemy: c.isEnemy || false,
+          initiative: c.initiative || null,
         });
         if (c.id >= state.nextCharId) state.nextCharId = c.id + 1;
       }
@@ -796,6 +876,7 @@ $('#export-chars').addEventListener('click', () => {
     imageUrl: c.imageUrl,
     visionRadius: c.visionRadius,
     isEnemy: c.isEnemy || false,
+    initiative: c.initiative || null,
   }));
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -828,6 +909,7 @@ $('#import-chars-input').addEventListener('change', (e) => {
           imageUrl: c.imageUrl,
           visionRadius: c.visionRadius || 5,
           isEnemy: c.isEnemy || false,
+          initiative: c.initiative || null,
         });
       }
       renderCharacters();

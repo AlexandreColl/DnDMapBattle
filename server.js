@@ -95,6 +95,14 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('view:changed', data);
   });
 
+  socket.on('initiative:changed', (data) => {
+    const char = gameState.characters.find(c => c.id === data.charId);
+    if (char) {
+      char.initiative = data.initiative;
+    }
+    socket.broadcast.emit('initiative:changed', data);
+  });
+
   socket.on('state:cleared', () => {
     gameState.mapImage = null;
     gameState.gridRows = 0;
