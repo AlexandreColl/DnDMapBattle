@@ -16,6 +16,7 @@ const gameState = {
   gridRows: 0,
   gridCols: 0,
   cellStates: [],
+  wallCells: [],
   characters: [],
   tokens: [],
   nextCharId: 1,
@@ -42,6 +43,7 @@ io.on('connection', (socket) => {
     gameState.gridRows = data.gridRows;
     gameState.gridCols = data.gridCols;
     gameState.cellStates = data.cellStates;
+    gameState.wallCells = data.wallCells;
     gameState.tokens = data.tokens;
     gameState.nextTokenId = data.nextTokenId;
     socket.broadcast.emit('grid:generated', data);
@@ -93,6 +95,11 @@ io.on('connection', (socket) => {
     gameState.panX = data.panX;
     gameState.panY = data.panY;
     socket.broadcast.emit('view:changed', data);
+  });
+
+  socket.on('walls:set', (data) => {
+    gameState.wallCells = data.wallCells;
+    socket.broadcast.emit('walls:set', data);
   });
 
   socket.on('initiative:changed', (data) => {

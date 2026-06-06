@@ -63,12 +63,24 @@ body {
   left: 0;
 }
 
-#sidebar h2 {
-  font-size: 1.1rem;
-  text-align: center;
-  color: #e94560;
+#sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   border-bottom: 1px solid #0f3460;
   padding-bottom: 10px;
+}
+
+#sidebar-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+#sidebar h2 {
+  font-size: 1.1rem;
+  color: #e94560;
 }
 
 #sidebar h3 {
@@ -471,6 +483,22 @@ body {
   pointer-events: auto;
 }
 
+/* ─── Wall editing ─── */
+#walls-section .btn {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+#toggle-walls.active {
+  background: #e94560;
+  color: white;
+}
+
+.grid-cell.wall-cell {
+  background: rgba(80, 60, 40, 0.3) !important;
+  border-color: rgba(160, 120, 80, 0.5) !important;
+}
+
 /* ─── Fog of War ─── */
 #fog-overlay {
   position: absolute;
@@ -532,28 +560,6 @@ body {
 .token.dragging {
   opacity: 0.5;
   z-index: 10;
-}
-
-.token .remove-token {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 18px;
-  height: 18px;
-  background: #e94560;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  font-size: 0.7rem;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.token:hover .remove-token {
-  display: flex;
 }
 
 /* ─── Token Editor Modal ─── */

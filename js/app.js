@@ -17,6 +17,10 @@ const state = {
   measuring: false,
   measurePoints: [],      // [{ row, col }, ...]
   currentTurnId: null,    // character ID whose turn it is
+  editingWalls: false,
+  wallCells: [],          // 2D boolean array: true = wall
+  imageNaturalWidth: 0,
+  imageNaturalHeight: 0,
 };
 
 // ─── DOM refs ───
@@ -57,6 +61,9 @@ function receiveFullState(data) {
       saveMapDataURL = data.mapImage;
       state.mapImage = data.mapImage;
       mapBg.style.backgroundImage = `url(${data.mapImage})`;
+      const img = new Image();
+      img.onload = () => { state.imageNaturalWidth = img.naturalWidth; state.imageNaturalHeight = img.naturalHeight; };
+      img.src = data.mapImage;
     }
 
     state.nextCharId = 1;
@@ -72,6 +79,13 @@ function receiveFullState(data) {
     if (data.gridRows && data.gridCols) {
       generateGrid(data.gridRows, data.gridCols);
       state.cellStates = data.cellStates;
+      if (data.wallCells) {
+        for (let r = 0; r < state.gridRows && r < data.wallCells.length; r++) {
+          for (let c = 0; c < state.gridCols && c < data.wallCells[r].length; c++) {
+            state.wallCells[r][c] = !!data.wallCells[r][c];
+          }
+        }
+      }
       state.nextTokenId = 1;
       state.tokens = data.tokens.map(t => {
         const token = { ...t };
@@ -81,12 +95,16 @@ function receiveFullState(data) {
       renderTokens();
       calculateVision();
       applyTransform();
+      if (data.wallCells) applyWallCells();
     }
 
     state.currentTurnId = null;
     $('#turn-display').textContent = '—';
     state.measuring = false; clearMeasurement();
+    state.editingWalls = false;
+    fogOverlay.style.opacity = '1';
     $('#toggle-measure').classList.remove('active');
+    $('#toggle-walls').classList.remove('active');
     renderCharacters();
   }
   socketIgnoreNext = false;
@@ -104,14 +122,25 @@ socket.on('map:changed', (data) => {
   if (state.mapImage && state.mapImage.startsWith('blob:')) URL.revokeObjectURL(state.mapImage);
   state.mapImage = data.mapImage; saveMapDataURL = data.mapImage;
   mapBg.style.backgroundImage = `url(${data.mapImage})`;
+  const img = new Image();
+  img.onload = () => { state.imageNaturalWidth = img.naturalWidth; state.imageNaturalHeight = img.naturalHeight; };
+  img.src = data.mapImage;
 });
 
 socket.on('grid:generated', (data) => {
   if (socketIgnoreNext) return;
   generateGrid(data.gridRows, data.gridCols);
   state.cellStates = data.cellStates;
+  if (data.wallCells) {
+    for (let r = 0; r < state.gridRows && r < data.wallCells.length; r++) {
+      for (let c = 0; c < state.gridCols && c < data.wallCells[r].length; c++) {
+        state.wallCells[r][c] = !!data.wallCells[r][c];
+      }
+    }
+  }
   state.tokens = data.tokens;
   state.nextTokenId = data.nextTokenId;
+  applyWallCells();
   renderTokens(); calculateVision();
 });
 
@@ -159,6 +188,15 @@ socket.on('fog:updated', (data) => {
   applyFog();
 });
 
+socket.on('walls:set', (data) => {
+  if (socketIgnoreNext) return;
+  state.wallCells = data.wallCells;
+  applyFog();
+  $$('.grid-cell.wall-cell', gridOverlay).forEach(el => el.classList.remove('wall-cell'));
+  applyWallCells();
+  calculateVision();
+});
+
 socket.on('view:changed', (data) => {
   if (socketIgnoreNext) return;
   state.zoom = data.zoom; state.panX = data.panX; state.panY = data.panY;
@@ -192,7 +230,11 @@ socket.on('state:cleared', () => {
   state.zoom = 1; state.panX = 0; state.panY = 0; applyTransform();
   state.measuring = false; clearMeasurement();
   state.currentTurnId = null;
+  state.editingWalls = false; state.wallCells = [];
+  state.imageNaturalWidth = 0; state.imageNaturalHeight = 0;
+  fogOverlay.style.opacity = '1';
   $('#toggle-measure').classList.remove('active');
+  $('#toggle-walls').classList.remove('active');
   $('#turn-display').textContent = '—';
   renderCharacters(); renderInitiativeBar();
 });
@@ -225,7 +267,7 @@ let panState = null;
 
 mapContainer.addEventListener('mousedown', (e) => {
   if (e.button !== 0) return;
-  if (e.target.closest('.token') || e.target.closest('.remove-token') || e.target.closest('.grid-cell') && e.target.closest('.grid-cell').querySelector('.token')) return;
+  if (e.target.closest('.token') || e.target.closest('.grid-cell') && e.target.closest('.grid-cell').querySelector('.token')) return;
   if (state.measuring && e.target.closest('.grid-cell')) return;
   panState = { startX: e.clientX, startY: e.clientY, panX: state.panX, panY: state.panY };
   mapContainer.classList.add('panning');
@@ -254,6 +296,14 @@ $('#map-upload').addEventListener('change', (e) => {
   if (state.mapImage && state.mapImage.startsWith('blob:')) URL.revokeObjectURL(state.mapImage);
   state.mapImage = url;
   mapBg.style.backgroundImage = `url(${url})`;
+
+  const tempImg = new Image();
+  tempImg.onload = () => {
+    state.imageNaturalWidth = tempImg.naturalWidth;
+    state.imageNaturalHeight = tempImg.naturalHeight;
+  };
+  tempImg.src = url;
+
   const reader = new FileReader();
   reader.onload = () => {
     saveMapDataURL = reader.result;
@@ -269,10 +319,13 @@ function generateGrid(rows, cols) {
 
   // Init cell states
   state.cellStates = [];
+  state.wallCells = [];
   for (let r = 0; r < rows; r++) {
     state.cellStates[r] = [];
+    state.wallCells[r] = [];
     for (let c = 0; c < cols; c++) {
       state.cellStates[r][c] = 'hidden';
+      state.wallCells[r][c] = false;
     }
   }
 
@@ -307,6 +360,10 @@ function generateGrid(rows, cols) {
         }
       });
       cell.addEventListener('click', (e) => {
+        if (state.editingWalls) {
+          toggleWall(r, c);
+          return;
+        }
         if (e.shiftKey) {
           toggleReveal(r, c);
           return;
@@ -330,7 +387,6 @@ function generateFog() {
   fogOverlay.innerHTML = '';
   fogOverlay.style.gridTemplateColumns = `repeat(${state.gridCols}, 1fr)`;
   fogOverlay.style.gridTemplateRows = `repeat(${state.gridRows}, 1fr)`;
-
   for (let r = 0; r < state.gridRows; r++) {
     for (let c = 0; c < state.gridCols; c++) {
       const cell = document.createElement('div');
@@ -370,7 +426,19 @@ function calculateVision() {
     for (let r = Math.max(0, token.row - radius); r <= Math.min(state.gridRows - 1, token.row + radius); r++) {
       for (let c = Math.max(0, token.col - radius); c <= Math.min(state.gridCols - 1, token.col + radius); c++) {
         const dist = Math.sqrt((r - token.row) ** 2 + (c - token.col) ** 2);
-        if (dist <= radius && state.cellStates[r][c] !== 'revealed') {
+        if (dist > radius) continue;
+        if (state.cellStates[r][c] === 'revealed') continue;
+
+        // Ray casting: check walls along line
+        const line = getLineCells(token.row, token.col, r, c);
+        let blocked = false;
+        for (let i = 1; i < line.length - 1; i++) {
+          if (state.wallCells[line[i].row]?.[line[i].col]) {
+            blocked = true;
+            break;
+          }
+        }
+        if (!blocked) {
           state.cellStates[r][c] = 'visible';
         }
       }
@@ -442,6 +510,89 @@ function renderInitiativeBar() {
   }
 }
 
+// ─── Walls ───
+$('#toggle-walls').addEventListener('click', () => {
+  state.editingWalls = !state.editingWalls;
+  $('#toggle-walls').classList.toggle('active');
+  fogOverlay.style.opacity = state.editingWalls ? '0' : '1';
+  $$('.grid-cell', gridOverlay).forEach(el => el.classList.toggle('wall-edit', state.editingWalls));
+  if (state.editingWalls) {
+    applyWallCells();
+  } else {
+    $$('.grid-cell.wall-cell', gridOverlay).forEach(el => el.classList.remove('wall-cell'));
+  }
+});
+
+$('#clear-walls').addEventListener('click', () => {
+  if (!confirm('¿Limpiar todas las paredes?')) return;
+  for (let r = 0; r < state.gridRows; r++) {
+    for (let c = 0; c < state.gridCols; c++) {
+      state.wallCells[r][c] = false;
+    }
+  }
+  $$('.grid-cell.wall-cell', gridOverlay).forEach(el => el.classList.remove('wall-cell'));
+  calculateVision();
+  if (!socketIgnoreNext) socket.emit('walls:set', { wallCells: state.wallCells });
+});
+
+function toggleWall(row, col) {
+  state.wallCells[row][col] = !state.wallCells[row][col];
+  const cell = $(`[data-row="${row}"][data-col="${col}"]`, gridOverlay);
+  if (cell) cell.classList.toggle('wall-cell', state.wallCells[row][col]);
+  calculateVision();
+  if (!socketIgnoreNext) socket.emit('walls:set', { wallCells: state.wallCells });
+}
+
+function applyWallCells() {
+  if (!state.editingWalls) {
+    $$('.grid-cell.wall-cell', gridOverlay).forEach(el => el.classList.remove('wall-cell'));
+    return;
+  }
+  for (let r = 0; r < state.gridRows; r++) {
+    for (let c = 0; c < state.gridCols; c++) {
+      const cell = $(`[data-row="${r}"][data-col="${c}"]`, gridOverlay);
+      if (cell) cell.classList.toggle('wall-cell', state.wallCells[r][c]);
+    }
+  }
+}
+
+// Bresenham line: returns all cells between (r0,c0) and (r1,c1) inclusive
+function getLineCells(r0, c0, r1, c1) {
+  const cells = [];
+  let dr = Math.abs(r1 - r0);
+  let dc = Math.abs(c1 - c0);
+  let sr = r0 < r1 ? 1 : -1;
+  let sc = c0 < c1 ? 1 : -1;
+  let err = dr - dc;
+  let r = r0, c = c0;
+  while (true) {
+    cells.push({ row: r, col: c });
+    if (r === r1 && c === c1) break;
+    const e2 = 2 * err;
+    if (e2 > -dc) { err -= dc; r += sr; }
+    if (e2 < dr) { err += dr; c += sc; }
+  }
+  return cells;
+}
+
+// ─── Auto-adjust rows/cols to keep cells square ───
+const gridRowsInput = $('#grid-rows');
+const gridColsInput = $('#grid-cols');
+
+gridRowsInput.addEventListener('change', () => {
+  if (state.imageNaturalWidth && state.imageNaturalHeight) {
+    const rows = parseInt(gridRowsInput.value) || 1;
+    gridColsInput.value = Math.round(rows * state.imageNaturalWidth / state.imageNaturalHeight);
+  }
+});
+
+gridColsInput.addEventListener('change', () => {
+  if (state.imageNaturalWidth && state.imageNaturalHeight) {
+    const cols = parseInt(gridColsInput.value) || 1;
+    gridRowsInput.value = Math.round(cols * state.imageNaturalHeight / state.imageNaturalWidth);
+  }
+});
+
 $('#grid-generate').addEventListener('click', () => {
   const rows = parseInt($('#grid-rows').value) || 15;
   const cols = parseInt($('#grid-cols').value) || 20;
@@ -449,7 +600,8 @@ $('#grid-generate').addEventListener('click', () => {
   clearMeasurement();
   if (!socketIgnoreNext) socket.emit('grid:generated', {
     gridRows: state.gridRows, gridCols: state.gridCols,
-    cellStates: state.cellStates, tokens: state.tokens, nextTokenId: state.nextTokenId,
+    cellStates: state.cellStates, wallCells: state.wallCells,
+    tokens: state.tokens, nextTokenId: state.nextTokenId,
   });
 });
 
@@ -917,14 +1069,12 @@ function renderTokens() {
     el.draggable = true;
     el.title = char.name;
 
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'remove-token';
-    removeBtn.textContent = '×';
-    removeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      removeToken(token.id);
+    el.addEventListener('auxclick', (e) => {
+      if (e.button === 1) { e.stopPropagation(); removeToken(token.id); }
     });
-    el.appendChild(removeBtn);
+
+    el.addEventListener('mouseenter', () => { hoveredTokenId = token.id; });
+    el.addEventListener('mouseleave', () => { if (hoveredTokenId === token.id) hoveredTokenId = null; });
 
     el.addEventListener('dragstart', (e) => {
       state.dragSource = { type: 'token', id: token.id };
@@ -982,6 +1132,7 @@ function saveState() {
     panX: state.panX,
     panY: state.panY,
     mapImage: saveMapDataURL || null,
+    wallCells: state.wallCells,
   };
 
   const json = JSON.stringify(data, null, 2);
@@ -1043,6 +1194,14 @@ function loadState(file) {
       // Generate grid and restore state
       generateGrid(data.gridRows, data.gridCols);
       state.cellStates = data.cellStates;
+      // Restore walls (backwards-compatible: default to all false)
+      if (data.wallCells) {
+        for (let r = 0; r < state.gridRows && r < data.wallCells.length; r++) {
+          for (let c = 0; c < state.gridCols && c < data.wallCells[r].length; c++) {
+            state.wallCells[r][c] = !!data.wallCells[r][c];
+          }
+        }
+      }
       state.nextTokenId = 1;
       state.tokens = data.tokens.map(t => {
         const token = { ...t };
@@ -1150,9 +1309,14 @@ $('#clear-all').addEventListener('click', () => {
   gridOverlay.classList.remove('has-grid');
   fogOverlay.innerHTML = '';
   state.cellStates = [];
+  state.wallCells = [];
+  state.imageNaturalWidth = 0; state.imageNaturalHeight = 0;
   state.measuring = false; clearMeasurement();
   state.currentTurnId = null;
+  state.editingWalls = false;
+  fogOverlay.style.opacity = '1';
   $('#toggle-measure').classList.remove('active');
+  $('#toggle-walls').classList.remove('active');
   $('#turn-display').textContent = '—';
   renderCharacters();
 });
@@ -1164,6 +1328,15 @@ sidebarToggle.addEventListener('click', () => {
   sidebar.classList.toggle('collapsed');
   sidebarToggle.classList.toggle('collapsed');
   sidebarToggle.textContent = sidebar.classList.contains('collapsed') ? '☰' : '◀';
+});
+
+// ─── Keyboard: D to delete hovered token ───
+let hoveredTokenId = null;
+
+document.addEventListener('keydown', (e) => {
+  if ((e.key === 'd' || e.key === 'D') && hoveredTokenId != null) {
+    removeToken(hoveredTokenId);
+  }
 });
 
 // ─── Init ───

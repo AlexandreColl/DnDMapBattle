@@ -8,7 +8,10 @@
 </head>
 <body>
   <aside id="sidebar">
-    <h2>DnD Battle Map</h2>
+    <div id="sidebar-header">
+      <img src="logo.png" alt="Logo" id="sidebar-logo">
+      <h2>DnD Battle Map</h2>
+    </div>
 
     <section id="map-section">
       <h3>Mapa</h3>
@@ -38,6 +41,14 @@
       <h3>Medición</h3>
       <button id="toggle-measure" class="btn">Medir distancia</button>
       <div id="measure-info"></div>
+    </section>
+
+    <hr>
+
+    <section id="walls-section">
+      <h3>Paredes</h3>
+      <button id="toggle-walls" class="btn">Editar paredes</button>
+      <button id="clear-walls" class="btn danger">Limpiar paredes</button>
     </section>
 
     <hr>
