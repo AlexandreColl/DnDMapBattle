@@ -27,6 +27,143 @@ const mapWrapper = $('#map-wrapper');
 const charList = $('#char-list');
 const mapContainer = $('#map-container');
 
+// ─── Socket.IO sync ───
+const socket = io();
+let socketIgnoreNext = false;
+
+function receiveFullState(data) {
+  socketIgnoreNext = true;
+
+  // Only apply if server has actual data
+  if (data.gridRows > 0 || data.characters?.length > 0 || data.mapImage || data.tokens?.length > 0) {
+    state.characters.forEach(c => { if (c.imageUrl.startsWith('blob:')) URL.revokeObjectURL(c.imageUrl); });
+    state.characters = [];
+    state.tokens = [];
+    if (state.mapImage) {
+      if (state.mapImage.startsWith('blob:')) URL.revokeObjectURL(state.mapImage);
+      state.mapImage = null; saveMapDataURL = null;
+      mapBg.style.backgroundImage = '';
+    }
+
+    if (data.mapImage) {
+      saveMapDataURL = data.mapImage;
+      state.mapImage = data.mapImage;
+      mapBg.style.backgroundImage = `url(${data.mapImage})`;
+    }
+
+    state.nextCharId = 1;
+    for (const c of data.characters) {
+      state.characters.push({ id: c.id, name: c.name, imageUrl: c.imageUrl, visionRadius: c.visionRadius || 5, isEnemy: c.isEnemy || false });
+      if (c.id >= state.nextCharId) state.nextCharId = c.id + 1;
+    }
+
+    state.zoom = data.zoom || 1;
+    state.panX = data.panX || 0;
+    state.panY = data.panY || 0;
+
+    if (data.gridRows && data.gridCols) {
+      generateGrid(data.gridRows, data.gridCols);
+      state.cellStates = data.cellStates;
+      state.nextTokenId = 1;
+      state.tokens = data.tokens.map(t => {
+        const token = { ...t };
+        if (token.id >= state.nextTokenId) state.nextTokenId = token.id + 1;
+        return token;
+      });
+      renderTokens();
+      calculateVision();
+      applyTransform();
+    }
+
+    renderCharacters();
+  }
+  socketIgnoreNext = false;
+}
+
+socket.on('connect', () => {});
+
+socket.on('state:full', (data) => {
+  if (socketIgnoreNext) return;
+  receiveFullState(data);
+});
+
+socket.on('map:changed', (data) => {
+  if (socketIgnoreNext) return;
+  if (state.mapImage && state.mapImage.startsWith('blob:')) URL.revokeObjectURL(state.mapImage);
+  state.mapImage = data.mapImage; saveMapDataURL = data.mapImage;
+  mapBg.style.backgroundImage = `url(${data.mapImage})`;
+});
+
+socket.on('grid:generated', (data) => {
+  if (socketIgnoreNext) return;
+  generateGrid(data.gridRows, data.gridCols);
+  state.cellStates = data.cellStates;
+  state.tokens = data.tokens;
+  state.nextTokenId = data.nextTokenId;
+  renderTokens(); calculateVision();
+});
+
+socket.on('character:added', (data) => {
+  if (socketIgnoreNext) return;
+  state.characters.push(data.character);
+  if (data.nextCharId > state.nextCharId) state.nextCharId = data.nextCharId;
+  renderCharacters();
+});
+
+socket.on('character:removed', (data) => {
+  if (socketIgnoreNext) return;
+  state.characters = state.characters.filter(c => c.id !== data.charId);
+  state.tokens = state.tokens.filter(t => t.characterId !== data.charId);
+  renderCharacters(); renderTokens(); calculateVision();
+});
+
+socket.on('token:placed', (data) => {
+  if (socketIgnoreNext) return;
+  const existing = state.tokens.find(t => t.characterId === data.characterId);
+  if (existing) { existing.row = data.row; existing.col = data.col; }
+  else { state.tokens.push(data.token); if (data.nextTokenId > state.nextTokenId) state.nextTokenId = data.nextTokenId; }
+  renderTokens(); calculateVision();
+});
+
+socket.on('token:removed', (data) => {
+  if (socketIgnoreNext) return;
+  state.tokens = state.tokens.filter(t => t.id !== data.tokenId);
+  renderTokens(); calculateVision();
+});
+
+socket.on('fog:revealed', (data) => {
+  if (socketIgnoreNext) return;
+  for (const { row, col } of data.cells) {
+    if (state.cellStates[row] && state.cellStates[row][col] !== undefined) {
+      state.cellStates[row][col] = 'revealed';
+    }
+  }
+  calculateVision();
+});
+
+socket.on('fog:updated', (data) => {
+  if (socketIgnoreNext) return;
+  state.cellStates = data.cellStates;
+  applyFog();
+});
+
+socket.on('view:changed', (data) => {
+  if (socketIgnoreNext) return;
+  state.zoom = data.zoom; state.panX = data.panX; state.panY = data.panY;
+  applyTransform();
+});
+
+socket.on('state:cleared', () => {
+  if (socketIgnoreNext) return;
+  state.characters.forEach(c => { if (c.imageUrl.startsWith('blob:')) URL.revokeObjectURL(c.imageUrl); });
+  state.characters = []; state.tokens = [];
+  if (state.mapImage) { if (state.mapImage.startsWith('blob:')) URL.revokeObjectURL(state.mapImage); state.mapImage = null; saveMapDataURL = null; mapBg.style.backgroundImage = ''; }
+  gridOverlay.innerHTML = ''; gridOverlay.classList.remove('has-grid');
+  fogOverlay.innerHTML = ''; state.cellStates = [];
+  state.zoom = 1; state.panX = 0; state.panY = 0; applyTransform();
+  renderCharacters();
+});
+
 // ─── Zoom / Pan ───
 function applyTransform() {
   mapWrapper.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
@@ -47,6 +184,7 @@ mapContainer.addEventListener('wheel', (e) => {
   e.preventDefault();
   const dir = e.deltaY < 0 ? 1.1 : 1 / 1.1;
   zoomAtPoint(state.zoom * dir, e.clientX, e.clientY);
+  if (!socketIgnoreNext) socket.emit('view:changed', { zoom: state.zoom, panX: state.panX, panY: state.panY });
 }, { passive: false });
 
 // ─── Pan via drag ───
@@ -71,6 +209,7 @@ document.addEventListener('mouseup', () => {
   if (!panState) return;
   panState = null;
   mapContainer.classList.remove('panning');
+  if (!socketIgnoreNext) socket.emit('view:changed', { zoom: state.zoom, panX: state.panX, panY: state.panY });
 });
 
 // ─── Map upload ───
@@ -82,7 +221,10 @@ $('#map-upload').addEventListener('change', (e) => {
   state.mapImage = url;
   mapBg.style.backgroundImage = `url(${url})`;
   const reader = new FileReader();
-  reader.onload = () => { saveMapDataURL = reader.result; };
+  reader.onload = () => {
+    saveMapDataURL = reader.result;
+    if (!socketIgnoreNext) socket.emit('map:changed', { mapImage: reader.result });
+  };
   reader.readAsDataURL(file);
 });
 
@@ -197,6 +339,7 @@ function calculateVision() {
   }
 
   applyFog();
+  if (!socketIgnoreNext) socket.emit('fog:updated', { cellStates: state.cellStates });
 }
 
 function toggleReveal(row, col) {
@@ -206,12 +349,17 @@ function toggleReveal(row, col) {
     state.cellStates[row][col] = 'revealed';
   }
   calculateVision();
+  if (!socketIgnoreNext) socket.emit('fog:revealed', { cells: [{ row, col }] });
 }
 
 $('#grid-generate').addEventListener('click', () => {
   const rows = parseInt($('#grid-rows').value) || 15;
   const cols = parseInt($('#grid-cols').value) || 20;
   generateGrid(rows, cols);
+  if (!socketIgnoreNext) socket.emit('grid:generated', {
+    gridRows: state.gridRows, gridCols: state.gridCols,
+    cellStates: state.cellStates, tokens: state.tokens, nextTokenId: state.nextTokenId,
+  });
 });
 
 // ─── Token Editor Modal ───
@@ -302,12 +450,13 @@ $('#editor-confirm').addEventListener('click', () => {
 
   createTokenImage(editorSourceImg, color, zoom, editorPanX, editorPanY, (dataUrl) => {
     const char = {
-      id: state.nextCharId++,
+      id: state.nextCharId,
       name: editorPendingName,
       imageUrl: dataUrl,
       visionRadius: parseInt($('#editor-vision').value) || 5,
       isEnemy: $('#editor-enemy').checked,
     };
+    state.nextCharId++;
     state.characters.push(char);
     renderCharacters();
     editorModal.classList.add('hidden');
@@ -316,6 +465,7 @@ $('#editor-confirm').addEventListener('click', () => {
     editorZoomLevel = 1; editorPanX = 0; editorPanY = 0;
     editorPendingFile = null;
     editorSourceImg = null;
+    if (!socketIgnoreNext) socket.emit('character:added', { character: char, nextCharId: state.nextCharId });
   });
 });
 
@@ -426,6 +576,7 @@ function removeCharacter(charId) {
   renderCharacters();
   renderTokens();
   calculateVision();
+  if (!socketIgnoreNext) socket.emit('character:removed', { charId });
 }
 
 // ─── Tokens (place / move) ───
@@ -438,15 +589,17 @@ function handleDrop(row, col, e) {
     if (existing) {
       existing.row = row;
       existing.col = col;
+      renderTokens();
+      calculateVision();
+      if (!socketIgnoreNext) socket.emit('token:placed', { characterId: charId, row, col, token: existing, nextTokenId: state.nextTokenId });
     } else {
-      state.tokens.push({
-        id: state.nextTokenId++,
-        characterId: charId,
-        row, col,
-      });
+      const token = { id: state.nextTokenId++, characterId: charId, row, col };
+      state.tokens.push(token);
+      renderTokens();
+      calculateVision();
+      if (!socketIgnoreNext) socket.emit('token:placed', { characterId: charId, row, col, token, nextTokenId: state.nextTokenId });
     }
-    renderTokens();
-    calculateVision();
+    return;
   }
 
   if (data.startsWith('token:')) {
@@ -455,9 +608,10 @@ function handleDrop(row, col, e) {
     if (token) {
       token.row = row;
       token.col = col;
+      renderTokens();
+      calculateVision();
+      if (!socketIgnoreNext) socket.emit('token:placed', { characterId: token.characterId, row, col, token, nextTokenId: state.nextTokenId });
     }
-    renderTokens();
-    calculateVision();
   }
 }
 
@@ -507,6 +661,7 @@ function removeToken(tokenId) {
   state.tokens = state.tokens.filter(t => t.id !== tokenId);
   renderTokens();
   calculateVision();
+  if (!socketIgnoreNext) socket.emit('token:removed', { tokenId });
 }
 
 // ─── Save / Load ───
@@ -687,6 +842,7 @@ $('#import-chars-input').addEventListener('change', (e) => {
 // ─── Clear all ───
 $('#clear-all').addEventListener('click', () => {
   if (!confirm('¿Limpiar todo?')) return;
+  socket.emit('state:cleared');
   state.characters.forEach(c => {
     if (c.imageUrl.startsWith('blob:')) URL.revokeObjectURL(c.imageUrl);
   });
@@ -703,6 +859,15 @@ $('#clear-all').addEventListener('click', () => {
   fogOverlay.innerHTML = '';
   state.cellStates = [];
   renderCharacters();
+});
+
+// ─── Sidebar toggle ───
+const sidebar = $('#sidebar');
+const sidebarToggle = $('#sidebar-toggle');
+sidebarToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+  sidebarToggle.classList.toggle('collapsed');
+  sidebarToggle.textContent = sidebar.classList.contains('collapsed') ? '☰' : '◀';
 });
 
 // ─── Init ───

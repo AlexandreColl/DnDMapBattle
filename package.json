@@ -1,0 +1,13 @@
+{
+  "name": "dndmapbattle",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DnD Battle Map - simulador de batallas multijugador",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "socket.io": "^4.7.5"
+  }
+}

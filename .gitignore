@@ -3,3 +3,7 @@
 Thumbs.db
 desktop.ini
 *.log
+
+# Node.js
+node_modules/
+package-lock.json
