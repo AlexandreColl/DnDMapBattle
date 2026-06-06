@@ -14,6 +14,9 @@ const state = {
   zoom: 1,
   panX: 0,
   panY: 0,
+  measuring: false,
+  measurePoints: [],      // [{ row, col }, ...]
+  currentTurnId: null,    // character ID whose turn it is
 };
 
 // ─── DOM refs ───
@@ -26,6 +29,11 @@ const fogOverlay = $('#fog-overlay');
 const mapWrapper = $('#map-wrapper');
 const charList = $('#char-list');
 const mapContainer = $('#map-container');
+const measureOverlay = $('#measure-overlay');
+const measureMarkerA = $('#measure-marker-a');
+const measureMarkerB = $('#measure-marker-b');
+const measureLabel = $('#measure-label');
+const measureLine = $('#measure-line');
 
 // ─── Socket.IO sync ───
 const socket = io();
@@ -75,6 +83,10 @@ function receiveFullState(data) {
       applyTransform();
     }
 
+    state.currentTurnId = null;
+    $('#turn-display').textContent = '—';
+    state.measuring = false; clearMeasurement();
+    $('#toggle-measure').classList.remove('active');
     renderCharacters();
   }
   socketIgnoreNext = false;
@@ -114,7 +126,7 @@ socket.on('character:added', (data) => {
     if (socketIgnoreNext) return;
     state.characters = state.characters.filter(c => c.id !== data.charId);
     state.tokens = state.tokens.filter(t => t.characterId !== data.charId);
-    renderCharacters(); renderTokens(); calculateVision(); renderInitiativeBar();
+    renderCharacters(); renderTokens(); calculateVision(); renderInitiativeBar(); renderTurnTracker();
   });
 
 socket.on('token:placed', (data) => {
@@ -160,7 +172,14 @@ socket.on('initiative:changed', (data) => {
     char.initiative = data.initiative;
     renderCharacters();
     renderInitiativeBar();
+    renderTurnTracker();
   }
+});
+
+socket.on('turn:changed', (data) => {
+  if (socketIgnoreNext) return;
+  state.currentTurnId = data.charId;
+  renderTurnTracker();
 });
 
 socket.on('state:cleared', () => {
@@ -171,6 +190,10 @@ socket.on('state:cleared', () => {
   gridOverlay.innerHTML = ''; gridOverlay.classList.remove('has-grid');
   fogOverlay.innerHTML = ''; state.cellStates = [];
   state.zoom = 1; state.panX = 0; state.panY = 0; applyTransform();
+  state.measuring = false; clearMeasurement();
+  state.currentTurnId = null;
+  $('#toggle-measure').classList.remove('active');
+  $('#turn-display').textContent = '—';
   renderCharacters(); renderInitiativeBar();
 });
 
@@ -203,6 +226,7 @@ let panState = null;
 mapContainer.addEventListener('mousedown', (e) => {
   if (e.button !== 0) return;
   if (e.target.closest('.token') || e.target.closest('.remove-token') || e.target.closest('.grid-cell') && e.target.closest('.grid-cell').querySelector('.token')) return;
+  if (state.measuring && e.target.closest('.grid-cell')) return;
   panState = { startX: e.clientX, startY: e.clientY, panX: state.panX, panY: state.panY };
   mapContainer.classList.add('panning');
   e.preventDefault();
@@ -285,6 +309,11 @@ function generateGrid(rows, cols) {
       cell.addEventListener('click', (e) => {
         if (e.shiftKey) {
           toggleReveal(r, c);
+          return;
+        }
+        if (state.measuring) {
+          e.stopPropagation();
+          handleMeasureClick(r, c);
         }
       });
 
@@ -390,8 +419,9 @@ function renderInitiativeBar() {
   entries.sort((a, b) => b.char.initiative - a.char.initiative);
 
   for (const { char } of entries) {
+    const isCurrent = state.currentTurnId === char.id;
     const item = document.createElement('div');
-    item.className = 'initiative-item';
+    item.className = 'initiative-item' + (isCurrent ? ' current-turn' : '');
     item.title = `${char.name} (Init: ${char.initiative})`;
 
     const img = document.createElement('div');
@@ -416,10 +446,188 @@ $('#grid-generate').addEventListener('click', () => {
   const rows = parseInt($('#grid-rows').value) || 15;
   const cols = parseInt($('#grid-cols').value) || 20;
   generateGrid(rows, cols);
+  clearMeasurement();
   if (!socketIgnoreNext) socket.emit('grid:generated', {
     gridRows: state.gridRows, gridCols: state.gridCols,
     cellStates: state.cellStates, tokens: state.tokens, nextTokenId: state.nextTokenId,
   });
+});
+
+// ─── Measurement ───
+$('#toggle-measure').addEventListener('click', () => {
+  state.measuring = !state.measuring;
+  $('#toggle-measure').classList.toggle('active');
+  if (!state.measuring) {
+    clearMeasurement();
+  } else {
+    state.measurePoints = [];
+    $('#measure-info').textContent = 'Haz clic en una celda para empezar';
+  }
+});
+
+function handleMeasureClick(row, col) {
+  if (state.measurePoints.length >= 2) {
+    state.measurePoints = [];
+  }
+  state.measurePoints.push({ row, col });
+  updateMeasurement();
+}
+
+function clearMeasurement() {
+  state.measurePoints = [];
+  measureMarkerA.style.display = 'none';
+  measureMarkerB.style.display = 'none';
+  measureLabel.style.display = 'none';
+  measureLine.style.display = 'none';
+  $$('.grid-cell.measure-a, .grid-cell.measure-b', gridOverlay).forEach(el => {
+    el.classList.remove('measure-a', 'measure-b');
+  });
+  $('#measure-info').textContent = '';
+}
+
+function getCellCenter(row, col) {
+  const cell = $(`[data-row="${row}"][data-col="${col}"]`, gridOverlay);
+  if (!cell) return null;
+  const wrapperRect = mapWrapper.getBoundingClientRect();
+  const cellRect = cell.getBoundingClientRect();
+  return {
+    x: cellRect.left + cellRect.width / 2 - wrapperRect.left,
+    y: cellRect.top + cellRect.height / 2 - wrapperRect.top,
+  };
+}
+
+function updateMeasurement() {
+  const pts = state.measurePoints;
+  $$('.grid-cell.measure-a, .grid-cell.measure-b', gridOverlay).forEach(el => {
+    el.classList.remove('measure-a', 'measure-b');
+  });
+
+  if (pts.length >= 1) {
+    const cellA = $(`[data-row="${pts[0].row}"][data-col="${pts[0].col}"]`, gridOverlay);
+    if (cellA) cellA.classList.add('measure-a');
+    const posA = getCellCenter(pts[0].row, pts[0].col);
+    if (posA) {
+      measureMarkerA.style.left = posA.x + 'px';
+      measureMarkerA.style.top = posA.y + 'px';
+      measureMarkerA.style.display = 'block';
+    }
+  }
+
+  if (pts.length >= 2) {
+    const cellB = $(`[data-row="${pts[1].row}"][data-col="${pts[1].col}"]`, gridOverlay);
+    if (cellB) cellB.classList.add('measure-b');
+    const posA = getCellCenter(pts[0].row, pts[0].col);
+    const posB = getCellCenter(pts[1].row, pts[1].col);
+    if (posA && posB) {
+      measureMarkerB.style.left = posB.x + 'px';
+      measureMarkerB.style.top = posB.y + 'px';
+      measureMarkerB.style.display = 'block';
+
+      // Draw line
+      const dx = posB.x - posA.x;
+      const dy = posB.y - posA.y;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      measureLine.style.left = posA.x + 'px';
+      measureLine.style.top = posA.y + 'px';
+      measureLine.style.width = len + 'px';
+      measureLine.style.transform = `rotate(${angle}deg)`;
+      measureLine.style.display = 'block';
+
+      // Label
+      const midX = (posA.x + posB.x) / 2;
+      const midY = (posA.y + posB.y) / 2;
+      const dr = Math.abs(pts[1].row - pts[0].row);
+      const dc = Math.abs(pts[1].col - pts[0].col);
+      const euclid = Math.sqrt(dr * dr + dc * dc);
+      measureLabel.textContent = `${euclid.toFixed(1)} casillas`;
+      measureLabel.style.left = midX + 'px';
+      measureLabel.style.top = (midY - 24) + 'px';
+      measureLabel.style.display = 'block';
+
+      $('#measure-info').textContent = `${euclid.toFixed(1)} casillas`;
+    }
+  }
+
+  if (pts.length === 0) {
+    measureMarkerA.style.display = 'none';
+    measureMarkerB.style.display = 'none';
+    measureLabel.style.display = 'none';
+    measureLine.innerHTML = '';
+  }
+
+  if (pts.length === 1) {
+    measureMarkerB.style.display = 'none';
+    measureLabel.style.display = 'none';
+    measureLine.style.display = 'none';
+    $('#measure-info').textContent = 'Haz clic en otra celda';
+  }
+}
+
+// ─── Turn tracker ───
+function getInitiativeEntries() {
+  const entries = [];
+  for (const token of state.tokens) {
+    const char = state.characters.find(c => c.id === token.characterId);
+    if (char && char.initiative != null) {
+      entries.push({ token, char });
+    }
+  }
+  entries.sort((a, b) => b.char.initiative - a.char.initiative);
+  return entries;
+}
+
+function renderTurnTracker() {
+  const display = $('#turn-display');
+  const entries = getInitiativeEntries();
+
+  if (entries.length === 0) {
+    display.textContent = '—';
+    state.currentTurnId = null;
+    return;
+  }
+
+  if (state.currentTurnId) {
+    const current = entries.find(e => e.char.id === state.currentTurnId);
+    if (!current) {
+      // Current character no longer on board with initiative
+      state.currentTurnId = entries[0].char.id;
+    }
+  } else {
+    state.currentTurnId = entries[0].char.id;
+  }
+
+  const current = state.characters.find(c => c.id === state.currentTurnId);
+  if (current) {
+    display.innerHTML = `<span style="color:#fff">${current.name}</span> — Init ${current.initiative}`;
+  }
+
+  renderInitiativeBar();
+}
+
+$('#turn-start').addEventListener('click', () => {
+  const entries = getInitiativeEntries();
+  if (entries.length === 0) {
+    alert('No hay personajes con iniciativa en el tablero.');
+    return;
+  }
+  state.currentTurnId = entries[0].char.id;
+  renderTurnTracker();
+  if (!socketIgnoreNext) socket.emit('turn:changed', { charId: state.currentTurnId });
+});
+
+$('#turn-next').addEventListener('click', () => {
+  const entries = getInitiativeEntries();
+  if (entries.length === 0) return;
+  if (!state.currentTurnId) {
+    state.currentTurnId = entries[0].char.id;
+  } else {
+    const idx = entries.findIndex(e => e.char.id === state.currentTurnId);
+    const nextIdx = (idx + 1) % entries.length;
+    state.currentTurnId = entries[nextIdx].char.id;
+  }
+  renderTurnTracker();
+  if (!socketIgnoreNext) socket.emit('turn:changed', { charId: state.currentTurnId });
 });
 
 // ─── Token Editor Modal ───
@@ -732,6 +940,7 @@ function renderTokens() {
     cell.appendChild(el);
   }
   renderInitiativeBar();
+  renderTurnTracker();
 }
 
 function removeToken(tokenId) {
@@ -739,6 +948,7 @@ function removeToken(tokenId) {
   renderTokens();
   calculateVision();
   renderInitiativeBar();
+  renderTurnTracker();
   if (!socketIgnoreNext) socket.emit('token:removed', { tokenId });
 }
 
@@ -940,6 +1150,10 @@ $('#clear-all').addEventListener('click', () => {
   gridOverlay.classList.remove('has-grid');
   fogOverlay.innerHTML = '';
   state.cellStates = [];
+  state.measuring = false; clearMeasurement();
+  state.currentTurnId = null;
+  $('#toggle-measure').classList.remove('active');
+  $('#turn-display').textContent = '—';
   renderCharacters();
 });
 

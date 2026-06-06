@@ -25,6 +25,23 @@
       <button id="grid-generate" class="btn">Generar cuadrícula</button>
     </section>
 
+    <section id="turn-section">
+      <h3>Turnos</h3>
+      <div id="turn-display">—</div>
+      <button id="turn-start" class="btn">Iniciar turnos</button>
+      <button id="turn-next" class="btn">Siguiente turno →</button>
+    </section>
+
+    <hr>
+
+    <section id="measure-section">
+      <h3>Medición</h3>
+      <button id="toggle-measure" class="btn">Medir distancia</button>
+      <div id="measure-info"></div>
+    </section>
+
+    <hr>
+
     <section id="char-section">
       <h3>Personajes</h3>
       <input type="file" id="char-upload" accept="image/*">
@@ -57,6 +74,12 @@
       <div id="map-bg"></div>
       <div id="grid-overlay"></div>
       <div id="fog-overlay"></div>
+      <div id="measure-overlay">
+        <div id="measure-marker-a"></div>
+        <div id="measure-marker-b"></div>
+        <div id="measure-label"></div>
+        <div id="measure-line"></div>
+      </div>
     </div>
   </main>
 

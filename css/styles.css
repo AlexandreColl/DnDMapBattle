@@ -305,6 +305,130 @@ body {
   background: rgba(233, 69, 96, 0.3);
 }
 
+/* ─── Turn tracker ─── */
+#turn-section #turn-display {
+  font-size: 0.9rem;
+  color: #e94560;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px;
+  background: rgba(233, 69, 96, 0.1);
+  border: 1px solid #e94560;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#turn-section .row {
+  display: flex;
+  gap: 6px;
+}
+
+#turn-section .row .btn {
+  flex: 1;
+  font-size: 0.78rem;
+  padding: 6px 8px;
+}
+
+#turn-start,
+#turn-next {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* ─── Measurement ─── */
+#measure-section #measure-info {
+  font-size: 0.8rem;
+  color: #a0a0c0;
+  text-align: center;
+  margin-top: 6px;
+  min-height: 20px;
+}
+
+#toggle-measure.active {
+  background: #e94560;
+  color: white;
+}
+
+#measure-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.grid-cell.measure-a {
+  background: rgba(233, 69, 96, 0.25) !important;
+  border-color: #e94560 !important;
+}
+
+.grid-cell.measure-b {
+  background: rgba(57, 255, 20, 0.25) !important;
+  border-color: #39ff14 !important;
+}
+
+#measure-marker-a,
+#measure-marker-b {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#measure-marker-a {
+  background: #e94560;
+  border: 2px solid white;
+}
+
+#measure-marker-b {
+  background: #39ff14;
+  border: 2px solid white;
+}
+
+#measure-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  display: none;
+  pointer-events: none;
+  z-index: 2;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+#measure-line {
+  position: absolute;
+  height: 2px;
+  background: #e94560;
+  transform-origin: left center;
+  pointer-events: none;
+  display: none;
+  z-index: 0;
+}
+
+/* ─── Initiative bar current turn highlight ─── */
+.initiative-item.current-turn .initiative-image {
+  border-color: #e94560;
+  box-shadow: 0 0 8px rgba(233, 69, 96, 0.6);
+}
+
+.initiative-item.current-turn .initiative-value {
+  background: #e94560;
+  color: white;
+}
+
 /* ─── Map container ─── */
 #map-container {
   flex: 1;

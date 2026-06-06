@@ -103,6 +103,10 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('initiative:changed', data);
   });
 
+  socket.on('turn:changed', (data) => {
+    socket.broadcast.emit('turn:changed', data);
+  });
+
   socket.on('state:cleared', () => {
     gameState.mapImage = null;
     gameState.gridRows = 0;
