@@ -87,8 +87,9 @@ Para obtener una copia local y ejecutarla, sigue estos pasos.
 ### Requisitos
 
 * Node.js v18 o superior
+* pnpm
   ```sh
-  node --version
+  npm install -g pnpm
   ```
 
 ### Instalación
@@ -100,11 +101,11 @@ Para obtener una copia local y ejecutarla, sigue estos pasos.
    ```
 2. Instala las dependencias
    ```sh
-   npm install
+   pnpm install
    ```
 3. Inicia el servidor
    ```sh
-   npm start
+   pnpm start
    ```
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
@@ -140,7 +141,7 @@ Abre `index.html` directamente en el navegador, o inicia el servidor y visita `h
 
 Conecta tablets y móviles al mismo mapa en tiempo real.
 
-1. Inicia el servidor (`npm start` o doble clic en `DnDMapBattle.bat`)
+1. Inicia el servidor (`pnpm start`)
 2. La consola muestra la IP local:
    ```
    Red local: http://192.168.1.44:8080
