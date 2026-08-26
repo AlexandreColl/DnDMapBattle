@@ -1,12 +1,15 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
 }
 
@@ -28,7 +31,12 @@ body {
   overflow-y: auto;
   border-right: 2px solid #0f3460;
   z-index: 10;
-  transition: margin-left 0.25s, width 0.25s, min-width 0.25s, padding 0.25s, border 0.25s;
+  transition:
+    margin-left 0.25s,
+    width 0.25s,
+    min-width 0.25s,
+    padding 0.25s,
+    border 0.25s;
 }
 
 #sidebar.collapsed {
@@ -150,7 +158,10 @@ body {
   font-size: 0.8rem;
 }
 
-#map-upload, #char-upload, #load-input, #import-chars-input {
+#map-upload,
+#char-upload,
+#load-input,
+#import-chars-input {
   display: none;
 }
 
@@ -267,7 +278,7 @@ body {
 }
 
 #initiative-bar::before {
-  content: '⚔ Iniciativa';
+  content: "⚔ Iniciativa";
   font-size: 0.7rem;
   color: #e94560;
   font-weight: 600;
@@ -417,7 +428,7 @@ body {
   display: none;
   pointer-events: none;
   z-index: 2;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 #measure-line {
