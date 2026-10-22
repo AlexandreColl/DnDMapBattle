@@ -27,7 +27,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "pnpm lint && pnpm format:check && pnpm test"
+    "check": "eslint . && prettier --check . && vitest run"
   },
   "dependencies": {
     "express": "^4.21.0",
