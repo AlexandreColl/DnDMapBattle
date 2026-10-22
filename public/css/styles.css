@@ -329,6 +329,10 @@ body {
 }
 
 /* ─── Turn tracker ─── */
+#turn-display .turn-name {
+  color: #fff;
+}
+
 #turn-section #turn-display {
   font-size: 0.9rem;
   color: #e94560;

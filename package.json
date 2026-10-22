@@ -3,11 +3,44 @@
   "version": "1.0.0",
   "private": true,
   "description": "DnD Battle Map - simulador de batallas multijugador",
+  "license": "MIT",
+  "author": "Alexandre Coll Molina",
+  "homepage": "https://github.com/AlexandreColl/DnDMapBattle#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandreColl/DnDMapBattle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AlexandreColl/DnDMapBattle/issues"
+  },
+  "type": "module",
+  "main": "server/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "pnpm lint && pnpm format:check && pnpm test"
   },
   "dependencies": {
     "express": "^4.21.0",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.11.0",
+    "prettier": "^3.3.3",
+    "socket.io-client": "^4.7.5",
+    "vitest": "^2.1.4"
   }
 }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DnD Battle Map</title>
+    <link rel="icon" href="favicon.ico" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
@@ -82,7 +83,12 @@
         <input type="file" id="char-upload" accept="image/*" />
         <div class="row">
           <label for="char-upload" class="btn">Seleccionar imagen</label>
-          <input type="text" id="char-name" placeholder="Nombre" />
+          <input
+            type="text"
+            id="char-name"
+            placeholder="Nombre"
+            maxlength="60"
+          />
         </div>
         <button id="char-add" class="btn">Añadir personaje</button>
         <div id="char-list"></div>
@@ -187,6 +193,6 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/app.js"></script>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>
