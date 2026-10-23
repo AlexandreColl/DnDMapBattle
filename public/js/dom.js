@@ -3,13 +3,19 @@ export const $$ = (s, p = document) => p.querySelectorAll(s);
 
 export const mapBg = $("#map-bg");
 export const gridOverlay = $("#grid-overlay");
-export const fogOverlay = $("#fog-overlay");
+export const fogCanvas = $("#fog-canvas");
 export const mapWrapper = $("#map-wrapper");
 export const mapContainer = $("#map-container");
-export const charList = $("#char-list");
 
 export function cellElement(row, col) {
   return $(`[data-row="${row}"][data-col="${col}"]`, gridOverlay);
+}
+
+/** The grid cell under an event target, if any, as { row, col, el }. */
+export function cellFromTarget(target) {
+  const el = target?.closest?.(".grid-cell");
+  if (!el) return null;
+  return { row: Number(el.dataset.row), col: Number(el.dataset.col), el };
 }
 
 /** Triggers a browser download of `data` serialized as JSON. */

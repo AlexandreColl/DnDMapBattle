@@ -1,6 +1,6 @@
-// Grid cells, fog of war and grid sizing.
-import { $, fogOverlay, gridOverlay, mapWrapper } from "./dom.js";
-import { clearMeasurement, handleMeasureClick } from "./measure.js";
+// Grid cells, vision and grid sizing.
+import { $, gridOverlay, mapWrapper } from "./dom.js";
+import { applyFog, placeFog } from "./fog.js";
 import {
   colsForSquareCells,
   computeGridRect,
@@ -9,14 +9,17 @@ import {
   rowsForSquareCells,
 } from "./lib/geometry.js";
 import { computeVision } from "./lib/vision.js";
+import { clearMeasurement, handleMeasureClick } from "./measure.js";
 import { CELL, EVENTS, LIMITS } from "./shared/protocol.js";
 import { emit, withoutEmitting } from "./socket.js";
 import { state } from "./state.js";
 import { handleDrop, renderTokens } from "./tokens.js";
-import { toggleWall } from "./walls.js";
+import { toast } from "./ui.js";
 
 const gridRowsInput = $("#grid-rows");
 const gridColsInput = $("#grid-cols");
+const gridInfo = $("#grid-info");
+const emptyState = $("#empty-state");
 
 function readGridInput(input, fallback) {
   const n = parseInt(input.value, 10);
@@ -47,16 +50,18 @@ function createCell(r, c) {
     }
   });
   cell.addEventListener("click", (e) => {
-    if (state.editingWalls) {
-      toggleWall(r, c);
-    } else if (e.shiftKey) {
+    if (state.tool === "reveal" || (state.tool === "move" && e.shiftKey)) {
       toggleReveal(r, c);
-    } else if (state.measuring) {
+    } else if (state.tool === "measure") {
       e.stopPropagation();
       handleMeasureClick(r, c);
     }
   });
   return cell;
+}
+
+export function updateEmptyState() {
+  emptyState.hidden = Boolean(state.gridRows || state.mapImage);
 }
 
 /** Builds an empty rows × cols grid (all fog hidden, no walls). */
@@ -66,7 +71,6 @@ export function generateGrid(rows, cols) {
   state.cellStates = createMatrix(rows, cols, CELL.HIDDEN);
   state.wallCells = createMatrix(rows, cols, false);
 
-  gridOverlay.replaceChildren();
   gridOverlay.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   gridOverlay.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
   gridOverlay.classList.add("has-grid");
@@ -74,9 +78,9 @@ export function generateGrid(rows, cols) {
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) cells.appendChild(createCell(r, c));
   }
-  gridOverlay.appendChild(cells);
+  gridOverlay.replaceChildren(cells);
 
-  generateFog();
+  updateEmptyState();
   renderTokens();
   calculateVision();
   requestAnimationFrame(() => {
@@ -92,36 +96,8 @@ export function clearGrid() {
   state.wallCells = [];
   gridOverlay.replaceChildren();
   gridOverlay.classList.remove("has-grid");
-  fogOverlay.replaceChildren();
-}
-
-function generateFog() {
-  fogOverlay.replaceChildren();
-  fogOverlay.style.gridTemplateColumns = `repeat(${state.gridCols}, 1fr)`;
-  fogOverlay.style.gridTemplateRows = `repeat(${state.gridRows}, 1fr)`;
-  const cells = document.createDocumentFragment();
-  for (let r = 0; r < state.gridRows; r++) {
-    for (let c = 0; c < state.gridCols; c++) {
-      const cell = document.createElement("div");
-      cell.className = "fog-cell";
-      cell.dataset.row = r;
-      cell.dataset.col = c;
-      cells.appendChild(cell);
-    }
-  }
-  fogOverlay.appendChild(cells);
   applyFog();
-}
-
-export function applyFog() {
-  const cells = fogOverlay.children;
-  for (let r = 0; r < state.gridRows; r++) {
-    for (let c = 0; c < state.gridCols; c++) {
-      const el = cells[r * state.gridCols + c];
-      if (el)
-        el.className = `fog-cell ${state.cellStates[r]?.[c] ?? CELL.HIDDEN}`;
-    }
-  }
+  updateEmptyState();
 }
 
 /** Recomputes what allied tokens can see and syncs the fog. */
@@ -147,45 +123,35 @@ export function toggleReveal(row, col) {
 
 export function updateGridLayout() {
   if (!state.gridRows || !state.gridCols) return;
-  const overlays = [gridOverlay, fogOverlay];
-  if (!state.imageNaturalWidth || !state.imageNaturalHeight) {
-    for (const el of overlays) {
-      Object.assign(el.style, {
-        left: "0",
-        top: "0",
-        width: "100%",
-        height: "100%",
-      });
-    }
-    return;
-  }
   const containerWidth = mapWrapper.clientWidth;
   const containerHeight = mapWrapper.clientHeight;
   if (!containerWidth || !containerHeight) return;
-  const rect = computeGridRect({
-    containerWidth,
-    containerHeight,
-    imageWidth: state.imageNaturalWidth,
-    imageHeight: state.imageNaturalHeight,
-    rows: state.gridRows,
-    cols: state.gridCols,
+  const rect =
+    state.imageNaturalWidth && state.imageNaturalHeight
+      ? computeGridRect({
+          containerWidth,
+          containerHeight,
+          imageWidth: state.imageNaturalWidth,
+          imageHeight: state.imageNaturalHeight,
+          rows: state.gridRows,
+          cols: state.gridCols,
+        })
+      : { left: 0, top: 0, width: containerWidth, height: containerHeight };
+  Object.assign(gridOverlay.style, {
+    left: `${rect.left}px`,
+    top: `${rect.top}px`,
+    width: `${rect.width}px`,
+    height: `${rect.height}px`,
+    right: "auto",
+    bottom: "auto",
   });
-  for (const el of overlays) {
-    Object.assign(el.style, {
-      left: `${rect.left}px`,
-      top: `${rect.top}px`,
-      width: `${rect.width}px`,
-      height: `${rect.height}px`,
-      right: "auto",
-      bottom: "auto",
-    });
-  }
+  placeFog(rect);
 }
 
 export function updateGridInfo() {
-  const info = $("#grid-info");
+  gridInfo.classList.remove("ok");
   if (!state.imageNaturalWidth) {
-    info.textContent = "";
+    gridInfo.textContent = state.mapImage ? "" : "Cualquier imagen";
     return;
   }
   const rows = state.gridRows || readGridInput(gridRowsInput, 0);
@@ -196,7 +162,8 @@ export function updateGridInfo() {
     state.imageNaturalWidth,
     state.imageNaturalHeight,
   );
-  info.textContent = `Imagen ${state.imageNaturalWidth}×${state.imageNaturalHeight} · Celda ${square ? "cuadrada ✓" : "rectangular — pulsa Ajustar"}`;
+  gridInfo.textContent = `${state.imageNaturalWidth} × ${state.imageNaturalHeight} · ${square ? "celdas cuadradas" : "celdas rectangulares"}`;
+  gridInfo.classList.toggle("ok", square);
 }
 
 function emitGridGenerated() {
@@ -220,7 +187,7 @@ function generateAndSync(rows, cols) {
 /** Sets rows so cells are square for the current columns and map. */
 export function autoFitGrid(generate = true) {
   if (!state.imageNaturalWidth || !state.imageNaturalHeight) {
-    alert("Carga un mapa primero");
+    toast("Carga un mapa primero", { kind: "error" });
     return;
   }
   const cols = readGridInput(gridColsInput, state.gridCols || 20);
@@ -271,7 +238,5 @@ export function initGrid() {
 
   $("#grid-fit").addEventListener("click", () => autoFitGrid(true));
 
-  window.addEventListener("resize", () => {
-    if (gridOverlay.classList.contains("has-grid")) updateGridLayout();
-  });
+  new ResizeObserver(() => updateGridLayout()).observe(mapWrapper);
 }

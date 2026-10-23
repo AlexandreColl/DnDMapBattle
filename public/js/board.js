@@ -1,8 +1,8 @@
 // Whole-board operations: reset, and applying a full snapshot.
 import { $ } from "./dom.js";
 import { clearCharacters, renderCharacters } from "./characters.js";
+import { applyFog } from "./fog.js";
 import {
-  applyFog,
   calculateVision,
   clearGrid,
   generateGrid,
@@ -16,27 +16,29 @@ import {
   normalizeToken,
 } from "./lib/sanitize.js";
 import { setMapImage } from "./map.js";
-import { setMeasuring } from "./measure.js";
+import { clearMeasurement } from "./measure.js";
 import { CELL, EVENTS, LIMITS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { state } from "./state.js";
+import { closeTokenMenu } from "./token-menu.js";
 import { renderTokens } from "./tokens.js";
 import { renderTurnTracker } from "./turns.js";
+import { confirmDialog } from "./ui.js";
 import { applyTransform, resetView } from "./view.js";
-import { applyWallCells, setWallEditing } from "./walls.js";
+import { applyWallCells } from "./walls.js";
 
-function resetTools() {
-  setMeasuring(false);
-  setWallEditing(false);
+function resetTransientUi() {
+  closeTokenMenu();
+  clearMeasurement();
   state.currentTurnId = null;
 }
 
 export function resetBoard() {
+  resetTransientUi();
   clearCharacters();
   setMapImage(null);
   clearGrid();
   resetView();
-  resetTools();
   renderCharacters();
   renderTurnTracker();
 }
@@ -63,6 +65,7 @@ export function loadTokens(tokens) {
 
 /** Replaces the whole board with a snapshot (server state or save file). */
 export function applyFullState(data) {
+  resetTransientUi();
   clearCharacters();
   setMapImage(data.mapImage || null);
 
@@ -76,7 +79,6 @@ export function applyFullState(data) {
   state.panX = Number(data.panX) || 0;
   state.panY = Number(data.panY) || 0;
 
-  resetTools();
   if (data.gridRows > 0 && data.gridCols > 0) {
     generateGrid(data.gridRows, data.gridCols);
     loadMatrices(data.cellStates, data.wallCells);
@@ -129,8 +131,14 @@ export function hasBoardData(data) {
 }
 
 export function initBoard() {
-  $("#clear-all").addEventListener("click", () => {
-    if (!confirm("¿Limpiar todo?")) return;
+  $("#clear-all").addEventListener("click", async () => {
+    const ok = await confirmDialog({
+      title: "Limpiar todo",
+      message:
+        "Se borrarán el mapa, la cuadrícula y todas las fichas para todos los jugadores.",
+      confirmLabel: "Limpiar todo",
+    });
+    if (!ok) return;
     resetBoard();
     emit(EVENTS.STATE_CLEARED);
   });

@@ -8,7 +8,8 @@ import {
   resetBoard,
 } from "./board.js";
 import { renderCharacters } from "./characters.js";
-import { applyFog, calculateVision, generateGrid } from "./grid.js";
+import { applyFog } from "./fog.js";
+import { calculateVision, generateGrid } from "./grid.js";
 import { matrixMatches } from "./lib/geometry.js";
 import {
   isCellState,
@@ -16,17 +17,24 @@ import {
   normalizeToken,
 } from "./lib/sanitize.js";
 import { setMapImage } from "./map.js";
+import { showPanel } from "./panels.js";
 import { EVENTS } from "./shared/protocol.js";
 import { onRemote } from "./socket.js";
 import { state } from "./state.js";
 import { renderTokens } from "./tokens.js";
-import { renderTurnTracker } from "./turns.js";
+import { announceTurn, renderTurnTracker } from "./turns.js";
 import { applyTransform } from "./view.js";
 import { applyWallCells } from "./walls.js";
 
+let joined = false;
+
 export function initSync() {
   onRemote(EVENTS.STATE_FULL, (data) => {
-    if (hasBoardData(data)) applyFullState(data);
+    if (!hasBoardData(data)) return;
+    applyFullState(data);
+    // Joining a game already in progress: go straight to the play panel.
+    if (!joined && data.gridRows > 0) showPanel("play");
+    joined = true;
   });
 
   onRemote(EVENTS.STATE_CLEARED, resetBoard);
@@ -123,5 +131,6 @@ export function initSync() {
   onRemote(EVENTS.TURN_CHANGED, ({ charId }) => {
     state.currentTurnId = charId;
     renderTurnTracker();
+    announceTurn();
   });
 }
