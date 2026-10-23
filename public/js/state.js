@@ -15,9 +15,9 @@ export const state = {
   zoom: 1,
   panX: 0,
   panY: 0,
-  measuring: false,
+  tool: "move", // "move" | "measure" | "reveal" | "walls" (local only)
   measurePoints: [], // [{ row, col }, ...]
   currentTurnId: null,
-  editingWalls: false,
   hoveredTokenId: null,
+  selectedTokenId: null, // token whose menu is open
 };

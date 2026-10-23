@@ -3,34 +3,41 @@ import { $ } from "./dom.js";
 import { initEditor } from "./editor.js";
 import { initGrid } from "./grid.js";
 import { initMap } from "./map.js";
-import { initMeasure } from "./measure.js";
+import { initPanels } from "./panels.js";
 import { initPersistence } from "./persistence.js";
 import { state } from "./state.js";
 import { initSync } from "./sync.js";
+import { closeTokenMenu, initTokenMenu } from "./token-menu.js";
 import { removeToken } from "./tokens.js";
-import { initTurns } from "./turns.js";
+import { SHORTCUTS, initTools, setTool } from "./tools.js";
+import { advanceTurn, initTurns } from "./turns.js";
 import { initView } from "./view.js";
 import { initWalls } from "./walls.js";
-
-function initSidebar() {
-  const sidebar = $("#sidebar");
-  const toggle = $("#sidebar-toggle");
-  toggle.addEventListener("click", () => {
-    const collapsed = sidebar.classList.toggle("collapsed");
-    toggle.classList.toggle("collapsed", collapsed);
-    toggle.textContent = collapsed ? "☰" : "◀";
-  });
-}
 
 function isTyping(target) {
   return target.closest?.("input, textarea, select, [contenteditable]");
 }
 
 function initKeyboard() {
-  // D deletes the token under the mouse.
   document.addEventListener("keydown", (e) => {
-    if (e.key.toLowerCase() !== "d" || isTyping(e.target)) return;
-    if (state.hoveredTokenId != null) removeToken(state.hoveredTokenId);
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if ($("dialog[open]")) return;
+    if (e.key === "Escape") {
+      closeTokenMenu();
+      setTool("move");
+      return;
+    }
+    if (isTyping(e.target)) return;
+
+    const key = e.key.toLowerCase();
+    if (SHORTCUTS[key]) {
+      setTool(SHORTCUTS[key]);
+    } else if (key === "n") {
+      advanceTurn();
+    } else if (key === "d" && state.hoveredTokenId != null) {
+      // D deletes the token under the mouse.
+      removeToken(state.hoveredTokenId);
+    }
   });
 }
 
@@ -44,16 +51,17 @@ function preventBrowserDefaults() {
   });
 }
 
+initPanels();
 initView();
 initMap();
 initGrid();
 initWalls();
-initMeasure();
+initTools();
 initTurns();
+initTokenMenu();
 initEditor();
 initPersistence();
 initBoard();
-initSidebar();
 initKeyboard();
 preventBrowserDefaults();
 initSync();

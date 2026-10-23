@@ -8,189 +8,330 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
+    <nav id="toolbar" aria-label="Herramientas">
+      <button class="tool active" data-tool="move" title="Mover (V)">
+        <svg class="icon"><use href="icons.svg#i-hand-move" /></svg>
+      </button>
+      <button class="tool" data-tool="measure" title="Medir (M)">
+        <svg class="icon"><use href="icons.svg#i-ruler-measure" /></svg>
+      </button>
+      <button class="tool" data-tool="reveal" title="Revelar niebla (F)">
+        <svg class="icon"><use href="icons.svg#i-eye" /></svg>
+      </button>
+      <button class="tool" data-tool="walls" title="Paredes (W)">
+        <svg class="icon"><use href="icons.svg#i-wall" /></svg>
+      </button>
+      <div class="spacer"></div>
+      <button id="sidebar-toggle" class="tool" title="Mostrar u ocultar panel">
+        <svg class="icon">
+          <use href="icons.svg#i-layout-sidebar-left-collapse" />
+        </svg>
+      </button>
+    </nav>
+
     <aside id="sidebar">
-      <div id="sidebar-header">
-        <img src="logo.png" alt="Logo" id="sidebar-logo" />
-        <h2>DnD Battle Map</h2>
-      </div>
+      <header id="sidebar-header">
+        <img src="logo.png" alt="" id="sidebar-logo" />
+        <h1>Mesa de batalla</h1>
+      </header>
 
-      <section id="map-section">
-        <h3>Mapa</h3>
-        <input type="file" id="map-upload" accept="image/*" />
-        <label for="map-upload" class="btn">Cargar mapa</label>
-      </section>
-
-      <section id="grid-section">
-        <h3>Cuadrícula</h3>
-        <div class="row">
-          <label
-            >Filas:
-            <input type="number" id="grid-rows" value="15" min="1" max="50"
-          /></label>
-          <label
-            >Cols:
-            <input type="number" id="grid-cols" value="20" min="1" max="50"
-          /></label>
-        </div>
-        <button id="grid-generate" class="btn">Generar cuadrícula</button>
-        <button
-          id="grid-fit"
-          class="btn"
-          style="width: 100%; margin-top: 6px; background: #1a5276"
-          title="Recalcula filas/cols para que cada celda sea cuadrada y cubra la imagen"
-        >
-          ⊡ Ajustar al mapa (cuadrado)
+      <div class="segmented" role="tablist">
+        <button role="tab" data-panel="setup" aria-selected="false">
+          Preparar
         </button>
-        <div
-          id="grid-info"
-          style="
-            font-size: 0.72rem;
-            color: #a0a0c0;
-            text-align: center;
-            margin-top: 4px;
-            min-height: 14px;
-          "
-        ></div>
-      </section>
+        <button role="tab" data-panel="play" aria-selected="true">
+          Partida
+        </button>
+      </div>
 
-      <section id="turn-section">
-        <h3>Turnos</h3>
-        <div id="turn-display">—</div>
-        <button id="turn-start" class="btn">Iniciar turnos</button>
-        <button id="turn-next" class="btn">Siguiente turno →</button>
-      </section>
+      <div class="panel" id="panel-setup" hidden>
+        <section>
+          <h2>Mapa</h2>
+          <input type="file" id="map-upload" accept="image/*" hidden />
+          <label for="map-upload" class="map-pick" id="map-pick">
+            <span class="map-thumb" id="map-thumb"></span>
+            <span class="map-meta">
+              <span id="map-name">Cargar mapa</span>
+              <span class="muted" id="grid-info">Cualquier imagen</span>
+            </span>
+            <svg class="icon muted"><use href="icons.svg#i-photo" /></svg>
+          </label>
+        </section>
 
-      <hr />
+        <section>
+          <h2>Cuadrícula</h2>
+          <div class="field-row">
+            <label class="field">
+              <span>Cols</span>
+              <input
+                type="number"
+                id="grid-cols"
+                value="20"
+                min="1"
+                max="200"
+              />
+            </label>
+            <label class="field">
+              <span>Filas</span>
+              <input
+                type="number"
+                id="grid-rows"
+                value="15"
+                min="1"
+                max="200"
+              />
+            </label>
+          </div>
+          <div class="btn-row">
+            <button id="grid-generate" class="btn">Generar</button>
+            <button
+              id="grid-fit"
+              class="btn"
+              title="Calcula las filas para que cada celda sea cuadrada"
+            >
+              Ajustar al mapa
+            </button>
+          </div>
+        </section>
 
-      <section id="measure-section">
-        <h3>Medición</h3>
-        <button id="toggle-measure" class="btn">Medir distancia</button>
-        <div id="measure-info"></div>
-      </section>
+        <section>
+          <h2>Paredes</h2>
+          <p class="hint">
+            Con la herramienta de paredes (W), arrastra para pintar. Mayús +
+            arrastrar para borrar.
+          </p>
+          <button id="clear-walls" class="btn danger">Limpiar paredes</button>
+        </section>
 
-      <hr />
-
-      <section id="walls-section">
-        <h3>Paredes</h3>
-        <button id="toggle-walls" class="btn">Editar paredes</button>
-        <button id="clear-walls" class="btn danger">Limpiar paredes</button>
-      </section>
-
-      <hr />
-
-      <section id="char-section">
-        <h3>Personajes</h3>
-        <input type="file" id="char-upload" accept="image/*" />
-        <div class="row">
-          <label for="char-upload" class="btn">Seleccionar imagen</label>
+        <section>
+          <h2>Archivo</h2>
+          <div class="btn-row">
+            <button id="save-state" class="btn">
+              <svg class="icon"><use href="icons.svg#i-device-floppy" /></svg>
+              Guardar
+            </button>
+            <button id="load-state" class="btn">
+              <svg class="icon"><use href="icons.svg#i-folder-open" /></svg>
+              Cargar
+            </button>
+          </div>
+          <input type="file" id="load-input" accept=".dndmap" hidden />
+          <div class="btn-row">
+            <button id="export-chars" class="btn">
+              <svg class="icon"><use href="icons.svg#i-file-export" /></svg>
+              Exportar fichas
+            </button>
+            <button id="import-chars" class="btn">
+              <svg class="icon"><use href="icons.svg#i-file-import" /></svg>
+              Importar fichas
+            </button>
+          </div>
           <input
-            type="text"
-            id="char-name"
-            placeholder="Nombre"
-            maxlength="60"
+            type="file"
+            id="import-chars-input"
+            accept=".dndchars"
+            hidden
           />
-        </div>
-        <button id="char-add" class="btn">Añadir personaje</button>
-        <div id="char-list"></div>
-      </section>
+          <button id="clear-all" class="btn danger">
+            <svg class="icon"><use href="icons.svg#i-trash" /></svg>
+            Limpiar todo
+          </button>
+        </section>
 
-      <hr />
-      <div class="row">
-        <button id="save-state" class="btn">Guardar partida</button>
-        <button id="load-state" class="btn">Cargar partida</button>
+        <button class="btn primary" id="start-play">
+          Empezar partida
+          <svg class="icon"><use href="icons.svg#i-chevrons-right" /></svg>
+        </button>
       </div>
-      <input type="file" id="load-input" accept=".dndmap" />
-      <div class="row">
-        <button id="export-chars" class="btn">Export personajes</button>
-        <button id="import-chars" class="btn">Import personajes</button>
+
+      <div class="panel" id="panel-play">
+        <section>
+          <h2>Turno actual</h2>
+          <div class="turn-card" id="turn-card">
+            <span class="avatar" id="turn-avatar"></span>
+            <span class="turn-meta">
+              <span id="turn-display">—</span>
+              <span class="muted" id="turn-sub">Sin iniciativa</span>
+            </span>
+            <button
+              class="btn icon-btn primary"
+              id="turn-next"
+              title="Siguiente turno (N)"
+            >
+              <svg class="icon"><use href="icons.svg#i-chevrons-right" /></svg>
+            </button>
+          </div>
+          <button class="btn subtle" id="turn-start">
+            <svg class="icon"><use href="icons.svg#i-player-play" /></svg>
+            Empezar desde el primero
+          </button>
+        </section>
+
+        <section>
+          <h2>Compañía</h2>
+          <div class="roster" id="roster-allies"></div>
+          <h2>Enemigos</h2>
+          <div class="roster" id="roster-enemies"></div>
+          <button class="btn subtle" id="char-add">
+            <svg class="icon"><use href="icons.svg#i-user-plus" /></svg>
+            Nueva ficha
+          </button>
+        </section>
       </div>
-      <input type="file" id="import-chars-input" accept=".dndchars" />
-      <button id="clear-all" class="btn danger">Limpiar todo</button>
     </aside>
-    <button id="sidebar-toggle" title="Mostrar/ocultar panel">◀</button>
 
     <main id="map-container">
-      <div id="initiative-bar"></div>
       <div id="map-wrapper">
         <div id="map-bg"></div>
         <div id="grid-overlay"></div>
-        <div id="fog-overlay"></div>
+        <canvas id="fog-canvas"></canvas>
         <div id="measure-overlay">
+          <div id="measure-line"></div>
           <div id="measure-marker-a"></div>
           <div id="measure-marker-b"></div>
           <div id="measure-label"></div>
-          <div id="measure-line"></div>
         </div>
       </div>
+
+      <div id="initiative-bar" aria-label="Orden de iniciativa"></div>
+
+      <div id="empty-state">
+        <p class="empty-title">Prepara la mesa</p>
+        <p class="muted">
+          Carga un mapa y genera la cuadrícula desde la pestaña Preparar.
+        </p>
+      </div>
+
+      <div id="mode-hint" class="pill"></div>
+
+      <div id="zoom-controls" class="pill">
+        <button id="zoom-out" title="Alejar">
+          <svg class="icon"><use href="icons.svg#i-minus" /></svg>
+        </button>
+        <button id="zoom-reset" title="Restablecer vista">100%</button>
+        <button id="zoom-in" title="Acercar">
+          <svg class="icon"><use href="icons.svg#i-plus" /></svg>
+        </button>
+      </div>
+
+      <div id="token-menu" class="popover" hidden>
+        <div class="popover-head">
+          <span class="avatar" id="token-menu-avatar"></span>
+          <strong id="token-menu-name"></strong>
+          <button class="icon-btn ghost" id="token-menu-close" title="Cerrar">
+            <svg class="icon"><use href="icons.svg#i-x" /></svg>
+          </button>
+        </div>
+        <label class="field inline">
+          <span>Iniciativa</span>
+          <input type="number" id="token-menu-initiative" placeholder="—" />
+        </label>
+        <div class="field inline">
+          <span>Visión</span>
+          <span id="token-menu-vision"></span>
+        </div>
+        <button class="btn danger" id="token-menu-remove">
+          Quitar del mapa
+        </button>
+      </div>
+
+      <div id="toasts" aria-live="polite"></div>
     </main>
 
-    <div id="token-editor" class="modal hidden">
-      <div class="modal-content">
-        <h3>Editor de ficha</h3>
+    <dialog id="token-editor">
+      <form method="dialog" id="editor-form">
+        <h2>Nueva ficha</h2>
         <div class="editor-layout">
           <div class="editor-preview">
-            <img id="editor-source" alt="Original" />
+            <input type="file" id="char-upload" accept="image/*" hidden />
+            <label for="char-upload" class="editor-drop" id="editor-drop">
+              <canvas id="editor-canvas" width="300" height="300"></canvas>
+              <span class="editor-drop-text" id="editor-drop-text">
+                <svg class="icon"><use href="icons.svg#i-photo" /></svg>
+                Elegir imagen
+              </span>
+            </label>
+            <span class="hint"
+              >Rueda: zoom · arrastrar: encuadre · doble clic: otra imagen</span
+            >
           </div>
           <div class="editor-controls">
-            <label>
-              Clase:
-              <select id="editor-class">
-                <option value="">— Custom —</option>
-                <option value="#C41E3A">Caballero de la Muerte</option>
-                <option value="#A330C9">Cazador de Demonios</option>
-                <option value="#FF7C0A">Druida</option>
-                <option value="#33937F">Evocador</option>
-                <option value="#AAD372">Cazador</option>
-                <option value="#3FC7EB">Mago</option>
-                <option value="#00FF98">Monje</option>
-                <option value="#F48CBA">Paladín</option>
-                <option value="#FFFFFF">Sacerdote</option>
-                <option value="#FFF468">Pícaro</option>
-                <option value="#0070DD">Chamán</option>
-                <option value="#8788EE">Brujo</option>
-                <option value="#C69B6D">Guerrero</option>
-              </select>
-            </label>
-            <label>
-              Color del borde:
-              <input type="color" id="editor-color" value="#e94560" />
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" id="editor-enemy" />
-              ¿Es enemigo?
-            </label>
-            <label id="editor-vision-label">
-              Visión (casillas):
+            <label class="field">
+              <span>Nombre</span>
               <input
-                type="number"
-                id="editor-vision"
-                value="5"
-                min="1"
-                max="50"
+                type="text"
+                id="char-name"
+                placeholder="Nombre del personaje"
+                maxlength="60"
+                autocomplete="off"
               />
             </label>
-            <label>
-              Iniciativa:
-              <input
-                type="number"
-                id="editor-initiative"
-                value=""
-                min="0"
-                max="999"
-                placeholder="— sin iniciativa"
-              />
-            </label>
-            <div class="editor-preview-token">
-              <canvas id="editor-canvas" width="150" height="150"></canvas>
+            <div class="segmented" id="editor-side">
+              <button type="button" data-enemy="false" aria-pressed="true">
+                Aliado
+              </button>
+              <button type="button" data-enemy="true" aria-pressed="false">
+                Enemigo
+              </button>
+            </div>
+            <div class="field">
+              <span>Color del borde</span>
+              <div class="swatches" id="editor-swatches">
+                <input
+                  type="color"
+                  id="editor-color"
+                  value="#e3b955"
+                  title="Color personalizado"
+                />
+              </div>
+            </div>
+            <div class="field-row">
+              <label class="field" id="editor-vision-label">
+                <span>Visión</span>
+                <input
+                  type="number"
+                  id="editor-vision"
+                  value="5"
+                  min="1"
+                  max="100"
+                />
+              </label>
+              <label class="field">
+                <span>Iniciativa</span>
+                <input
+                  type="number"
+                  id="editor-initiative"
+                  min="-99"
+                  max="999"
+                  placeholder="—"
+                />
+              </label>
             </div>
           </div>
         </div>
-        <div class="editor-actions">
-          <button id="editor-confirm" class="btn">Añadir ficha</button>
-          <button id="editor-cancel" class="btn danger">Cancelar</button>
+        <div class="dialog-actions">
+          <button type="button" class="btn subtle" id="editor-cancel">
+            Cancelar
+          </button>
+          <button type="submit" class="btn primary" id="editor-confirm">
+            Añadir ficha
+          </button>
         </div>
-      </div>
-    </div>
+      </form>
+    </dialog>
+
+    <dialog id="confirm-dialog">
+      <form method="dialog">
+        <h2 id="confirm-title"></h2>
+        <p id="confirm-message"></p>
+        <div class="dialog-actions">
+          <button value="cancel" class="btn subtle">Cancelar</button>
+          <button value="ok" class="btn danger" id="confirm-ok">
+            Confirmar
+          </button>
+        </div>
+      </form>
+    </dialog>
 
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="js/main.js"></script>
