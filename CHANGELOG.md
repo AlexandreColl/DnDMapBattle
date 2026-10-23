@@ -4,6 +4,30 @@ Todos los cambios relevantes de este proyecto se documentan en este fichero.
 
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el proyecto usa [Versionado Semántico](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Cambiado
+
+- Nueva interfaz con estilo oscuro fantasía: paleta piedra y oro, tipografía Cinzel e iconos.
+- Panel lateral dividido en _Preparar_ (mapa, cuadrícula, paredes, archivos) y _Partida_ (turno actual, compañía y enemigos).
+- Herramientas exclusivas en una barra lateral (mover, medir, revelar niebla, paredes) con atajos `V`, `M`, `F`, `W` y `Esc`.
+- La niebla se dibuja en canvas con bordes suaves, transiciones animadas y un halo de antorcha alrededor de los aliados.
+- Las paredes se pintan arrastrando (y se borran con `Mayús`).
+- Editor de fichas rediseñado: elección de imagen dentro del propio editor, colores de clase en muestras y selector aliado/enemigo.
+- La iniciativa se edita directamente en la lista o en el menú de cada ficha, sin ventanas del navegador.
+- Avisos y confirmaciones propios en lugar de `alert()` y `confirm()`.
+- Barra de iniciativa flotante y controles de zoom en pantalla.
+
+### Añadido
+
+- Menú de ficha al hacer clic: iniciativa, visión y quitar del mapa.
+- Atajo `N` para pasar al siguiente turno, y aviso «Turno de…» en todos los dispositivos.
+- Las fichas que no están en el mapa aparecen atenuadas en la lista.
+
+### Corregido
+
+- La regla de medición se desplazaba al medir con el mapa ampliado.
+
 ## [1.0.0] - 2026-10-22
 
 Primera versión estable.
@@ -35,4 +59,5 @@ Primera versión estable.
 - Cargar una partida o importar personajes no se sincronizaba con los demás jugadores.
 - El zoom saltaba al llegar a los límites.
 
+[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/AlexandreColl/DnDMapBattle/releases/tag/v1.0.0

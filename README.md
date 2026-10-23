@@ -111,23 +111,35 @@ En Windows también puedes hacer doble clic en `launcher.bat`: instala las depen
 
 La aplicación necesita el servidor en marcha (no funciona abriendo `index.html` directamente).
 
-1. **Carga un mapa**: selecciona cualquier imagen
-2. **Genera la cuadrícula**: configura filas y columnas, o pulsa _Ajustar al mapa_ para obtener celdas cuadradas
-3. **Añade personajes**: el editor convierte tus imágenes en fichas circulares con borde de color
-4. **Arrastra las fichas al mapa**: colócalas en las celdas
-5. **Gestiona la niebla**: los aliados destapan el mapa según su radio de visión; las paredes la bloquean
+El panel lateral tiene dos pestañas: **Preparar** (mapa, cuadrícula, paredes y archivos) y **Partida** (turnos y fichas).
 
-### Controles rápidos
+1. **Carga un mapa** en _Preparar_: cualquier imagen sirve
+2. **Genera la cuadrícula**: configura columnas y filas, o pulsa _Ajustar al mapa_ para obtener celdas cuadradas
+3. **Pinta las paredes** con la herramienta de paredes (`W`): bloquean la visión
+4. **Añade fichas** en _Partida_ con _Nueva ficha_: el editor convierte tus imágenes en fichas circulares con borde de color
+5. **Arrastra las fichas al mapa**: los aliados iluminan el mapa según su radio de visión
+6. **Gestiona los turnos**: escribe la iniciativa junto a cada ficha y avanza con `N`
 
-| Acción                      | Entrada                            |
-| --------------------------- | ---------------------------------- |
-| Zoom                        | Rueda del ratón                    |
-| Paneo                       | Arrastrar el fondo                 |
-| Colocar personaje           | Arrastrar del panel a una celda    |
-| Mover personaje             | Arrastrar la ficha a otra celda    |
-| Quitar ficha del mapa       | Clic central sobre la ficha, o `D` |
-| Destapar celda (permanente) | Clic central o `Shift + clic`      |
-| Ocultar panel               | Botón `◀` en el borde del panel    |
+### Herramientas
+
+| Tecla | Herramienta    | Uso                                                       |
+| ----- | -------------- | --------------------------------------------------------- |
+| `V`   | Mover          | Arrastrar fichas o el mapa; clic en una ficha para editar |
+| `M`   | Medir          | Clic en dos casillas                                      |
+| `F`   | Revelar niebla | Clic para revelar u ocultar una casilla                   |
+| `W`   | Paredes        | Arrastrar para pintar; `Mayús` + arrastrar para borrar    |
+| `Esc` | —              | Vuelve a Mover y cierra menús                             |
+
+### Otros controles
+
+| Acción                      | Entrada                                    |
+| --------------------------- | ------------------------------------------ |
+| Zoom                        | Rueda del ratón o botones `−` / `+`        |
+| Paneo                       | Arrastrar el fondo                         |
+| Siguiente turno             | `N` o el botón junto al turno actual       |
+| Quitar ficha del mapa       | `D` con el ratón encima, o desde su menú   |
+| Destapar celda (permanente) | Clic central o `Mayús + clic`              |
+| Ocultar panel               | Botón inferior de la barra de herramientas |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
