@@ -8,6 +8,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Cambiado
 
+- **Requiere Node.js 24 (LTS) o superior** (antes, 20). La versión está fijada en `.nvmrc` y `launcher.bat` avisa si el Node instalado es anterior.
+- pnpm 12 (antes, 9). Su configuración pasa de `.npmrc` a `pnpm-workspace.yaml`.
+- Dependencias actualizadas a sus últimas versiones mayores: Express 5, Zod 4, ESLint 10, Vitest 5, globals 17 y eslint-config-prettier 10.
+- La CI se ejecuta solo con Node 24 e incluye `pnpm audit`.
 - Nueva interfaz con estilo oscuro fantasía: paleta piedra y oro, tipografía Cinzel e iconos.
 - Panel lateral dividido en _Preparar_ (mapa, cuadrícula, paredes, archivos) y _Partida_ (turno actual, compañía y enemigos).
 - Herramientas exclusivas en una barra lateral (mover, medir, revelar niebla, paredes) con atajos `V`, `M`, `F`, `W` y `Esc`.
@@ -27,6 +31,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ### Corregido
 
 - La regla de medición se desplazaba al medir con el mapa ampliado.
+
+### Seguridad
+
+- Corregidas las 22 vulnerabilidades conocidas en dependencias (4 críticas, 5 altas), heredadas de Express 4 y Vitest 2.
+- pnpm no instala versiones publicadas hace menos de 3 días (`minimumReleaseAge`) ni subdependencias desde git o URLs.
+- Las GitHub Actions están fijadas por SHA de commit.
+- Revisión de dependencias en cada PR: falla si se añade una con vulnerabilidades conocidas.
+- Dependabot propone cada semana, contra `develop`, las actualizaciones de dependencias y de Actions, con 3 días de espera.
 
 ## [1.0.0] - 2026-10-22
 

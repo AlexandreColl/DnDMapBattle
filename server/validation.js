@@ -49,8 +49,8 @@ const matrix = (cell) =>
 export const cellStates = matrix(z.enum(Object.values(CELL)));
 export const wallCells = matrix(z.boolean());
 
-const zoom = z.number().finite().min(LIMITS.minZoom).max(LIMITS.maxZoom);
-const pan = z.number().finite().min(-MAX_PAN).max(MAX_PAN);
+const zoom = z.number().min(LIMITS.minZoom).max(LIMITS.maxZoom);
+const pan = z.number().min(-MAX_PAN).max(MAX_PAN);
 
 export const schemas = {
   stateFull: z.object({

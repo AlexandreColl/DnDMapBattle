@@ -1,0 +1,19 @@
+# pnpm settings (since pnpm 11, .npmrc only holds registry/auth settings).
+
+# Refuse to install with a Node.js version outside package.json "engines".
+engineStrict: true
+
+# Supply-chain protection: never resolve a version published less than
+# 3 days ago (in minutes). Most malicious releases are caught and pulled
+# within hours. pnpm's default is 1 day.
+minimumReleaseAge: 4320
+
+# Reject transitive dependencies from git/tarball URLs (pnpm 11+ default,
+# kept explicit).
+blockExoticSubdeps: true
+
+# Exact versions allowed before the 3-day wait. Only for security fixes from
+# trusted maintainers; remove each entry once it is older than the wait.
+minimumReleaseAgeExclude:
+  # Fix for GHSA-27r3-jxmh-p828 (published 2026-10-22). Remove after 2026-10-25.
+  - body-parser@2.4.0

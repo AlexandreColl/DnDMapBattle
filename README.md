@@ -2,7 +2,7 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/AlexandreColl/DnDMapBattle/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/AlexandreColl/DnDMapBattle/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-e94560?style=for-the-badge)](LICENSE)
-[![Node](https://img.shields.io/badge/node-%3E%3D20-339933?style=for-the-badge)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/node-24%20LTS-339933?style=for-the-badge)](https://nodejs.org/)
 [![PRs](https://img.shields.io/badge/PRs-welcome-3FC7EB?style=for-the-badge)](#contribuir)
 
 <br />
@@ -80,8 +80,8 @@ Características principales:
 
 ### Requisitos
 
-- Node.js v20 o superior
-- pnpm (viene con Node a través de Corepack)
+- Node.js 24 (LTS) o superior. Con [nvm](https://github.com/nvm-sh/nvm) o [fnm](https://github.com/Schniz/fnm) basta con `nvm use` / `fnm use`: la versión está en `.nvmrc`
+- pnpm 12 (viene con Node a través de Corepack; la versión exacta está fijada en `package.json`)
   ```sh
   corepack enable
   ```
@@ -173,13 +173,14 @@ Variables de entorno opcionales:
 
 ## Desarrollo
 
-| Comando       | Descripción                                 |
-| ------------- | ------------------------------------------- |
-| `pnpm dev`    | Servidor con recarga automática             |
-| `pnpm test`   | Tests (Vitest)                              |
-| `pnpm lint`   | ESLint                                      |
-| `pnpm format` | Formatea el código con Prettier             |
-| `pnpm check`  | Lint + formato + tests (lo mismo que la CI) |
+| Comando       | Descripción                                |
+| ------------- | ------------------------------------------ |
+| `pnpm dev`    | Servidor con recarga automática            |
+| `pnpm test`   | Tests (Vitest)                             |
+| `pnpm lint`   | ESLint                                     |
+| `pnpm format` | Formatea el código con Prettier            |
+| `pnpm check`  | Lint + formato + tests                     |
+| `pnpm audit`  | Busca vulnerabilidades en las dependencias |
 
 Estructura:
 
