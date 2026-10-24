@@ -1,5 +1,6 @@
 // Roster in the sidebar: allies and enemies, with inline initiative.
 import { $, $$, revokeIfBlob } from "./dom.js";
+import { makeDraggable } from "./drag.js";
 import { calculateVision } from "./grid.js";
 import { EVENTS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
@@ -14,7 +15,6 @@ const enemies = $("#roster-enemies");
 function createCharacterItem(char) {
   const item = document.createElement("div");
   item.className = "char-item";
-  item.draggable = true;
   item.dataset.charId = char.id;
   item.title = "Arrastra al mapa para colocar";
 
@@ -35,8 +35,6 @@ function createCharacterItem(char) {
   initiative.addEventListener("change", () =>
     setInitiative(char, initiative.value.trim()),
   );
-  // Typing in the field must not start a drag of the whole row.
-  initiative.addEventListener("pointerdown", (e) => e.stopPropagation());
 
   const removeBtn = document.createElement("button");
   removeBtn.className = "icon-btn ghost remove-char";
@@ -54,11 +52,12 @@ function createCharacterItem(char) {
 
   item.append(avatar, name, initiative, removeBtn);
 
-  item.addEventListener("dragstart", (e) => {
-    e.dataTransfer.setData("text/plain", `char:${char.id}`);
-    item.classList.add("dragging");
+  makeDraggable(item, {
+    kind: "char",
+    id: char.id,
+    image: avatar.style.backgroundImage,
+    longPressOnTouch: true,
   });
-  item.addEventListener("dragend", () => item.classList.remove("dragging"));
   return item;
 }
 

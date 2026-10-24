@@ -1,5 +1,6 @@
 import { initBoard } from "./board.js";
 import { $ } from "./dom.js";
+import { initDrag } from "./drag.js";
 import { initEditor } from "./editor.js";
 import { initGrid } from "./grid.js";
 import { initMap } from "./map.js";
@@ -53,6 +54,7 @@ function preventBrowserDefaults() {
 
 initPanels();
 initView();
+initDrag();
 initMap();
 initGrid();
 initWalls();

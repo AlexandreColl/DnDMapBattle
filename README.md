@@ -132,14 +132,15 @@ El panel lateral tiene dos pestañas: **Preparar** (mapa, cuadrícula, paredes y
 
 ### Otros controles
 
-| Acción                      | Entrada                                    |
-| --------------------------- | ------------------------------------------ |
-| Zoom                        | Rueda del ratón o botones `−` / `+`        |
-| Paneo                       | Arrastrar el fondo                         |
-| Siguiente turno             | `N` o el botón junto al turno actual       |
-| Quitar ficha del mapa       | `D` con el ratón encima, o desde su menú   |
-| Destapar celda (permanente) | Clic central o `Mayús + clic`              |
-| Ocultar panel               | Botón inferior de la barra de herramientas |
+| Acción                      | Entrada                                        |
+| --------------------------- | ---------------------------------------------- |
+| Zoom                        | Rueda del ratón, pellizcar o botones `−` / `+` |
+| Paneo                       | Arrastrar el fondo, o con dos dedos            |
+| Colocar ficha (táctil)      | Mantener pulsada en la lista y arrastrar       |
+| Siguiente turno             | `N` o el botón junto al turno actual           |
+| Quitar ficha del mapa       | `D` con el ratón encima, o desde su menú       |
+| Destapar celda (permanente) | Clic central o `Mayús + clic`                  |
+| Ocultar panel               | Botón inferior de la barra de herramientas     |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 

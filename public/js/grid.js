@@ -13,7 +13,7 @@ import { clearMeasurement, handleMeasureClick } from "./measure.js";
 import { CELL, EVENTS, LIMITS } from "./shared/protocol.js";
 import { emit, withoutEmitting } from "./socket.js";
 import { state } from "./state.js";
-import { handleDrop, renderTokens } from "./tokens.js";
+import { renderTokens } from "./tokens.js";
 import { toast } from "./ui.js";
 
 const gridRowsInput = $("#grid-rows");
@@ -33,16 +33,6 @@ function createCell(r, c) {
   cell.dataset.row = r;
   cell.dataset.col = c;
 
-  cell.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    cell.classList.add("drag-over");
-  });
-  cell.addEventListener("dragleave", () => cell.classList.remove("drag-over"));
-  cell.addEventListener("drop", (e) => {
-    e.preventDefault();
-    cell.classList.remove("drag-over");
-    handleDrop(r, c, e);
-  });
   cell.addEventListener("auxclick", (e) => {
     if (e.button === 1) {
       e.preventDefault();

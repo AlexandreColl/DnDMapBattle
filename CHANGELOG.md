@@ -27,6 +27,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Menú de ficha al hacer clic: iniciativa, visión y quitar del mapa.
 - Atajo `N` para pasar al siguiente turno, y aviso «Turno de…» en todos los dispositivos.
 - Las fichas que no están en el mapa aparecen atenuadas en la lista.
+- Soporte táctil para tablets y móviles: arrastrar fichas con el dedo (mantener pulsada en la lista para sacarlas), pintar paredes, desplazar el mapa y pellizcar para hacer zoom.
 
 ### Corregido
 
