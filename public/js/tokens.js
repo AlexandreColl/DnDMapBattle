@@ -1,6 +1,7 @@
 // Tokens: characters placed on the grid.
 import { refreshRosterState } from "./characters.js";
 import { $$, cellElement, gridOverlay } from "./dom.js";
+import { makeDraggable } from "./drag.js";
 import { redrawFog } from "./fog.js";
 import { calculateVision } from "./grid.js";
 import { cssUrl } from "./lib/sanitize.js";
@@ -18,7 +19,6 @@ function createTokenElement(token, char) {
   el.dataset.tokenId = token.id;
   el.dataset.charId = char.id;
   el.style.backgroundImage = cssUrl(char.imageUrl);
-  el.draggable = true;
   el.title = char.name;
 
   el.addEventListener("click", (e) => {
@@ -38,13 +38,13 @@ function createTokenElement(token, char) {
   el.addEventListener("mouseleave", () => {
     if (state.hoveredTokenId === token.id) state.hoveredTokenId = null;
   });
-  el.addEventListener("dragstart", (e) => {
-    closeTokenMenu();
-    e.dataTransfer.setData("text/plain", `token:${token.id}`);
-    el.classList.add("dragging");
-    e.stopPropagation();
+  // With the walls tool, dragging over a token paints its cell instead.
+  makeDraggable(el, {
+    kind: "token",
+    id: token.id,
+    image: el.style.backgroundImage,
+    enabled: () => state.tool !== "walls",
   });
-  el.addEventListener("dragend", () => el.classList.remove("dragging"));
   return el;
 }
 
@@ -80,11 +80,7 @@ function syncPlacedToken(token) {
 }
 
 /** Drop from the roster (place/move) or from another cell (move). */
-export function handleDrop(row, col, e) {
-  const [kind, rawId] = e.dataTransfer.getData("text/plain").split(":");
-  const id = parseInt(rawId, 10);
-  if (!Number.isInteger(id)) return;
-
+export function placeOnCell(row, col, kind, id) {
   let token;
   if (kind === "char") {
     if (!state.characters.some((c) => c.id === id)) return;

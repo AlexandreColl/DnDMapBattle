@@ -491,7 +491,9 @@ input[type="text"]:focus {
   padding: 5px 6px;
   border-radius: var(--radius);
   cursor: grab;
+  -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .char-item:hover {
@@ -561,6 +563,11 @@ input[type="text"]:focus {
   overflow: hidden;
   background: var(--bg-0);
   cursor: grab;
+  /* Pan and pinch are handled in view.js, not by the browser. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 #map-container.panning {
@@ -676,6 +683,26 @@ input[type="text"]:focus {
 
 .token.dragging {
   opacity: 0.5;
+}
+
+/* Follows the pointer while dragging a token or a roster character. */
+.drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: var(--bg-3) center / cover no-repeat;
+  box-shadow:
+    0 0 14px 2px var(--gold-glow),
+    0 6px 16px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+body.dragging-piece,
+body.dragging-piece * {
+  cursor: grabbing !important;
 }
 
 /* ─── Initiative bar ─── */
@@ -1041,6 +1068,13 @@ dialog h2 {
     bottom: 0;
     left: var(--rail-w);
     box-shadow: var(--shadow);
+    transition: opacity 0.2s;
+  }
+
+  /* Uncover the map while dragging a character out of the roster. */
+  body.dragging-piece #sidebar {
+    opacity: 0.25;
+    pointer-events: none;
   }
 
   #mode-hint {
