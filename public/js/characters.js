@@ -1,45 +1,58 @@
-// Character list in the sidebar.
-import { charList, revokeIfBlob } from "./dom.js";
+// Roster in the sidebar: allies and enemies, with inline initiative.
+import { $, $$, revokeIfBlob } from "./dom.js";
 import { calculateVision } from "./grid.js";
 import { EVENTS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { state } from "./state.js";
 import { renderTokens } from "./tokens.js";
-import { editInitiative } from "./turns.js";
+import { paintAvatar, setInitiative } from "./turns.js";
+import { confirmDialog, icon } from "./ui.js";
+
+const allies = $("#roster-allies");
+const enemies = $("#roster-enemies");
 
 function createCharacterItem(char) {
   const item = document.createElement("div");
   item.className = "char-item";
   item.draggable = true;
   item.dataset.charId = char.id;
+  item.title = "Arrastra al mapa para colocar";
 
-  const img = document.createElement("img");
-  img.src = char.imageUrl;
-  img.alt = char.name;
+  const avatar = document.createElement("span");
+  avatar.className = "avatar";
+  paintAvatar(avatar, char);
 
   const name = document.createElement("span");
-  name.textContent = `${char.isEnemy ? "[E]" : "[A]"} ${char.name}`;
+  name.className = "char-name";
+  name.textContent = char.name;
 
-  const initiative = document.createElement("span");
+  const initiative = document.createElement("input");
+  initiative.type = "number";
   initiative.className = "char-initiative";
-  initiative.textContent = char.initiative ?? "—";
-  initiative.classList.toggle("none", char.initiative == null);
-  initiative.title = "Click para editar iniciativa";
-  initiative.addEventListener("click", (e) => {
-    e.stopPropagation();
-    editInitiative(char);
-  });
+  initiative.placeholder = "—";
+  initiative.title = "Iniciativa";
+  initiative.value = char.initiative ?? "";
+  initiative.addEventListener("change", () =>
+    setInitiative(char, initiative.value.trim()),
+  );
+  // Typing in the field must not start a drag of the whole row.
+  initiative.addEventListener("pointerdown", (e) => e.stopPropagation());
 
   const removeBtn = document.createElement("button");
-  removeBtn.className = "remove-char";
-  removeBtn.textContent = "×";
-  removeBtn.title = "Eliminar personaje";
-  removeBtn.addEventListener("click", (e) => {
+  removeBtn.className = "icon-btn ghost remove-char";
+  removeBtn.title = "Eliminar ficha";
+  removeBtn.append(icon("x"));
+  removeBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
-    removeCharacter(char.id);
+    const ok = await confirmDialog({
+      title: `Eliminar a ${char.name}`,
+      message: "La ficha desaparecerá de la lista y del mapa.",
+      confirmLabel: "Eliminar",
+    });
+    if (ok) removeCharacter(char.id);
   });
 
-  item.append(img, name, initiative, removeBtn);
+  item.append(avatar, name, initiative, removeBtn);
 
   item.addEventListener("dragstart", (e) => {
     e.dataTransfer.setData("text/plain", `char:${char.id}`);
@@ -50,7 +63,25 @@ function createCharacterItem(char) {
 }
 
 export function renderCharacters() {
-  charList.replaceChildren(...state.characters.map(createCharacterItem));
+  const items = state.characters.map((char) => [
+    char,
+    createCharacterItem(char),
+  ]);
+  allies.replaceChildren(
+    ...items.filter(([c]) => !c.isEnemy).map(([, el]) => el),
+  );
+  enemies.replaceChildren(
+    ...items.filter(([c]) => c.isEnemy).map(([, el]) => el),
+  );
+  refreshRosterState();
+}
+
+/** Dims characters that are not on the map. */
+export function refreshRosterState() {
+  const onBoard = new Set(state.tokens.map((t) => t.characterId));
+  $$(".char-item").forEach((el) =>
+    el.classList.toggle("off-board", !onBoard.has(Number(el.dataset.charId))),
+  );
 }
 
 export function addCharacter(char) {
