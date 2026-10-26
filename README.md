@@ -208,34 +208,40 @@ Las contribuciones son bienvenidas. Si tienes una sugerencia, abre un issue con 
 
 1. Haz un fork del proyecto
 2. Crea tu rama desde `develop` (`git checkout -b feature/AmazingFeature develop`)
-3. Haz commit con el formato de abajo (`git commit -m ':sparkles: feat: add some amazing feature'`)
+3. Haz commit con el formato de abajo (`git commit -m '✨ feat: add some amazing feature'`)
 4. Comprueba que `pnpm check` pasa
 5. Haz push y abre un pull request contra `develop`
 
 ### Formato de commits
 
-Un [gitmoji](https://gitmoji.dev/) seguido de [Conventional Commits](https://www.conventionalcommits.org/es/):
+Un [gitmoji](https://gitmoji.dev/) como carácter Unicode (no `:shortcode:`) seguido de [Conventional Commits](https://www.conventionalcommits.org/es/). Se aplica también a los títulos de los PR:
 
 ```
-:emoji: tipo(ámbito opcional): descripción corta en imperativo
+<emoji> tipo(ámbito opcional): descripción corta en imperativo
 ```
 
-| Gitmoji            | Tipo       | Cuándo                                        |
-| ------------------ | ---------- | --------------------------------------------- |
-| :sparkles:         | `feat`     | Funcionalidad nueva                           |
-| :bug:              | `fix`      | Corrección de un bug                          |
-| :lipstick:         | `style`    | Cambios visuales de la interfaz (CSS, diseño) |
-| :recycle:          | `refactor` | Reorganizar código sin cambiar comportamiento |
-| :zap:              | `perf`     | Mejora de rendimiento                         |
-| :fire:             | `chore`    | Borrar código o ficheros                      |
-| :white_check_mark: | `test`     | Añadir o corregir tests                       |
-| :memo:             | `docs`     | Documentación (README, CHANGELOG)             |
-| :wrench:           | `chore`    | Configuración, herramientas, dependencias     |
-| :green_heart:      | `ci`       | Integración continua                          |
-| :lock:             | `fix`      | Corrección de seguridad                       |
-| :art:              | `style`    | Formato del código (Prettier)                 |
-| :bookmark:         | `chore`    | Preparar una versión                          |
-| :boom:             | `tipo!`    | Cambio incompatible (sube la versión mayor)   |
+Por ejemplo: `✨ feat(fog): animate fog transitions` o `🔥 chore: remove unused fixtures`.
+
+| Gitmoji | Tipo             | Cuándo                                           |
+| ------- | ---------------- | ------------------------------------------------ |
+| ✨      | `feat`           | Funcionalidad nueva                              |
+| 🐛      | `fix`            | Corrección de un bug                             |
+| 🚑️      | `fix`            | Corrección urgente                               |
+| 🔒️      | `fix`            | Corrección de seguridad                          |
+| 💄      | `style`          | Cambios visuales de la interfaz (CSS, diseño)    |
+| 🎨      | `style`          | Formato o estructura del código (Prettier)       |
+| ♻️      | `refactor`       | Reorganizar código sin cambiar comportamiento    |
+| ⚡️      | `perf`           | Mejora de rendimiento                            |
+| ✅      | `test`           | Añadir o corregir tests                          |
+| 📝      | `docs`           | Documentación (README, CHANGELOG)                |
+| 👷      | `ci`             | Integración continua                             |
+| ⬆️      | `build(deps)`    | Actualizar dependencias                          |
+| 🔧      | `chore`          | Ficheros de configuración                        |
+| 🔥      | `chore`          | Borrar código o ficheros                         |
+| 🔖      | `chore(release)` | Preparar una versión                             |
+| ⏪️      | `revert`         | Revertir cambios                                 |
+| 💥      | `tipo!`          | Cambio incompatible (sube la versión mayor)      |
+| 🔀      | —                | Merge: `🔀 Merge branch '<rama>' into <destino>` |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
