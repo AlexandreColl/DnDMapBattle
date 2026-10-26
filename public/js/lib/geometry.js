@@ -95,6 +95,13 @@ export function matrixMatches(m, rows, cols) {
 /**
  * Copies `source` into a fresh rows × cols matrix. Cells missing from
  * `source`, or rejected by `accept`, get `fallback`.
+ * @template T
+ * @param {unknown} source
+ * @param {number} rows
+ * @param {number} cols
+ * @param {T} fallback
+ * @param {(value: unknown) => boolean} [accept]
+ * @returns {T[][]}
  */
 export function fitMatrix(source, rows, cols, fallback, accept = () => true) {
   const out = createMatrix(rows, cols, fallback);
