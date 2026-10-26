@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+### Añadido
+
+- Tests E2E con Playwright: dos jugadores en la misma partida (cuadrícula, fichas, paredes, turnos y medición), gestos táctiles y comprobaciones de accesibilidad con axe.
+- Cobertura de los tests unitarios con umbral mínimo y comprobación de tipos con TypeScript sobre el JavaScript existente.
+- La CI se divide en trabajos paralelos: lint, formato y tipos; tests unitarios y cobertura; tests E2E; auditoría de dependencias.
+
+### Corregido
+
+- El texto secundario tenía un contraste insuficiente (WCAG AA).
+
 ## [1.1.0] - 2026-10-26
 
 ### Cambiado
