@@ -11,9 +11,3 @@ minimumReleaseAge: 4320
 # Reject transitive dependencies from git/tarball URLs (pnpm 11+ default,
 # kept explicit).
 blockExoticSubdeps: true
-
-# Exact versions allowed before the 3-day wait. Only for security fixes from
-# trusted maintainers; remove each entry once it is older than the wait.
-minimumReleaseAgeExclude:
-  # Fix for GHSA-27r3-jxmh-p828 (published 2026-10-22). Remove after 2026-10-25.
-  - body-parser@2.4.0
