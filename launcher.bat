@@ -10,6 +10,13 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
+node -e "process.exit(Number(process.versions.node.split('.')[0]) < 24 ? 1 : 0)"
+if errorlevel 1 (
+  echo Se necesita Node.js 24 o superior. Actualizalo desde https://nodejs.org/
+  node --version
+  pause
+  exit /b 1
+)
 if not exist node_modules (
   echo Instalando dependencias...
   call corepack pnpm install --prod --frozen-lockfile

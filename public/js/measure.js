@@ -2,9 +2,8 @@
 import { $, $$, cellElement, gridOverlay, mapWrapper } from "./dom.js";
 import { cellDistance } from "./lib/geometry.js";
 import { state } from "./state.js";
+import { resetHint, setHint } from "./tools.js";
 
-const toggleButton = $("#toggle-measure");
-const info = $("#measure-info");
 const markerA = $("#measure-marker-a");
 const markerB = $("#measure-marker-b");
 const label = $("#measure-label");
@@ -26,14 +25,15 @@ function placeAt(el, { x, y }) {
   el.style.display = "block";
 }
 
+/** Center of a cell in map-wrapper coordinates (before zoom/pan). */
 function getCellCenter({ row, col }) {
   const cell = cellElement(row, col);
   if (!cell) return null;
   const wrapperRect = mapWrapper.getBoundingClientRect();
   const cellRect = cell.getBoundingClientRect();
   return {
-    x: cellRect.left + cellRect.width / 2 - wrapperRect.left,
-    y: cellRect.top + cellRect.height / 2 - wrapperRect.top,
+    x: (cellRect.left + cellRect.width / 2 - wrapperRect.left) / state.zoom,
+    y: (cellRect.top + cellRect.height / 2 - wrapperRect.top) / state.zoom,
   };
 }
 
@@ -41,14 +41,7 @@ export function clearMeasurement() {
   state.measurePoints = [];
   hide(markerA, markerB, label, line);
   clearCellHighlights();
-  info.textContent = "";
-}
-
-export function setMeasuring(measuring) {
-  state.measuring = measuring;
-  toggleButton.classList.toggle("active", measuring);
-  clearMeasurement();
-  if (measuring) info.textContent = "Haz clic en una celda para empezar";
+  if (state.tool === "measure") resetHint();
 }
 
 export function handleMeasureClick(row, col) {
@@ -68,7 +61,7 @@ function updateMeasurement() {
   if (posA) placeAt(markerA, posA);
 
   if (!b) {
-    info.textContent = "Haz clic en otra celda";
+    setHint("Medir · haz clic en otra casilla");
     return;
   }
 
@@ -85,10 +78,6 @@ function updateMeasurement() {
 
   const text = `${cellDistance(a, b).toFixed(1)} casillas`;
   label.textContent = text;
-  placeAt(label, { x: (posA.x + posB.x) / 2, y: (posA.y + posB.y) / 2 - 24 });
-  info.textContent = text;
-}
-
-export function initMeasure() {
-  toggleButton.addEventListener("click", () => setMeasuring(!state.measuring));
+  placeAt(label, { x: (posA.x + posB.x) / 2, y: (posA.y + posB.y) / 2 - 18 });
+  setHint(`Distancia: ${text}`);
 }

@@ -1,20 +1,31 @@
 // Tokens: characters placed on the grid.
+import { refreshRosterState } from "./characters.js";
 import { $$, cellElement, gridOverlay } from "./dom.js";
+import { makeDraggable } from "./drag.js";
+import { redrawFog } from "./fog.js";
 import { calculateVision } from "./grid.js";
 import { cssUrl } from "./lib/sanitize.js";
 import { EVENTS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { state } from "./state.js";
+import { closeTokenMenu, openTokenMenu } from "./token-menu.js";
 import { renderTurnTracker } from "./turns.js";
 
 function createTokenElement(token, char) {
   const el = document.createElement("div");
   el.className = "token";
+  el.classList.toggle("enemy", char.isEnemy);
+  el.classList.toggle("selected", state.selectedTokenId === token.id);
   el.dataset.tokenId = token.id;
+  el.dataset.charId = char.id;
   el.style.backgroundImage = cssUrl(char.imageUrl);
-  el.draggable = true;
   el.title = char.name;
 
+  el.addEventListener("click", (e) => {
+    if (state.tool !== "move") return;
+    e.stopPropagation();
+    openTokenMenu(token.id);
+  });
   el.addEventListener("auxclick", (e) => {
     if (e.button === 1) {
       e.stopPropagation();
@@ -27,13 +38,18 @@ function createTokenElement(token, char) {
   el.addEventListener("mouseleave", () => {
     if (state.hoveredTokenId === token.id) state.hoveredTokenId = null;
   });
-  el.addEventListener("dragstart", (e) => {
-    e.dataTransfer.setData("text/plain", `token:${token.id}`);
-    el.classList.add("dragging");
-    e.stopPropagation();
+  // With the walls tool, dragging over a token paints its cell instead.
+  makeDraggable(el, {
+    kind: "token",
+    id: token.id,
+    image: el.style.backgroundImage,
+    enabled: () => state.tool !== "walls",
   });
-  el.addEventListener("dragend", () => el.classList.remove("dragging"));
   return el;
+}
+
+export function tokenElement(tokenId) {
+  return gridOverlay.querySelector(`.token[data-token-id="${tokenId}"]`);
 }
 
 export function renderTokens() {
@@ -43,7 +59,12 @@ export function renderTokens() {
     const cell = char && cellElement(token.row, token.col);
     if (cell) cell.appendChild(createTokenElement(token, char));
   }
+  if (!state.tokens.some((t) => t.id === state.selectedTokenId)) {
+    closeTokenMenu();
+  }
+  refreshRosterState();
   renderTurnTracker();
+  redrawFog();
 }
 
 function syncPlacedToken(token) {
@@ -58,12 +79,8 @@ function syncPlacedToken(token) {
   });
 }
 
-/** Drop from the character list (place/move) or from another cell (move). */
-export function handleDrop(row, col, e) {
-  const [kind, rawId] = e.dataTransfer.getData("text/plain").split(":");
-  const id = parseInt(rawId, 10);
-  if (!Number.isInteger(id)) return;
-
+/** Drop from the roster (place/move) or from another cell (move). */
+export function placeOnCell(row, col, kind, id) {
   let token;
   if (kind === "char") {
     if (!state.characters.some((c) => c.id === id)) return;

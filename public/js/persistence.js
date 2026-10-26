@@ -8,16 +8,19 @@ import {
   parseCharactersFile,
   parseSaveFile,
 } from "./lib/save-file.js";
+import { showPanel } from "./panels.js";
 import { EVENTS } from "./shared/protocol.js";
 import { emit, withoutEmitting } from "./socket.js";
 import { state } from "./state.js";
+import { toast } from "./ui.js";
 
 function saveGame() {
   if (state.gridRows === 0 || state.gridCols === 0) {
-    alert("No hay partida que guardar. Genera una cuadrícula primero.");
+    toast("Genera una cuadrícula antes de guardar", { kind: "error" });
     return;
   }
   downloadJson(buildSaveData(state), "partida.dndmap");
+  toast("Partida guardada", { kind: "success" });
 }
 
 async function loadGame(file) {
@@ -25,14 +28,16 @@ async function loadGame(file) {
     const data = parseSaveFile(await readFileAsText(file));
     withoutEmitting(() => applyFullState(data));
     emit(EVENTS.STATE_FULL, snapshotState());
+    showPanel("play");
+    toast("Partida cargada", { kind: "success" });
   } catch (err) {
-    alert(`Error al cargar la partida: ${err.message}`);
+    toast(`No se pudo cargar la partida: ${err.message}`, { kind: "error" });
   }
 }
 
 function exportCharacters() {
   if (state.characters.length === 0) {
-    alert("No hay personajes para exportar.");
+    toast("No hay fichas para exportar", { kind: "error" });
     return;
   }
   downloadJson(buildCharactersExport(state.characters), "personajes.dndchars");
@@ -42,10 +47,18 @@ async function importCharacters(file) {
   try {
     const text = await readFileAsText(file);
     const characters = parseCharactersFile(text, state.nextCharId);
-    if (characters.length === 0) throw new Error("No hay personajes válidos");
+    if (characters.length === 0) throw new Error("no hay fichas válidas");
     characters.forEach(addCharacter);
+    toast(
+      characters.length === 1
+        ? "1 ficha importada"
+        : `${characters.length} fichas importadas`,
+      { kind: "success" },
+    );
   } catch (err) {
-    alert(`Error al importar personajes: ${err.message}`);
+    toast(`No se pudieron importar las fichas: ${err.message}`, {
+      kind: "error",
+    });
   }
 }
 
