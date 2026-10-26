@@ -208,7 +208,7 @@ Las contribuciones son bienvenidas. Si tienes una sugerencia, abre un issue con 
 
 1. Haz un fork del proyecto
 2. Crea tu rama desde `develop` (`git checkout -b feature/AmazingFeature develop`)
-3. Haz commit con el formato de abajo (`git commit -m ':sparkles: feat: add some amazing feature'`)
+3. Haz commit con el formato de abajo (`git commit -m '✨ feat: add some amazing feature'`)
 4. Comprueba que `pnpm check` pasa
 5. Haz push y abre un pull request contra `develop`
 
