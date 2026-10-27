@@ -12,6 +12,7 @@ export default defineConfig({
         "server/**/*.js",
         "public/js/lib/**/*.js",
         "public/js/shared/**/*.js",
+        "scripts/commit-format.js",
       ],
       exclude: ["server/index.js"],
       reporter: ["text", "html", "lcov"],

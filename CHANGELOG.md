@@ -11,6 +11,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Tests E2E con Playwright: dos jugadores en la misma partida (cuadrícula, fichas, paredes, turnos y medición), gestos táctiles y comprobaciones de accesibilidad con axe.
 - Cobertura de los tests unitarios con umbral mínimo y comprobación de tipos con TypeScript sobre el JavaScript existente.
 - La CI se divide en trabajos paralelos: lint, formato y tipos; tests unitarios y cobertura; tests E2E; auditoría de dependencias.
+- CodeQL como workflow propio, en `main`, `develop` y sus PRs.
+- Check del formato de commits y del título de cada PR.
+- OpenSSF Scorecard con badge en el README.
+
+### Seguridad
+
+- Los workflows tienen permisos mínimos por trabajo, tiempo máximo, cancelan ejecuciones repetidas de un PR, usan una imagen de Ubuntu fija y registran sus conexiones de red con Harden-Runner.
 
 ### Corregido
 

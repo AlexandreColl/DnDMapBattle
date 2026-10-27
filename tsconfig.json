@@ -10,5 +10,13 @@
     "strict": false,
     "skipLibCheck": true
   },
-  "include": ["server", "public/js", "test", "e2e", "types", "*.config.js"]
+  "include": [
+    "server",
+    "public/js",
+    "scripts",
+    "test",
+    "e2e",
+    "types",
+    "*.config.js"
+  ]
 }
