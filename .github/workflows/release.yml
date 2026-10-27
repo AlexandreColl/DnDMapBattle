@@ -1,0 +1,147 @@
+name: Release
+
+# Pushing a v* tag publishes the GitHub Release: notes from CHANGELOG.md, a
+# ready-to-run zip, an SBOM and signed build provenance for both.
+# On PRs that touch the packaging, only the build runs, to catch breakage
+# before a real release.
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - .github/workflows/release.yml
+      - scripts/release-notes.js
+      - launcher.bat
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    name: Empaquetar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # Sign the provenance and SBOM attestations (Sigstore, via OIDC).
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    env:
+      IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+
+      # On a tag, the version comes from the tag and must match package.json;
+      # on a PR, package.json's version is used for a dry run.
+      - name: Versión
+        id: version
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$IS_RELEASE" = "true" ]; then
+            version="${REF_NAME#v}"
+          else
+            version="$(node -p "require('./package.json').version")"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "name=dndmapbattle-$version" >> "$GITHUB_OUTPUT"
+
+      - name: Tests
+        run: pnpm check
+
+      - name: Notas de la versión
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p dist
+          node scripts/release-notes.js "$VERSION" > dist/release-notes.md
+
+      # A folder with only what is needed to run, plus the production
+      # dependencies as a flat node_modules (no symlinks, so the zip works on
+      # Windows). launcher.bat skips the install when node_modules exists.
+      - name: Empaquetar
+        env:
+          NAME: ${{ steps.version.outputs.name }}
+        run: |
+          mkdir "dist/$NAME"
+          cp -r server public package.json pnpm-lock.yaml pnpm-workspace.yaml \
+            .nvmrc launcher.bat README.md LICENSE CHANGELOG.md SECURITY.md \
+            "dist/$NAME/"
+          (cd "dist/$NAME" && pnpm install --prod --frozen-lockfile \
+            --config.node-linker=hoisted --ignore-scripts)
+          (cd dist && zip -qrX "$NAME.zip" "$NAME")
+          pnpm sbom --prod --sbom-format cyclonedx --sbom-type application \
+            --out "dist/$NAME.cdx.json"
+          (cd dist && sha256sum "$NAME.zip" "$NAME.cdx.json" > SHA256SUMS.txt)
+          cat dist/SHA256SUMS.txt
+
+      - name: Procedencia firmada
+        if: env.IS_RELEASE == 'true'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: dist/${{ steps.version.outputs.name }}.zip
+      - name: SBOM firmado
+        if: env.IS_RELEASE == 'true'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: dist/${{ steps.version.outputs.name }}.zip
+          sbom-path: dist/${{ steps.version.outputs.name }}.cdx.json
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          # Only the final files, not the staging folder.
+          path: |
+            dist/*.zip
+            dist/*.cdx.json
+            dist/SHA256SUMS.txt
+            dist/release-notes.md
+          retention-days: 14
+
+  # Only this job can write to the repository, and it runs no project code.
+  publish:
+    name: Publicar release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release
+      - name: Crear la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          {
+            cat release-notes.md
+            echo
+            echo "---"
+            echo
+            echo "**Descarga:** \`dndmapbattle-${TAG#v}.zip\`, descomprímelo y ejecuta \`launcher.bat\` (Node.js 24 o superior)."
+            echo
+            echo "Verifica que el zip se construyó en este repositorio con \`gh attestation verify dndmapbattle-${TAG#v}.zip -R $GH_REPO\`."
+          } > notes.md
+          gh release create "$TAG" --verify-tag --title "DnD Map Battle ${TAG#v}" \
+            --notes-file notes.md ./*.zip ./*.cdx.json SHA256SUMS.txt
