@@ -11,28 +11,26 @@ async function violations(page) {
   );
 }
 
-test("the empty table has no accessibility violations", async ({
-  openPlayer,
-}) => {
-  const page = await openPlayer();
+test("the empty table has no accessibility violations", async ({ openDm }) => {
+  const page = await openDm();
   expect(await violations(page)).toEqual([]);
   await page.locator('[data-panel="setup"]').click();
   expect(await violations(page)).toEqual([]);
 });
 
 test("a game in progress has no accessibility violations", async ({
-  openPlayer,
+  openDm,
 }) => {
-  const page = await openPlayer();
+  const page = await openDm();
   await generateGrid(page, 5, 5);
   await addCharacter(page, { name: "Aria", initiative: 10 });
   expect(await violations(page)).toEqual([]);
 });
 
 test("the character editor has no accessibility violations", async ({
-  openPlayer,
+  openDm,
 }) => {
-  const page = await openPlayer();
+  const page = await openDm();
   await page.locator('[data-panel="play"]').click();
   await page.locator("#char-add").click();
   await expect(page.locator("#token-editor")).toBeVisible();
