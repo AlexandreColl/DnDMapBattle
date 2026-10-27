@@ -94,7 +94,7 @@ export function makeDraggable(source, options) {
   source.addEventListener("pointerdown", (e) => {
     if (pending || !e.isPrimary || e.button !== 0) return;
     if (options.enabled && !options.enabled()) return;
-    if (e.target.closest("input, button")) return;
+    if (/** @type {Element} */ (e.target).closest("input, button")) return;
 
     const longPress = options.longPressOnTouch && e.pointerType === "touch";
     pending = {
@@ -141,6 +141,7 @@ export function initDrag() {
   );
   // Long-pressing a roster item would otherwise open the context menu.
   document.addEventListener("contextmenu", (e) => {
-    if (pending || e.target.closest(".char-item, .token")) e.preventDefault();
+    const target = /** @type {Element} */ (e.target);
+    if (pending || target.closest(".char-item, .token")) e.preventDefault();
   });
 }

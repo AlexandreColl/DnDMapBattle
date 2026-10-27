@@ -1,4 +1,5 @@
 // Grid cells, vision and grid sizing.
+import { refreshRosterState } from "./characters.js";
 import { $, gridOverlay, mapWrapper } from "./dom.js";
 import { applyFog, placeFog } from "./fog.js";
 import {
@@ -13,6 +14,7 @@ import { clearMeasurement, handleMeasureClick } from "./measure.js";
 import { CELL, EVENTS, LIMITS } from "./shared/protocol.js";
 import { emit, withoutEmitting } from "./socket.js";
 import { state } from "./state.js";
+import { isDm } from "./roles.js";
 import { renderTokens } from "./tokens.js";
 import { toast } from "./ui.js";
 
@@ -33,14 +35,17 @@ function createCell(r, c) {
   cell.dataset.row = r;
   cell.dataset.col = c;
 
+  // Revealing fog is for the DM only.
   cell.addEventListener("auxclick", (e) => {
-    if (e.button === 1) {
+    if (e.button === 1 && isDm()) {
       e.preventDefault();
       toggleReveal(r, c);
     }
   });
   cell.addEventListener("click", (e) => {
-    if (state.tool === "reveal" || (state.tool === "move" && e.shiftKey)) {
+    const reveal =
+      state.tool === "reveal" || (state.tool === "move" && e.shiftKey);
+    if (reveal && isDm()) {
       toggleReveal(r, c);
     } else if (state.tool === "measure") {
       e.stopPropagation();
@@ -90,8 +95,15 @@ export function clearGrid() {
   updateEmptyState();
 }
 
-/** Recomputes what allied tokens can see and syncs the fog. */
+/**
+ * Recomputes what allied tokens can see and syncs the fog. Players do not
+ * have the walls or hidden enemies: their fog always comes from the server.
+ */
 export function calculateVision() {
+  if (!isDm()) {
+    applyFog();
+    return;
+  }
   state.cellStates = computeVision({
     rows: state.gridRows,
     cols: state.gridCols,
@@ -101,6 +113,7 @@ export function calculateVision() {
     characters: state.characters,
   });
   applyFog();
+  refreshRosterState();
   emit(EVENTS.FOG_UPDATED, { cellStates: state.cellStates });
 }
 

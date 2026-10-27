@@ -89,7 +89,13 @@ export const schemas = {
   tokenRemoved: z.object({ tokenId: id }),
   fogUpdated: z.object({ cellStates }),
   wallsSet: z.object({ wallCells }),
-  viewChanged: z.object({ zoom, panX: pan, panY: pan }),
+  // Center of the DM view as a fraction of the grid, and how much of the
+  // grid width it shows, so each screen can frame the same area.
+  viewCentered: z.object({
+    x: z.number().min(0).max(1),
+    y: z.number().min(0).max(1),
+    span: z.number().min(0.01).max(100),
+  }),
   initiativeChanged: z.object({ charId: id, initiative }),
   turnChanged: z.object({ charId: id.nullable() }),
 };

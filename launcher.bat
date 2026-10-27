@@ -26,7 +26,10 @@ if not exist node_modules (
     exit /b 1
   )
 )
-start "" http://localhost:8080
+rem The DM key: this browser opens as DM; players use the address the
+rem server prints. The key goes after "#", so it never reaches the server.
+for /f %%k in ('node server\dm-key.js') do set "DM_KEY=%%k"
+start "" "http://localhost:8080/#dm=%DM_KEY%"
 node server\index.js
 echo.
 echo Servidor detenido.

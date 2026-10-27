@@ -6,6 +6,35 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.2.0] - 2026-10-27
+
+### Añadido
+
+- **Roles de máster y jugador.** Al arrancar, el servidor muestra un enlace de máster con una clave secreta (`launcher.bat` lo abre directamente); el resto de dispositivos entran como jugadores.
+- Los jugadores ven la niebla opaca, mueven solo a su compañía, editan su iniciativa y miden; el mapa, las paredes, la niebla, los enemigos y los turnos son del máster.
+- El servidor calcula la niebla y no envía a los jugadores los enemigos ocultos, su iniciativa ni las paredes.
+- El máster ve la niebla semitransparente, qué enemigos no ven los jugadores, cuántos jugadores hay conectados y puede centrar a todos en su vista.
+- Tests E2E con Playwright: dos jugadores en la misma partida (cuadrícula, fichas, paredes, turnos y medición), gestos táctiles y comprobaciones de accesibilidad con axe.
+- Cobertura de los tests unitarios con umbral mínimo y comprobación de tipos con TypeScript sobre el JavaScript existente.
+- La CI se divide en trabajos paralelos: lint, formato y tipos; tests unitarios y cobertura; tests E2E; auditoría de dependencias.
+- CodeQL como workflow propio, en `main`, `develop` y sus PRs.
+- Check del formato de commits y del título de cada PR.
+- OpenSSF Scorecard con badge en el README.
+- Releases automáticas al subir un tag `v*`: notas desde el CHANGELOG, zip listo para usar con las dependencias incluidas, SBOM (CycloneDX), sumas SHA-256 y atestaciones firmadas de procedencia y SBOM.
+- Política de seguridad (`SECURITY.md`) con reporte privado de vulnerabilidades, formularios para reportar errores y proponer funcionalidades, plantilla de PR con checklist y `CODEOWNERS`.
+
+### Cambiado
+
+- Cada dispositivo tiene su propio zoom y encuadre (antes se compartían entre todos).
+
+### Corregido
+
+- El texto secundario tenía un contraste insuficiente (WCAG AA).
+
+### Seguridad
+
+- Los workflows tienen permisos mínimos por trabajo, tiempo máximo, cancelan ejecuciones repetidas de un PR, usan una imagen de Ubuntu fija y registran sus conexiones de red con Harden-Runner.
+
 ## [1.1.0] - 2026-10-26
 
 ### Cambiado
@@ -74,6 +103,7 @@ Primera versión estable.
 - Cargar una partida o importar personajes no se sincronizaba con los demás jugadores.
 - El zoom saltaba al llegar a los límites.
 
-[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.1.0...HEAD
+[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/AlexandreColl/DnDMapBattle/releases/tag/v1.0.0

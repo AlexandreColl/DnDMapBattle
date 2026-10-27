@@ -1,6 +1,7 @@
 // Exclusive map tools: move, measure, reveal fog and paint walls.
 import { $, $$, mapContainer } from "./dom.js";
 import { clearMeasurement } from "./measure.js";
+import { isDm } from "./roles.js";
 import { state } from "./state.js";
 import { closeTokenMenu } from "./token-menu.js";
 import { icon } from "./ui.js";
@@ -36,8 +37,11 @@ export function resetHint() {
   setHint(TOOLS[state.tool].hint);
 }
 
+/** Tools a player may use; the rest change the board for everyone. */
+const PLAYER_TOOLS = ["move", "measure"];
+
 export function setTool(tool) {
-  if (!TOOLS[tool]) return;
+  if (!TOOLS[tool] || (!isDm() && !PLAYER_TOOLS.includes(tool))) return;
   const previous = state.tool;
   state.tool = tool;
   mapContainer.dataset.tool = tool;

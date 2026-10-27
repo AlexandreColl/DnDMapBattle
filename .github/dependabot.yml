@@ -21,7 +21,8 @@ updates:
         update-types: [minor, patch]
 
   - package-ecosystem: github-actions
-    directory: /
+    # The workflows plus the composite action in .github/actions.
+    directories: ["/", "/.github/actions/*"]
     target-branch: develop
     schedule:
       interval: weekly

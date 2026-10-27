@@ -25,7 +25,7 @@
 
   --text: #e8dcc2;
   --text-muted: #a8977a;
-  --text-faint: #7c6e57;
+  --text-faint: #938368;
 
   --gold: #e3b955;
   --gold-soft: rgba(227, 185, 85, 0.16);
@@ -1080,4 +1080,68 @@ dialog h2 {
   #mode-hint {
     max-width: calc(100% - 140px);
   }
+}
+
+/* ─── Roles: the server enforces permissions, this only hides controls ─── */
+body:not([data-role="dm"]) [data-dm-only],
+body:not([data-role="player"]) [data-player-only] {
+  display: none !important;
+}
+
+.role-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.role-badge.dm {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--bg-1);
+}
+
+.role-badge .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.presence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.presence-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.presence-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+/* DM only: characters the players cannot see right now. */
+.char-item .hidden-mark {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+}
+
+/* Players cannot drag enemies. */
+.char-item.locked {
+  cursor: default;
 }

@@ -149,12 +149,9 @@ export const reducers = {
     return data;
   },
 
-  [EVENTS.VIEW_CHANGED](state, raw) {
-    const data = schemas.viewChanged.parse(raw);
-    state.zoom = data.zoom;
-    state.panX = data.panX;
-    state.panY = data.panY;
-    return data;
+  // Nothing to store: each device keeps its own view.
+  [EVENTS.VIEW_CENTERED](_state, raw) {
+    return schemas.viewCentered.parse(raw);
   },
 
   [EVENTS.INITIATIVE_CHANGED](state, raw) {
