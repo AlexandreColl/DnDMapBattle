@@ -8,13 +8,19 @@ export const PNG = Buffer.from(
   "base64",
 );
 
+// The DM key of the test servers; pages opened with it are DMs.
+export const DM_KEY = "TEST-DM-KEY";
+
 /**
  * @typedef {import("@playwright/test").Page} Page
+ * @typedef {(
+ *   options?: import("@playwright/test").BrowserContextOptions,
+ * ) => Promise<Page>} OpenPage
  * @typedef {{
  *   serverUrl: string,
- *   openPlayer: (
- *     options?: import("@playwright/test").BrowserContextOptions,
- *   ) => Promise<Page>,
+ *   openPage: (role: "dm" | "player", options?: import("@playwright/test").BrowserContextOptions) => Promise<Page>,
+ *   openDm: OpenPage,
+ *   openPlayer: OpenPage,
  * }} GameFixtures
  */
 
@@ -29,7 +35,7 @@ export const test = base.extend({
   // A server with an empty game, so tests never share state.
   // eslint-disable-next-line no-empty-pattern -- Playwright requires it
   serverUrl: async ({}, use) => {
-    const { server, io } = createApp({ logger: { warn() {} } });
+    const { server, io } = createApp({ logger: { warn() {} }, dmKey: DM_KEY });
     await new Promise((resolve) =>
       server.listen(0, "127.0.0.1", () => resolve(undefined)),
     );
@@ -40,22 +46,28 @@ export const test = base.extend({
     await new Promise((resolve) => io.close(resolve));
   },
 
-  // Opens the game in a new browser context ("player"). The test fails if
-  // any page throws an uncaught error.
-  openPlayer: async ({ browser, serverUrl }, use) => {
+  // Opens the game in a new browser context, as DM (with the key in the
+  // link) or as a player. The test fails if any page throws an uncaught error.
+  openPage: async ({ browser, serverUrl }, use) => {
     const contexts = [];
     const errors = [];
-    await use(async (options = {}) => {
+    await use(async (role, options = {}) => {
       const context = await browser.newContext(options);
       contexts.push(context);
       const page = await context.newPage();
       page.on("pageerror", (err) => errors.push(err.message));
-      await page.goto(serverUrl);
-      await expect(page.locator("#map-container")).toBeVisible();
+      await page.goto(role === "dm" ? `${serverUrl}/#dm=${DM_KEY}` : serverUrl);
+      await expect(page.locator("body")).toHaveAttribute("data-role", role);
       return page;
     });
     await Promise.all(contexts.map((c) => c.close()));
     expect(errors, "uncaught errors in the page").toEqual([]);
+  },
+  openDm: async ({ openPage }, use) => {
+    await use((options) => openPage("dm", options));
+  },
+  openPlayer: async ({ openPage }, use) => {
+    await use((options) => openPage("player", options));
   },
 });
 
@@ -76,9 +88,12 @@ export async function generateGrid(page, rows, cols) {
 /**
  * Creates a character through the editor dialog.
  * @param {Page} page
- * @param {{ name: string, enemy?: boolean, initiative?: number }} character
+ * @param {{ name: string, enemy?: boolean, initiative?: number, vision?: number }} character
  */
-export async function addCharacter(page, { name, enemy = false, initiative }) {
+export async function addCharacter(
+  page,
+  { name, enemy = false, initiative, vision },
+) {
   await page.locator('[data-panel="play"]').click();
   await page.locator("#char-add").click();
   await page.locator("#char-upload").setInputFiles({
@@ -89,6 +104,7 @@ export async function addCharacter(page, { name, enemy = false, initiative }) {
   await expect(page.locator("#editor-drop")).toHaveClass(/has-image/);
   await page.locator("#char-name").fill(name);
   if (enemy) await page.locator('#editor-side [data-enemy="true"]').click();
+  if (vision != null) await page.locator("#editor-vision").fill(String(vision));
   if (initiative != null) {
     await page.locator("#editor-initiative").fill(String(initiative));
   }

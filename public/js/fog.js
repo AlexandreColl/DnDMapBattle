@@ -1,7 +1,8 @@
 // Fog of war drawn on a canvas: soft edges between cells, smooth transitions
 // when vision changes, and a warm torch halo around allied tokens.
 import { fogCanvas } from "./dom.js";
-import { fogAlphas, stepTowards } from "./lib/fog.js";
+import { DM_HIDDEN_ALPHA, fogAlphas, stepTowards } from "./lib/fog.js";
+import { isDm } from "./roles.js";
 import { state } from "./state.js";
 
 const FOG_RGB = [8, 6, 4];
@@ -39,7 +40,12 @@ export function placeFog({ left, top, width, height }) {
 
 /** Starts animating the fog towards the current `state.cellStates`. */
 export function applyFog() {
-  const next = fogAlphas(state.cellStates, state.gridRows, state.gridCols);
+  const next = fogAlphas(
+    state.cellStates,
+    state.gridRows,
+    state.gridCols,
+    isDm() ? DM_HIDDEN_ALPHA : undefined,
+  );
   if (state.gridRows !== rows || state.gridCols !== cols) {
     rows = state.gridRows;
     cols = state.gridCols;

@@ -106,9 +106,9 @@ Características principales:
    ```sh
    pnpm start
    ```
-4. Abre `http://localhost:8080` en el navegador
+4. Abre el enlace **Máster** que muestra la consola (`http://localhost:8080/#dm=…`)
 
-En Windows también puedes hacer doble clic en `launcher.bat`: instala las dependencias si faltan, arranca el servidor y abre el navegador.
+En Windows también puedes hacer doble clic en `launcher.bat`: instala las dependencias si faltan, arranca el servidor y abre el navegador ya como máster.
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
@@ -116,7 +116,9 @@ En Windows también puedes hacer doble clic en `launcher.bat`: instala las depen
 
 La aplicación necesita el servidor en marcha (no funciona abriendo `index.html` directamente).
 
-El panel lateral tiene dos pestañas: **Preparar** (mapa, cuadrícula, paredes y archivos) y **Partida** (turnos y fichas).
+Hay dos roles: el **máster** prepara la mesa y controla la partida; los **jugadores** ven solo lo que su compañía alcanza a ver (ver [Multijugador](#multijugador)).
+
+El panel lateral del máster tiene dos pestañas: **Preparar** (mapa, cuadrícula, paredes y archivos) y **Partida** (jugadores conectados, turnos y fichas).
 
 1. **Carga un mapa** en _Preparar_: cualquier imagen sirve
 2. **Genera la cuadrícula**: configura columnas y filas, o pulsa _Ajustar al mapa_ para obtener celdas cuadradas
@@ -127,25 +129,26 @@ El panel lateral tiene dos pestañas: **Preparar** (mapa, cuadrícula, paredes y
 
 ### Herramientas
 
-| Tecla | Herramienta    | Uso                                                       |
-| ----- | -------------- | --------------------------------------------------------- |
-| `V`   | Mover          | Arrastrar fichas o el mapa; clic en una ficha para editar |
-| `M`   | Medir          | Clic en dos casillas                                      |
-| `F`   | Revelar niebla | Clic para revelar u ocultar una casilla                   |
-| `W`   | Paredes        | Arrastrar para pintar; `Mayús` + arrastrar para borrar    |
-| `Esc` | —              | Vuelve a Mover y cierra menús                             |
+| Tecla | Herramienta    | Uso                                                       | Quién  |
+| ----- | -------------- | --------------------------------------------------------- | ------ |
+| `V`   | Mover          | Arrastrar fichas o el mapa; clic en una ficha para editar | Todos  |
+| `M`   | Medir          | Clic en dos casillas                                      | Todos  |
+| `F`   | Revelar niebla | Clic para revelar u ocultar una casilla                   | Máster |
+| `W`   | Paredes        | Arrastrar para pintar; `Mayús` + arrastrar para borrar    | Máster |
+| `Esc` | —              | Vuelve a Mover y cierra menús                             | Todos  |
 
 ### Otros controles
 
-| Acción                      | Entrada                                        |
-| --------------------------- | ---------------------------------------------- |
-| Zoom                        | Rueda del ratón, pellizcar o botones `−` / `+` |
-| Paneo                       | Arrastrar el fondo, o con dos dedos            |
-| Colocar ficha (táctil)      | Mantener pulsada en la lista y arrastrar       |
-| Siguiente turno             | `N` o el botón junto al turno actual           |
-| Quitar ficha del mapa       | `D` con el ratón encima, o desde su menú       |
-| Destapar celda (permanente) | Clic central o `Mayús + clic`                  |
-| Ocultar panel               | Botón inferior de la barra de herramientas     |
+| Acción                   | Entrada                                        |
+| ------------------------ | ---------------------------------------------- |
+| Zoom                     | Rueda del ratón, pellizcar o botones `−` / `+` |
+| Paneo                    | Arrastrar el fondo, o con dos dedos            |
+| Colocar ficha (táctil)   | Mantener pulsada en la lista y arrastrar       |
+| Siguiente turno (máster) | `N` o el botón junto al turno actual           |
+| Quitar ficha (máster)    | `D` con el ratón encima, o desde su menú       |
+| Destapar celda (máster)  | Clic central o `Mayús + clic`                  |
+| Centrar a todos (máster) | _Centrar a todos aquí_ en _Partida_            |
+| Ocultar panel            | Botón inferior de la barra de herramientas     |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
@@ -153,27 +156,40 @@ El panel lateral tiene dos pestañas: **Preparar** (mapa, cuadrícula, paredes y
 
 Conecta tablets y móviles al mismo mapa en tiempo real.
 
-1. Inicia el servidor (`pnpm start`)
-2. La consola muestra la IP local:
+1. Inicia el servidor (`pnpm start` o `launcher.bat`)
+2. La consola muestra dos enlaces:
    ```
-   Red local: http://192.168.1.44:8080
+   Jugadores: http://192.168.1.44:8080
+   Máster:    http://localhost:8080/#dm=K7Q2-M9XA
    ```
-3. Desde cualquier dispositivo en la misma WiFi, abre esa URL
-4. Todos los cambios se replican instantáneamente
+3. El máster abre su enlace; los jugadores, desde cualquier dispositivo en la misma WiFi, abren el suyo
+4. Cada cambio llega al instante a todos, filtrado según el rol
+
+|                                     | Máster                                    | Jugadores                                   |
+| ----------------------------------- | ----------------------------------------- | ------------------------------------------- |
+| Mapa, cuadrícula, paredes, archivos | ✅                                        | ❌                                          |
+| Niebla                              | Semitransparente; puede revelar casillas  | Opaca                                       |
+| Fichas aliadas                      | Mover, quitar, iniciativa                 | Mover e iniciativa                          |
+| Enemigos                            | Todos                                     | Solo los que la compañía ve, sin iniciativa |
+| Turnos                              | Empezar y pasar turno                     | Ver el turno actual                         |
+| Zoom y encuadre                     | Propio; puede centrar a todos en su vista | Propio                                      |
+
+El servidor comprueba cada mensaje según el rol y **nunca envía a los jugadores** las fichas ocultas por la niebla ni las paredes, así que no se pueden ver ni desde las herramientas del navegador. La clave de máster cambia en cada arranque; si se pierde el enlace, cópialo de la consola o reinicia el servidor.
 
 > [!NOTE]
 > Si el firewall bloquea la conexión, permite el puerto 8080.
 
 > [!WARNING]
-> El servidor no tiene autenticación: cualquiera en tu red puede conectarse y modificar la partida. No lo expongas a Internet.
+> Cualquiera en tu red puede conectarse como jugador, y quien tenga el enlace de máster controla la partida. No lo compartas ni expongas el servidor a Internet.
 
 Variables de entorno opcionales:
 
-| Variable         | Por defecto | Descripción                                    |
-| ---------------- | ----------- | ---------------------------------------------- |
-| `PORT`           | `8080`      | Puerto HTTP                                    |
-| `HOST`           | `0.0.0.0`   | Interfaz de escucha (`127.0.0.1` = solo local) |
-| `MAX_PAYLOAD_MB` | `16`        | Tamaño máximo de un mensaje (mapas grandes)    |
+| Variable         | Por defecto | Descripción                                             |
+| ---------------- | ----------- | ------------------------------------------------------- |
+| `PORT`           | `8080`      | Puerto HTTP                                             |
+| `HOST`           | `0.0.0.0`   | Interfaz de escucha (`127.0.0.1` = solo local)          |
+| `MAX_PAYLOAD_MB` | `16`        | Tamaño máximo de un mensaje (mapas grandes)             |
+| `DM_KEY`         | aleatoria   | Clave del enlace de máster (6–64 letras, números o `-`) |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 

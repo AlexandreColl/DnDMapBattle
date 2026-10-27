@@ -43,9 +43,9 @@ test.describe("touch", () => {
   test.skip(({ browserName }) => browserName !== "chromium", "uses CDP");
 
   test("long press on the roster drags a character onto the map", async ({
-    openPlayer,
+    openDm,
   }) => {
-    const page = await openPlayer(tablet);
+    const page = await openDm(tablet);
     await generateGrid(page, 5, 5);
     await addCharacter(page, { name: "Aria" });
     const from = await center(page.locator(".char-item", { hasText: "Aria" }));
@@ -59,10 +59,8 @@ test.describe("touch", () => {
     await expect(cell(page, 2, 3).locator(".token")).toBeVisible();
   });
 
-  test("one finger pans and two fingers pinch to zoom", async ({
-    openPlayer,
-  }) => {
-    const page = await openPlayer(tablet);
+  test("one finger pans and two fingers pinch to zoom", async ({ openDm }) => {
+    const page = await openDm(tablet);
     await generateGrid(page, 5, 5);
     const zoom = page.locator("#zoom-reset");
     const start = await center(cell(page, 2, 2));
@@ -83,8 +81,8 @@ test.describe("touch", () => {
     await expect(zoom).toHaveText("200%");
   });
 
-  test("dragging a finger paints walls", async ({ openPlayer }) => {
-    const page = await openPlayer(tablet);
+  test("dragging a finger paints walls", async ({ openDm }) => {
+    const page = await openDm(tablet);
     await generateGrid(page, 5, 5);
     await page.keyboard.press("w");
     await touchGesture(

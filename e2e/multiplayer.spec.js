@@ -1,4 +1,4 @@
-// Two players at the same table: every change must reach the other one.
+// A DM and a player at the same table: changes must reach the other screen.
 import {
   addCharacter,
   cell,
@@ -9,16 +9,16 @@ import {
 } from "./fixtures.js";
 
 test("grid, characters and tokens are shared between players", async ({
+  openDm,
   openPlayer,
 }) => {
-  const dm = await openPlayer();
+  const dm = await openDm();
   const player = await openPlayer();
 
   await generateGrid(dm, 6, 8);
   await expect(player.locator(".grid-cell")).toHaveCount(48);
 
   await addCharacter(dm, { name: "Aria" });
-  await player.locator('[data-panel="play"]').click();
   await expect(player.locator(".char-item", { hasText: "Aria" })).toBeVisible();
 
   await dragTo(
@@ -34,14 +34,17 @@ test("grid, characters and tokens are shared between players", async ({
   await expect(cell(player, 2, 3).locator(".token")).toHaveCount(0);
 });
 
-test("the token menu removes a token from the map", async ({ openPlayer }) => {
-  const dm = await openPlayer();
+test("the token menu removes a token from the map", async ({
+  openDm,
+  openPlayer,
+}) => {
+  const dm = await openDm();
   const player = await openPlayer();
   await generateGrid(dm, 5, 5);
-  await addCharacter(dm, { name: "Orco", enemy: true });
+  await addCharacter(dm, { name: "Aria" });
   await dragTo(
     dm,
-    dm.locator(".char-item", { hasText: "Orco" }),
+    dm.locator(".char-item", { hasText: "Aria" }),
     cell(dm, 1, 1),
   );
   await expect(player.locator(".token")).toHaveCount(1);
@@ -56,20 +59,20 @@ test("the token menu removes a token from the map", async ({ openPlayer }) => {
   await expect(dm.locator(".char-item.off-board")).toHaveCount(1);
 });
 
-test("walls painted by one player reach the other", async ({ openPlayer }) => {
-  const dm = await openPlayer();
-  const player = await openPlayer();
+test("walls painted by one DM reach another DM", async ({ openDm }) => {
+  const dm = await openDm();
+  const coDm = await openDm();
   await generateGrid(dm, 5, 5);
 
   await dm.keyboard.press("w");
   await dragTo(dm, cell(dm, 0, 0), cell(dm, 0, 3));
 
-  await player.keyboard.press("w");
-  await expect(player.locator(".grid-cell.wall-cell")).toHaveCount(4);
+  await coDm.keyboard.press("w");
+  await expect(coDm.locator(".grid-cell.wall-cell")).toHaveCount(4);
 });
 
-test("turns follow initiative and sync", async ({ openPlayer }) => {
-  const dm = await openPlayer();
+test("turns follow initiative and sync", async ({ openDm, openPlayer }) => {
+  const dm = await openDm();
   const player = await openPlayer();
   await generateGrid(dm, 5, 5);
   await addCharacter(dm, { name: "Aria", initiative: 12 });
@@ -87,17 +90,14 @@ test("turns follow initiative and sync", async ({ openPlayer }) => {
 
   await dm.locator("#turn-start").click();
   await expect(dm.locator("#turn-display")).toHaveText("Orco");
-  await player.locator('[data-panel="play"]').click();
   await expect(player.locator("#turn-display")).toHaveText("Orco");
 
   await dm.keyboard.press("n");
   await expect(player.locator("#turn-display")).toHaveText("Aria");
 });
 
-test("measuring shows the distance between two cells", async ({
-  openPlayer,
-}) => {
-  const dm = await openPlayer();
+test("measuring shows the distance between two cells", async ({ openDm }) => {
+  const dm = await openDm();
   await generateGrid(dm, 6, 6);
   await dm.keyboard.press("m");
   await cell(dm, 0, 0).click();

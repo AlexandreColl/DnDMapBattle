@@ -8,6 +8,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Añadido
 
+- **Roles de máster y jugador.** Al arrancar, el servidor muestra un enlace de máster con una clave secreta (`launcher.bat` lo abre directamente); el resto de dispositivos entran como jugadores.
+- Los jugadores ven la niebla opaca, mueven solo a su compañía, editan su iniciativa y miden; el mapa, las paredes, la niebla, los enemigos y los turnos son del máster.
+- El servidor calcula la niebla y no envía a los jugadores los enemigos ocultos, su iniciativa ni las paredes.
+- El máster ve la niebla semitransparente, qué enemigos no ven los jugadores, cuántos jugadores hay conectados y puede centrar a todos en su vista.
 - Tests E2E con Playwright: dos jugadores en la misma partida (cuadrícula, fichas, paredes, turnos y medición), gestos táctiles y comprobaciones de accesibilidad con axe.
 - Cobertura de los tests unitarios con umbral mínimo y comprobación de tipos con TypeScript sobre el JavaScript existente.
 - La CI se divide en trabajos paralelos: lint, formato y tipos; tests unitarios y cobertura; tests E2E; auditoría de dependencias.
@@ -20,6 +24,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ### Seguridad
 
 - Los workflows tienen permisos mínimos por trabajo, tiempo máximo, cancelan ejecuciones repetidas de un PR, usan una imagen de Ubuntu fija y registran sus conexiones de red con Harden-Runner.
+
+### Cambiado
+
+- Cada dispositivo tiene su propio zoom y encuadre (antes se compartían entre todos).
 
 ### Corregido
 

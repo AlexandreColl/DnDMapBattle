@@ -15,10 +15,15 @@
       <button class="tool" data-tool="measure" title="Medir (M)">
         <svg class="icon"><use href="icons.svg#i-ruler-measure" /></svg>
       </button>
-      <button class="tool" data-tool="reveal" title="Revelar niebla (F)">
+      <button
+        class="tool"
+        data-tool="reveal"
+        title="Revelar niebla (F)"
+        data-dm-only
+      >
         <svg class="icon"><use href="icons.svg#i-eye" /></svg>
       </button>
-      <button class="tool" data-tool="walls" title="Paredes (W)">
+      <button class="tool" data-tool="walls" title="Paredes (W)" data-dm-only>
         <svg class="icon"><use href="icons.svg#i-wall" /></svg>
       </button>
       <div class="spacer"></div>
@@ -33,9 +38,10 @@
       <header id="sidebar-header">
         <img src="logo.png" alt="" id="sidebar-logo" />
         <h1>Mesa de batalla</h1>
+        <span id="role-badge" class="role-badge" hidden></span>
       </header>
 
-      <div class="segmented" role="tablist">
+      <div class="segmented" role="tablist" data-dm-only>
         <button role="tab" data-panel="setup" aria-selected="false">
           Preparar
         </button>
@@ -145,6 +151,18 @@
       </div>
 
       <div class="panel" id="panel-play">
+        <section data-dm-only>
+          <h2>Jugadores conectados</h2>
+          <p class="presence" id="presence">
+            <span class="presence-dots" id="presence-dots"></span>
+            <span id="presence-text">Ningún jugador</span>
+          </p>
+          <button class="btn subtle" id="center-all">
+            <svg class="icon"><use href="icons.svg#i-focus-centered" /></svg>
+            Centrar a todos aquí
+          </button>
+        </section>
+
         <section>
           <h2>Turno actual</h2>
           <div class="turn-card" id="turn-card">
@@ -157,11 +175,12 @@
               class="btn icon-btn primary"
               id="turn-next"
               title="Siguiente turno (N)"
+              data-dm-only
             >
               <svg class="icon"><use href="icons.svg#i-chevrons-right" /></svg>
             </button>
           </div>
-          <button class="btn subtle" id="turn-start">
+          <button class="btn subtle" id="turn-start" data-dm-only>
             <svg class="icon"><use href="icons.svg#i-player-play" /></svg>
             Empezar desde el primero
           </button>
@@ -170,12 +189,16 @@
         <section>
           <h2>Compañía</h2>
           <div class="roster" id="roster-allies"></div>
-          <h2>Enemigos</h2>
+          <h2 id="enemies-title">Enemigos</h2>
           <div class="roster" id="roster-enemies"></div>
-          <button class="btn subtle" id="char-add">
+          <button class="btn subtle" id="char-add" data-dm-only>
             <svg class="icon"><use href="icons.svg#i-user-plus" /></svg>
             Nueva ficha
           </button>
+          <p class="hint" data-player-only>
+            Arrastra a tu compañía; el máster controla el mapa, la niebla y los
+            enemigos.
+          </p>
         </section>
       </div>
     </aside>
@@ -196,9 +219,13 @@
       <div id="initiative-bar" aria-label="Orden de iniciativa"></div>
 
       <div id="empty-state">
-        <p class="empty-title">Prepara la mesa</p>
-        <p class="muted">
+        <p class="empty-title" data-dm-only>Prepara la mesa</p>
+        <p class="muted" data-dm-only>
           Carga un mapa y genera la cuadrícula desde la pestaña Preparar.
+        </p>
+        <p class="empty-title" data-player-only>Esperando al máster</p>
+        <p class="muted" data-player-only>
+          La partida aparecerá aquí cuando el máster prepare la mesa.
         </p>
       </div>
 
@@ -222,7 +249,7 @@
             <svg class="icon"><use href="icons.svg#i-x" /></svg>
           </button>
         </div>
-        <label class="field inline">
+        <label class="field inline" id="token-menu-initiative-field">
           <span>Iniciativa</span>
           <input type="number" id="token-menu-initiative" placeholder="—" />
         </label>
@@ -230,7 +257,7 @@
           <span>Visión</span>
           <span id="token-menu-vision"></span>
         </div>
-        <button class="btn danger" id="token-menu-remove">
+        <button class="btn danger" id="token-menu-remove" data-dm-only>
           Quitar del mapa
         </button>
       </div>
