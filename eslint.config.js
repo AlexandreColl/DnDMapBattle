@@ -17,7 +17,13 @@ export default [
     languageOptions: { globals: globals.browser },
   },
   {
-    files: ["server/**/*.js", "test/**/*.js", "e2e/**/*.js", "*.config.js"],
+    files: [
+      "server/**/*.js",
+      "scripts/**/*.js",
+      "test/**/*.js",
+      "e2e/**/*.js",
+      "*.config.js",
+    ],
     languageOptions: { globals: globals.node },
   },
   {
