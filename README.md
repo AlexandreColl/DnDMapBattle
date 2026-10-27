@@ -1,6 +1,7 @@
 <a id="readme-top"></a>
 
 [![CI](https://img.shields.io/github/actions/workflow/status/AlexandreColl/DnDMapBattle/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/AlexandreColl/DnDMapBattle/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/AlexandreColl/DnDMapBattle?style=for-the-badge&label=OpenSSF%20Scorecard)](https://scorecard.dev/viewer/?uri=github.com/AlexandreColl/DnDMapBattle)
 [![License](https://img.shields.io/badge/license-MIT-e94560?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/node-24%20LTS-339933?style=for-the-badge)](https://nodejs.org/)
 [![PRs](https://img.shields.io/badge/PRs-welcome-3FC7EB?style=for-the-badge)](#contribuir)
@@ -188,6 +189,17 @@ Variables de entorno opcionales:
 
 Antes del primer `pnpm test:e2e`, descarga el navegador con `pnpm exec playwright install chromium`.
 
+Integración continua (GitHub Actions):
+
+| Workflow       | Cuándo                         | Qué hace                                                                                              |
+| -------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| CI             | Push y PR a `main` / `develop` | Lint, formato y tipos; tests unitarios con cobertura; tests E2E; auditoría y revisión de dependencias |
+| Formato del PR | Cada PR                        | Título y commits siguen el [formato de commits](#formato-de-commits)                                  |
+| CodeQL         | Push, PR y semanal             | Análisis de seguridad del código y de los workflows                                                   |
+| Scorecard      | Push a `main` y semanal        | Puntuación [OpenSSF](https://scorecard.dev/) de las prácticas de seguridad del repositorio            |
+
+Todos los workflows fijan las Actions por SHA, usan permisos mínimos por trabajo, tienen tiempo máximo y registran las conexiones de red con [Harden-Runner](https://github.com/step-security/harden-runner).
+
 Estructura:
 
 ```
@@ -248,6 +260,8 @@ Por ejemplo: `✨ feat(fog): animate fog transitions` o `🔥 chore: remove unus
 | ⏪️      | `revert`         | Revertir cambios                                 |
 | 💥      | `tipo!`          | Cambio incompatible (sube la versión mayor)      |
 | 🔀      | —                | Merge: `🔀 Merge branch '<rama>' into <destino>` |
+
+El check _Formato de commits y título_ lo comprueba en cada PR (los commits de merge no se revisan). Para probarlo en local: `PR_TITLE="✨ feat: …" node scripts/check-commit-format.js`.
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
