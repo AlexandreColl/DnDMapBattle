@@ -39,6 +39,11 @@ function describeError(err) {
   return err?.message ?? String(err);
 }
 
+/**
+ * @param {import("socket.io").Server} io
+ * @param {ReturnType<typeof createGameState>} state
+ * @param {{ logger?: Pick<Console, "warn"> }} [options]
+ */
 export function registerSocketHandlers(io, state, { logger = console } = {}) {
   io.on("connection", (socket) => {
     socket.emit(EVENTS.STATE_FULL, state);
@@ -61,6 +66,8 @@ export function registerSocketHandlers(io, state, { logger = console } = {}) {
 /**
  * Builds the HTTP + Socket.IO server without starting it, so tests can listen
  * on an ephemeral port.
+ * @param {{ publicDir?: string, maxPayloadBytes?: number,
+ *   logger?: Pick<Console, "warn"> }} [options]
  */
 export function createApp({
   publicDir = DEFAULT_PUBLIC_DIR,
