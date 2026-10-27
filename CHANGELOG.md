@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.2.0] - 2026-10-27
+
 ### Añadido
 
 - **Roles de máster y jugador.** Al arrancar, el servidor muestra un enlace de máster con una clave secreta (`launcher.bat` lo abre directamente); el resto de dispositivos entran como jugadores.
@@ -21,10 +23,6 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Releases automáticas al subir un tag `v*`: notas desde el CHANGELOG, zip listo para usar con las dependencias incluidas, SBOM (CycloneDX), sumas SHA-256 y atestaciones firmadas de procedencia y SBOM.
 - Política de seguridad (`SECURITY.md`) con reporte privado de vulnerabilidades, formularios para reportar errores y proponer funcionalidades, plantilla de PR con checklist y `CODEOWNERS`.
 
-### Seguridad
-
-- Los workflows tienen permisos mínimos por trabajo, tiempo máximo, cancelan ejecuciones repetidas de un PR, usan una imagen de Ubuntu fija y registran sus conexiones de red con Harden-Runner.
-
 ### Cambiado
 
 - Cada dispositivo tiene su propio zoom y encuadre (antes se compartían entre todos).
@@ -32,6 +30,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ### Corregido
 
 - El texto secundario tenía un contraste insuficiente (WCAG AA).
+
+### Seguridad
+
+- Los workflows tienen permisos mínimos por trabajo, tiempo máximo, cancelan ejecuciones repetidas de un PR, usan una imagen de Ubuntu fija y registran sus conexiones de red con Harden-Runner.
 
 ## [1.1.0] - 2026-10-26
 
@@ -101,6 +103,7 @@ Primera versión estable.
 - Cargar una partida o importar personajes no se sincronizaba con los demás jugadores.
 - El zoom saltaba al llegar a los límites.
 
-[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.1.0...HEAD
+[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/AlexandreColl/DnDMapBattle/releases/tag/v1.0.0
