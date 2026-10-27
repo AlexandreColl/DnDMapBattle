@@ -13,6 +13,7 @@ export default defineConfig({
         "public/js/lib/**/*.js",
         "public/js/shared/**/*.js",
         "scripts/commit-format.js",
+        "scripts/release-notes.js",
       ],
       exclude: ["server/index.js"],
       reporter: ["text", "html", "lcov"],
