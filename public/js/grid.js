@@ -65,6 +65,8 @@ export function generateGrid(rows, cols) {
   state.gridCols = cols;
   state.cellStates = createMatrix(rows, cols, CELL.HIDDEN);
   state.wallCells = createMatrix(rows, cols, false);
+  // A smaller grid leaves no room for tokens past its edges.
+  state.tokens = state.tokens.filter((t) => t.row < rows && t.col < cols);
 
   gridOverlay.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   gridOverlay.style.gridTemplateRows = `repeat(${rows}, 1fr)`;

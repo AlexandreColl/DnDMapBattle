@@ -78,6 +78,26 @@ describe("socket server", () => {
     expect(leaked).toBe(false);
   });
 
+  it("resyncs a DM whose character id is already taken", async () => {
+    const a = await client();
+    const b = await client();
+    const added = once(b.socket, EVENTS.CHARACTER_ADDED);
+    a.socket.emit(EVENTS.CHARACTER_ADDED, {
+      character: { id: 1, name: "Hero", imageUrl: IMG },
+      nextCharId: 2,
+    });
+    await added;
+
+    const resync = once(b.socket, EVENTS.STATE_FULL);
+    b.socket.emit(EVENTS.CHARACTER_ADDED, {
+      character: { id: 1, name: "Villain", imageUrl: IMG },
+      nextCharId: 2,
+    });
+    const state = await resync;
+    expect(state.characters.map((c) => c.name)).toEqual(["Hero"]);
+    expect(state.nextCharId).toBe(2);
+  });
+
   it("serves only the public folder, with security headers", async () => {
     const index = await fetch(`${url}/`);
     expect(index.status).toBe(200);
