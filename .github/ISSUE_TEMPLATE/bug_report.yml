@@ -1,0 +1,55 @@
+name: 🐛 Reportar un error
+description: Algo no funciona como debería.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportarlo. Si es un problema de seguridad, **no abras un issue**: sigue la [política de seguridad](https://github.com/AlexandreColl/DnDMapBattle/security/policy).
+  - type: textarea
+    id: what
+    attributes:
+      label: Qué ha pasado
+      description: Qué esperabas que pasara y qué ha pasado en realidad.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducirlo
+      placeholder: |
+        1. Carga un mapa…
+        2. Genera una cuadrícula de…
+        3. Arrastra una ficha…
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versión
+      description: La de `package.json` o la release que usas.
+      placeholder: "1.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: Dispositivo
+      multiple: true
+      options:
+        - Escritorio (ratón)
+        - Tablet
+        - Móvil
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Navegador
+      placeholder: Chrome 140, Firefox 145, Safari iOS 19…
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errores en la consola
+      description: Del navegador (F12 → Consola) o de la terminal del servidor.
+      render: text

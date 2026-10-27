@@ -19,9 +19,9 @@
     <a href="#sobre-el-proyecto"><strong>Explorar funcionalidades »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/AlexandreColl/DnDMapBattle/issues/new?labels=bug">Reportar Error</a>
+    <a href="https://github.com/AlexandreColl/DnDMapBattle/issues/new?template=bug_report.yml">Reportar Error</a>
     &middot;
-    <a href="https://github.com/AlexandreColl/DnDMapBattle/issues/new?labels=enhancement">Solicitar Funcionalidad</a>
+    <a href="https://github.com/AlexandreColl/DnDMapBattle/issues/new?template=feature_request.yml">Solicitar Funcionalidad</a>
   </p>
 </div>
 
@@ -222,13 +222,13 @@ Cada mensaje que llega por WebSocket se valida en el servidor antes de aplicarse
 
 ## Contribuir
 
-Las contribuciones son bienvenidas. Si tienes una sugerencia, abre un issue con la etiqueta "enhancement" o envía un pull request:
+Las contribuciones son bienvenidas. Si tienes una sugerencia, [propón una funcionalidad](https://github.com/AlexandreColl/DnDMapBattle/issues/new?template=feature_request.yml) o envía un pull request. Para problemas de seguridad, sigue la [política de seguridad](SECURITY.md) en lugar de abrir un issue.
 
 1. Haz un fork del proyecto
 2. Crea tu rama desde `develop` (`git checkout -b feature/AmazingFeature develop`)
 3. Haz commit con el formato de abajo (`git commit -m '✨ feat: add some amazing feature'`)
 4. Comprueba que `pnpm check` pasa
-5. Haz push y abre un pull request contra `develop`
+5. Haz push y abre un pull request contra `develop`; la plantilla incluye una checklist
 
 ### Formato de commits
 
