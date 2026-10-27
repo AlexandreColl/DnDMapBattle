@@ -2,7 +2,8 @@
 import { $, $$, revokeIfBlob } from "./dom.js";
 import { makeDraggable } from "./drag.js";
 import { calculateVision } from "./grid.js";
-import { EVENTS } from "./shared/protocol.js";
+import { canControl, isDm } from "./roles.js";
+import { CELL, EVENTS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { state } from "./state.js";
 import { renderTokens } from "./tokens.js";
@@ -11,12 +12,15 @@ import { confirmDialog, icon } from "./ui.js";
 
 const allies = $("#roster-allies");
 const enemies = $("#roster-enemies");
+const enemiesTitle = $("#enemies-title");
 
 function createCharacterItem(char) {
   const item = document.createElement("div");
   item.className = "char-item";
   item.dataset.charId = char.id;
-  item.title = "Arrastra al mapa para colocar";
+  const controllable = canControl(char);
+  item.classList.toggle("locked", !controllable);
+  if (controllable) item.title = "Arrastra al mapa para colocar";
 
   const avatar = document.createElement("span");
   avatar.className = "avatar";
@@ -50,18 +54,32 @@ function createCharacterItem(char) {
     if (ok) removeCharacter(char.id);
   });
 
-  item.append(avatar, name, initiative, removeBtn);
+  // Players do not see enemy initiative, and cannot remove anyone.
+  if (!controllable) initiative.hidden = true;
+  if (!isDm()) removeBtn.hidden = true;
 
-  makeDraggable(item, {
-    kind: "char",
-    id: char.id,
-    image: avatar.style.backgroundImage,
-    longPressOnTouch: true,
-  });
+  const hiddenMark = icon("eye-off");
+  hiddenMark.classList.add("hidden-mark");
+  hiddenMark.setAttribute("aria-hidden", "false");
+  hiddenMark.setAttribute("role", "img");
+  hiddenMark.setAttribute("aria-label", "Oculto para los jugadores");
+
+  item.append(avatar, name, hiddenMark, initiative, removeBtn);
+
+  if (controllable) {
+    makeDraggable(item, {
+      kind: "char",
+      id: char.id,
+      image: avatar.style.backgroundImage,
+      longPressOnTouch: true,
+    });
+  }
   return item;
 }
 
 export function renderCharacters() {
+  // Players only get the enemies they can see.
+  enemiesTitle.textContent = isDm() ? "Enemigos" : "A la vista";
   const items = state.characters.map((char) => [
     char,
     createCharacterItem(char),
@@ -75,12 +93,27 @@ export function renderCharacters() {
   refreshRosterState();
 }
 
-/** Dims characters that are not on the map. */
+/** Whether players can see this enemy: on the map, outside the fog. */
+function visibleToPlayers(char) {
+  if (!char?.isEnemy) return true;
+  const token = state.tokens.find((t) => t.characterId === char.id);
+  const cell = token && state.cellStates[token.row]?.[token.col];
+  return Boolean(cell) && cell !== CELL.HIDDEN;
+}
+
+/**
+ * Dims characters that are not on the map and, for the DM, marks the
+ * enemies the players cannot see.
+ */
 export function refreshRosterState() {
   const onBoard = new Set(state.tokens.map((t) => t.characterId));
-  $$(".char-item").forEach((el) =>
-    el.classList.toggle("off-board", !onBoard.has(Number(el.dataset.charId))),
-  );
+  $$(".char-item").forEach((el) => {
+    const id = Number(el.dataset.charId);
+    const char = state.characters.find((c) => c.id === id);
+    el.classList.toggle("off-board", !onBoard.has(id));
+    el.querySelector(".hidden-mark").style.display =
+      isDm() && !visibleToPlayers(char) ? "" : "none";
+  });
 }
 
 export function addCharacter(char) {

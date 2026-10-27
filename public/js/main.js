@@ -6,6 +6,7 @@ import { initGrid } from "./grid.js";
 import { initMap } from "./map.js";
 import { initPanels } from "./panels.js";
 import { initPersistence } from "./persistence.js";
+import { isDm } from "./roles.js";
 import { state } from "./state.js";
 import { initSync } from "./sync.js";
 import { closeTokenMenu, initTokenMenu } from "./token-menu.js";
@@ -33,9 +34,9 @@ function initKeyboard() {
     const key = e.key.toLowerCase();
     if (SHORTCUTS[key]) {
       setTool(SHORTCUTS[key]);
-    } else if (key === "n") {
+    } else if (key === "n" && isDm()) {
       advanceTurn();
-    } else if (key === "d" && state.hoveredTokenId != null) {
+    } else if (key === "d" && isDm() && state.hoveredTokenId != null) {
       // D deletes the token under the mouse.
       removeToken(state.hoveredTokenId);
     }

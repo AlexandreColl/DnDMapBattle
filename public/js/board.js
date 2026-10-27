@@ -63,8 +63,12 @@ export function loadTokens(tokens) {
   state.nextTokenId = Math.max(1, ...state.tokens.map((t) => t.id + 1));
 }
 
-/** Replaces the whole board with a snapshot (server state or save file). */
-export function applyFullState(data) {
+/**
+ * Replaces the whole board with a snapshot (server state or save file).
+ * The view (zoom and pan) is only restored from save files: each device
+ * keeps its own.
+ */
+export function applyFullState(data, { restoreView = false } = {}) {
   resetTransientUi();
   clearCharacters();
   setMapImage(data.mapImage || null);
@@ -75,14 +79,22 @@ export function applyFullState(data) {
     .filter(Boolean);
   state.nextCharId = Math.max(1, ...state.characters.map((c) => c.id + 1));
 
-  state.zoom = Number(data.zoom) || 1;
-  state.panX = Number(data.panX) || 0;
-  state.panY = Number(data.panY) || 0;
+  if (restoreView) {
+    state.zoom = Number(data.zoom) || 1;
+    state.panX = Number(data.panX) || 0;
+    state.panY = Number(data.panY) || 0;
+  }
 
   if (data.gridRows > 0 && data.gridCols > 0) {
     generateGrid(data.gridRows, data.gridCols);
     loadMatrices(data.cellStates, data.wallCells);
     loadTokens(data.tokens);
+    // Players do not get every token: keep the server count to avoid reusing
+    // the id of a hidden one.
+    state.nextTokenId = Math.max(
+      state.nextTokenId,
+      Number(data.nextTokenId) || 1,
+    );
     applyFog();
     renderTokens();
     calculateVision();
@@ -97,6 +109,7 @@ export function applyFullState(data) {
   applyTransform();
 
   state.currentTurnId = data.currentTurnId ?? null;
+  state.hiddenTurn = data.hiddenTurn === true;
   renderCharacters();
   renderTurnTracker();
 }

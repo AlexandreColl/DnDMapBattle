@@ -1,5 +1,6 @@
 // Popover shown when clicking a token: initiative, vision, remove.
 import { $, mapContainer } from "./dom.js";
+import { canControl } from "./roles.js";
 import { state } from "./state.js";
 import { removeToken, tokenElement } from "./tokens.js";
 import { paintAvatar, setInitiative } from "./turns.js";
@@ -9,6 +10,7 @@ const avatar = $("#token-menu-avatar");
 const nameEl = $("#token-menu-name");
 const initiativeInput = $("#token-menu-initiative");
 const visionEl = $("#token-menu-vision");
+const initiativeField = $("#token-menu-initiative-field");
 
 function selectedCharacter() {
   const token = state.tokens.find((t) => t.id === state.selectedTokenId);
@@ -42,6 +44,8 @@ export function openTokenMenu(tokenId) {
   paintAvatar(avatar, char);
   nameEl.textContent = char.name;
   initiativeInput.value = char.initiative ?? "";
+  // Players do not see or change enemy initiative.
+  initiativeField.hidden = !canControl(char);
   visionEl.textContent = char.isEnemy
     ? "Enemigo"
     : `${char.visionRadius} casillas`;

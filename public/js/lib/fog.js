@@ -1,24 +1,37 @@
 import { CELL } from "../shared/protocol.js";
 
-/** Fog opacity per cell state. */
+/** Fog opacity per cell state, for players. */
 export const FOG_ALPHA = Object.freeze({
-  [CELL.HIDDEN]: 0.86,
+  [CELL.HIDDEN]: 1,
   [CELL.VISIBLE]: 0,
   [CELL.REVEALED]: 0,
 });
+
+/** The DM sees through the fog to place enemies and plan reveals. */
+export const DM_HIDDEN_ALPHA = 0.6;
 
 /**
  * Fog opacity for every cell, with a one-cell hidden border around the grid
  * so the blur fades into darkness at the edges. Row-major, size
  * (rows + 2) × (cols + 2).
+ * @param {string[][]} cellStates
+ * @param {number} rows
+ * @param {number} cols
+ * @param {number} [hiddenAlpha] opacity of hidden cells
  */
-export function fogAlphas(cellStates, rows, cols) {
+export function fogAlphas(
+  cellStates,
+  rows,
+  cols,
+  hiddenAlpha = FOG_ALPHA[CELL.HIDDEN],
+) {
   const width = cols + 2;
-  const out = new Float32Array((rows + 2) * width).fill(FOG_ALPHA[CELL.HIDDEN]);
+  const alphas = { ...FOG_ALPHA, [CELL.HIDDEN]: hiddenAlpha };
+  const out = new Float32Array((rows + 2) * width).fill(hiddenAlpha);
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const alpha = FOG_ALPHA[cellStates[r]?.[c]];
-      out[(r + 1) * width + c + 1] = alpha ?? FOG_ALPHA[CELL.HIDDEN];
+      const alpha = alphas[cellStates[r]?.[c]];
+      out[(r + 1) * width + c + 1] = alpha ?? hiddenAlpha;
     }
   }
   return out;

@@ -26,7 +26,7 @@ function saveGame() {
 async function loadGame(file) {
   try {
     const data = parseSaveFile(await readFileAsText(file));
-    withoutEmitting(() => applyFullState(data));
+    withoutEmitting(() => applyFullState(data, { restoreView: true }));
     emit(EVENTS.STATE_FULL, snapshotState());
     showPanel("play");
     toast("Partida cargada", { kind: "success" });

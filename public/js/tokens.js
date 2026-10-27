@@ -4,6 +4,7 @@ import { $$, cellElement, gridOverlay } from "./dom.js";
 import { makeDraggable } from "./drag.js";
 import { redrawFog } from "./fog.js";
 import { calculateVision } from "./grid.js";
+import { canControl, isDm } from "./roles.js";
 import { cssUrl } from "./lib/sanitize.js";
 import { EVENTS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
@@ -27,7 +28,7 @@ function createTokenElement(token, char) {
     openTokenMenu(token.id);
   });
   el.addEventListener("auxclick", (e) => {
-    if (e.button === 1) {
+    if (e.button === 1 && isDm()) {
       e.stopPropagation();
       removeToken(token.id);
     }
@@ -39,11 +40,12 @@ function createTokenElement(token, char) {
     if (state.hoveredTokenId === token.id) state.hoveredTokenId = null;
   });
   // With the walls tool, dragging over a token paints its cell instead.
+  // Players can only drag their allies.
   makeDraggable(el, {
     kind: "token",
     id: token.id,
     image: el.style.backgroundImage,
-    enabled: () => state.tool !== "walls",
+    enabled: () => state.tool !== "walls" && canControl(char),
   });
   return el;
 }
