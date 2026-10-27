@@ -136,8 +136,9 @@ export function registerSocketHandlers(
           logger.warn(
             `[socket ${socket.id}] evento "${event}" rechazado: ${describeError(err)}`,
           );
-          // Undo what the player already changed on their screen.
-          if (!isDm(socket)) sendSnapshot(socket, state);
+          // Undo what the sender already changed on their screen (a player
+          // moving an enemy, or a DM racing another for the same id).
+          sendSnapshot(socket, state);
         }
       });
     }

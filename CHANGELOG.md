@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+### Corregido
+
+- Si dos másters añadían a la vez un personaje o una ficha, podían quedar dos con el mismo id y la ficha de un enemigo mostrarse a los jugadores como aliada. El servidor rechaza el repetido y reenvía el estado a quien lo envió.
+- El servidor descarta las fichas fuera de la cuadrícula, de personajes que no existen o repetidas al cargar una partida o generar la cuadrícula, y al reducir la cuadrícula se quitan las fichas que quedan fuera.
+
+### Añadido
+
+- Tests de propiedades con fast-check: secuencias aleatorias de eventos de máster y jugadores comprueban que un evento rechazado no cambia nada, que el estado es coherente, que los jugadores solo tocan a sus aliados y que nunca reciben enemigos ocultos.
+- Las releases incluyen las atestaciones de procedencia y SBOM como bundles de Sigstore (`.intoto.jsonl`).
+
 ## [1.2.0] - 2026-10-27
 
 ### Añadido

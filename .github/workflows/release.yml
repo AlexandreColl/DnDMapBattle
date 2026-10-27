@@ -1,7 +1,8 @@
 name: Release
 
 # Pushing a v* tag publishes the GitHub Release: notes from CHANGELOG.md, a
-# ready-to-run zip, an SBOM and signed build provenance for both.
+# ready-to-run zip, an SBOM and signed build provenance for both, also
+# attached as Sigstore bundles so they can be checked offline.
 # On PRs that touch the packaging, only the build runs, to catch breakage
 # before a real release.
 on:
@@ -90,16 +91,29 @@ jobs:
           cat dist/SHA256SUMS.txt
 
       - name: Procedencia firmada
+        id: provenance
         if: env.IS_RELEASE == 'true'
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: dist/${{ steps.version.outputs.name }}.zip
       - name: SBOM firmado
+        id: sbom
         if: env.IS_RELEASE == 'true'
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: dist/${{ steps.version.outputs.name }}.zip
           sbom-path: dist/${{ steps.version.outputs.name }}.cdx.json
+      # The .intoto.jsonl name is what tools such as OpenSSF Scorecard look
+      # for to recognise signed provenance among the release assets.
+      - name: Adjuntar las firmas
+        if: env.IS_RELEASE == 'true'
+        env:
+          NAME: ${{ steps.version.outputs.name }}
+          PROVENANCE: ${{ steps.provenance.outputs.bundle-path }}
+          SBOM: ${{ steps.sbom.outputs.bundle-path }}
+        run: |
+          cp "$PROVENANCE" "dist/$NAME.zip.intoto.jsonl"
+          cp "$SBOM" "dist/$NAME.cdx.intoto.jsonl"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -108,6 +122,7 @@ jobs:
           path: |
             dist/*.zip
             dist/*.cdx.json
+            dist/*.intoto.jsonl
             dist/SHA256SUMS.txt
             dist/release-notes.md
           retention-days: 14
@@ -141,7 +156,8 @@ jobs:
             echo
             echo "**Descarga:** \`dndmapbattle-${TAG#v}.zip\`, descomprímelo y ejecuta \`launcher.bat\` (Node.js 24 o superior)."
             echo
-            echo "Verifica que el zip se construyó en este repositorio con \`gh attestation verify dndmapbattle-${TAG#v}.zip -R $GH_REPO\`."
+            echo "Verifica que el zip se construyó en este repositorio con \`gh attestation verify dndmapbattle-${TAG#v}.zip -R $GH_REPO\` (sin conexión, añade \`--bundle dndmapbattle-${TAG#v}.zip.intoto.jsonl\`)."
           } > notes.md
           gh release create "$TAG" --verify-tag --title "DnD Map Battle ${TAG#v}" \
-            --notes-file notes.md ./*.zip ./*.cdx.json SHA256SUMS.txt
+            --notes-file notes.md ./*.zip ./*.cdx.json ./*.intoto.jsonl \
+            SHA256SUMS.txt
