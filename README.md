@@ -89,6 +89,10 @@ Características principales:
 
 ### Instalación
 
+**Sin clonar nada (Windows):** descarga `dndmapbattle-X.Y.Z.zip` de la [última release](https://github.com/AlexandreColl/DnDMapBattle/releases/latest), descomprímelo y haz doble clic en `launcher.bat`. Solo necesitas Node.js 24; las dependencias ya vienen incluidas.
+
+**Desde el código:**
+
 1. Clona el repositorio
    ```sh
    git clone https://github.com/AlexandreColl/DnDMapBattle.git
@@ -197,8 +201,22 @@ Integración continua (GitHub Actions):
 | Formato del PR | Cada PR                        | Título y commits siguen el [formato de commits](#formato-de-commits)                                  |
 | CodeQL         | Push, PR y semanal             | Análisis de seguridad del código y de los workflows                                                   |
 | Scorecard      | Push a `main` y semanal        | Puntuación [OpenSSF](https://scorecard.dev/) de las prácticas de seguridad del repositorio            |
+| Release        | Tag `v*`                       | Publica la release: notas del CHANGELOG, zip listo para usar, SBOM y procedencia firmada              |
 
 Todos los workflows fijan las Actions por SHA, usan permisos mínimos por trabajo, tienen tiempo máximo y registran las conexiones de red con [Harden-Runner](https://github.com/step-security/harden-runner).
+
+### Publicar una versión
+
+1. Crea `release/X.Y.Z` desde `develop`, sube la versión en `package.json` y pon la fecha a la sección en `CHANGELOG.md` (`## [X.Y.Z] - AAAA-MM-DD`)
+2. Abre un PR hacia `main` y mergéalo
+3. Crea el tag en `main` y súbelo: `git tag -a vX.Y.Z -m "🔖 vX.Y.Z" && git push origin vX.Y.Z`
+4. El workflow _Release_ comprueba que el tag coincide con `package.json`, pasa los tests y publica la release con:
+   - `dndmapbattle-X.Y.Z.zip`: listo para ejecutar con `launcher.bat`, dependencias incluidas
+   - `dndmapbattle-X.Y.Z.cdx.json`: SBOM (CycloneDX) de las dependencias de producción
+   - `SHA256SUMS.txt` y [atestaciones](https://github.com/AlexandreColl/DnDMapBattle/attestations) firmadas de procedencia y SBOM
+5. Lleva `main` de vuelta a `develop`
+
+Para comprobar que un zip se construyó en este repositorio: `gh attestation verify dndmapbattle-X.Y.Z.zip -R AlexandreColl/DnDMapBattle`.
 
 Estructura:
 
