@@ -14,6 +14,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - CodeQL como workflow propio, en `main`, `develop` y sus PRs.
 - Check del formato de commits y del título de cada PR.
 - OpenSSF Scorecard con badge en el README.
+- Releases automáticas al subir un tag `v*`: notas desde el CHANGELOG, zip listo para usar con las dependencias incluidas, SBOM (CycloneDX), sumas SHA-256 y atestaciones firmadas de procedencia y SBOM.
 - Política de seguridad (`SECURITY.md`) con reporte privado de vulnerabilidades, formularios para reportar errores y proponer funcionalidades, plantilla de PR con checklist y `CODEOWNERS`.
 
 ### Seguridad
