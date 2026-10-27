@@ -1,0 +1,3 @@
+# Owners are requested as reviewers automatically on every PR opened by
+# someone else (GitHub never asks authors to review their own PRs).
+* @AlexandreColl

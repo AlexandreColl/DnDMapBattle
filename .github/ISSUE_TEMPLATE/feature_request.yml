@@ -1,0 +1,24 @@
+name: ✨ Proponer una funcionalidad
+description: Una idea para mejorar la mesa de batalla.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qué problema resuelve
+      description: Qué echas en falta durante una partida.
+      placeholder: Como máster, cuando…, me gustaría…
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: Cómo te imaginas que funcionaría.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas
+      description: Otras formas de resolverlo que hayas pensado o uses ahora.
