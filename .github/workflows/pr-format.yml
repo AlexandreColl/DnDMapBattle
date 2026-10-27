@@ -15,6 +15,10 @@ permissions: {}
 jobs:
   commit-format:
     name: Formato de commits y título
+    # Dependabot uses our prefix but always writes "Bump" capitalized; its
+    # PRs are generated, so the check is skipped (a skipped required check
+    # still lets the PR merge).
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

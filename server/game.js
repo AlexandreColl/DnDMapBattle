@@ -42,6 +42,41 @@ function assertInGrid(state, row, col) {
   }
 }
 
+/** Smallest id above `sent`, `current` and every id in `items`. */
+function nextId(current, sent, items) {
+  return Math.max(current, sent, ...items.map((item) => item.id + 1));
+}
+
+/** The first character with each id. */
+function uniqueCharacters(characters) {
+  const ids = new Set();
+  return characters.filter((c) => !ids.has(c.id) && ids.add(c.id));
+}
+
+/**
+ * Tokens on the grid, of a known character, with no repeated id and at most
+ * one per character. Clients send consistent boards; this keeps a stale
+ * client or an old save from breaking what the role filter relies on.
+ */
+function tokensOnBoard(tokens, characters, rows, cols) {
+  const charIds = new Set(characters.map((c) => c.id));
+  const ids = new Set();
+  const owners = new Set();
+  return tokens.filter((t) => {
+    const keep =
+      t.row < rows &&
+      t.col < cols &&
+      charIds.has(t.characterId) &&
+      !ids.has(t.id) &&
+      !owners.has(t.characterId);
+    if (keep) {
+      ids.add(t.id);
+      owners.add(t.characterId);
+    }
+    return keep;
+  });
+}
+
 /**
  * One reducer per client event. Each one validates the raw payload, applies it
  * to `state` and returns the sanitized payload to broadcast to the other
@@ -60,6 +95,15 @@ export const reducers = {
     ) {
       reject("wallCells no coincide con la cuadrícula");
     }
+    data.characters = uniqueCharacters(data.characters);
+    data.tokens = tokensOnBoard(
+      data.tokens,
+      data.characters,
+      data.gridRows,
+      data.gridCols,
+    );
+    data.nextCharId = nextId(1, data.nextCharId, data.characters);
+    data.nextTokenId = nextId(1, data.nextTokenId, data.tokens);
     Object.assign(state, data);
     return data;
   },
@@ -83,6 +127,13 @@ export const reducers = {
     ) {
       reject("las matrices no coinciden con la cuadrícula");
     }
+    data.tokens = tokensOnBoard(
+      data.tokens,
+      state.characters,
+      data.gridRows,
+      data.gridCols,
+    );
+    data.nextTokenId = nextId(state.nextTokenId, data.nextTokenId, data.tokens);
     Object.assign(state, data);
     return data;
   },
@@ -92,8 +143,14 @@ export const reducers = {
     if (state.characters.length >= LIMITS.maxCharacters) {
       reject("demasiados personajes");
     }
+    // Two DMs adding at the same time pick the same id.
+    if (state.characters.some((c) => c.id === data.character.id)) {
+      reject("ya hay un personaje con ese id");
+    }
     state.characters.push(data.character);
-    state.nextCharId = Math.max(state.nextCharId, data.nextCharId);
+    state.nextCharId = nextId(state.nextCharId, data.nextCharId, [
+      data.character,
+    ]);
     return data;
   },
 
@@ -118,13 +175,18 @@ export const reducers = {
       existing.row = data.row;
       existing.col = data.col;
     } else {
+      if (state.tokens.some((t) => t.id === data.token.id)) {
+        reject("ya hay una ficha con ese id");
+      }
       state.tokens.push({
         ...data.token,
         characterId: data.characterId,
         row: data.row,
         col: data.col,
       });
-      state.nextTokenId = Math.max(state.nextTokenId, data.nextTokenId);
+      state.nextTokenId = nextId(state.nextTokenId, data.nextTokenId, [
+        data.token,
+      ]);
     }
     return data;
   },

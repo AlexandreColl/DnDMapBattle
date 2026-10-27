@@ -198,7 +198,7 @@ Variables de entorno opcionales:
 | Comando              | Descripción                                                |
 | -------------------- | ---------------------------------------------------------- |
 | `pnpm dev`           | Servidor con recarga automática                            |
-| `pnpm test`          | Tests unitarios (Vitest)                                   |
+| `pnpm test`          | Tests unitarios y de propiedades (Vitest + fast-check)     |
 | `pnpm test:coverage` | Tests unitarios con cobertura (falla si baja del umbral)   |
 | `pnpm test:e2e`      | Tests E2E en navegador (Playwright), incluye accesibilidad |
 | `pnpm lint`          | ESLint                                                     |
@@ -230,9 +230,10 @@ Todos los workflows fijan las Actions por SHA, usan permisos mínimos por trabaj
    - `dndmapbattle-X.Y.Z.zip`: listo para ejecutar con `launcher.bat`, dependencias incluidas
    - `dndmapbattle-X.Y.Z.cdx.json`: SBOM (CycloneDX) de las dependencias de producción
    - `SHA256SUMS.txt` y [atestaciones](https://github.com/AlexandreColl/DnDMapBattle/attestations) firmadas de procedencia y SBOM
+   - `*.intoto.jsonl`: esas atestaciones como bundles de Sigstore, para verificarlas sin conexión
 5. Lleva `main` de vuelta a `develop`
 
-Para comprobar que un zip se construyó en este repositorio: `gh attestation verify dndmapbattle-X.Y.Z.zip -R AlexandreColl/DnDMapBattle`.
+Para comprobar que un zip se construyó en este repositorio: `gh attestation verify dndmapbattle-X.Y.Z.zip -R AlexandreColl/DnDMapBattle` (añade `--bundle dndmapbattle-X.Y.Z.zip.intoto.jsonl` para hacerlo sin conexión).
 
 Estructura:
 
