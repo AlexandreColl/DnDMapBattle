@@ -12,10 +12,23 @@ export const EVENTS = Object.freeze({
   TOKEN_REMOVED: "token:removed",
   FOG_UPDATED: "fog:updated",
   WALLS_SET: "walls:set",
-  VIEW_CHANGED: "view:changed",
+  // The DM brings everyone to the area they are looking at.
+  VIEW_CENTERED: "view:centered",
   INITIATIVE_CHANGED: "initiative:changed",
   TURN_CHANGED: "turn:changed",
+  // Server → client only.
+  SESSION: "session", // { role } right after connecting
+  PRESENCE: "presence", // { dms, players } to the DMs
+  PLAYER_VIEW: "player:view", // what a player may see, after every change
 });
+
+export const ROLES = Object.freeze({ DM: "dm", PLAYER: "player" });
+
+/** Events a player may send; everything else is for the DM only. */
+export const PLAYER_EVENTS = Object.freeze([
+  EVENTS.TOKEN_PLACED,
+  EVENTS.INITIATIVE_CHANGED,
+]);
 
 export const CELL = Object.freeze({
   HIDDEN: "hidden",
