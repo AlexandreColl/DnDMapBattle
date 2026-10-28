@@ -6,8 +6,8 @@ Solo la última versión publicada recibe correcciones de seguridad.
 
 | Versión | Soporte |
 | ------- | ------- |
-| 1.2.x   | ✅      |
-| < 1.2   | ❌      |
+| 1.3.x   | ✅      |
+| < 1.3   | ❌      |
 
 ## Cómo reportar una vulnerabilidad
 

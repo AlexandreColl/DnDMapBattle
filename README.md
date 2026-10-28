@@ -200,14 +200,14 @@ Variables de entorno opcionales:
 | `pnpm dev`           | Servidor con recarga automática                            |
 | `pnpm test`          | Tests unitarios y de propiedades (Vitest + fast-check)     |
 | `pnpm test:coverage` | Tests unitarios con cobertura (falla si baja del umbral)   |
-| `pnpm test:e2e`      | Tests E2E en navegador (Playwright), incluye accesibilidad |
+| `pnpm test:e2e`      | Tests E2E en Chrome, Firefox y Safari de iPad (Playwright) |
 | `pnpm lint`          | ESLint                                                     |
 | `pnpm typecheck`     | Comprueba tipos con TypeScript (JSDoc, sin compilar)       |
 | `pnpm format`        | Formatea el código con Prettier                            |
 | `pnpm check`         | Lint + formato + tipos + tests unitarios                   |
 | `pnpm audit`         | Busca vulnerabilidades en las dependencias                 |
 
-Antes del primer `pnpm test:e2e`, descarga el navegador con `pnpm exec playwright install chromium`.
+Antes del primer `pnpm test:e2e`, descarga los navegadores con `pnpm exec playwright install chromium firefox webkit`. Para probar solo uno: `pnpm test:e2e --project=chromium`.
 
 Integración continua (GitHub Actions):
 

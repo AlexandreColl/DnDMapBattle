@@ -6,15 +6,19 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
-### Corregido
-
-- Si dos másters añadían a la vez un personaje o una ficha, podían quedar dos con el mismo id y la ficha de un enemigo mostrarse a los jugadores como aliada. El servidor rechaza el repetido y reenvía el estado a quien lo envió.
-- El servidor descarta las fichas fuera de la cuadrícula, de personajes que no existen o repetidas al cargar una partida o generar la cuadrícula, y al reducir la cuadrícula se quitan las fichas que quedan fuera.
+## [1.3.0] - 2026-10-28
 
 ### Añadido
 
 - Tests de propiedades con fast-check: secuencias aleatorias de eventos de máster y jugadores comprueban que un evento rechazado no cambia nada, que el estado es coherente, que los jugadores solo tocan a sus aliados y que nunca reciben enemigos ocultos.
+- Límite de eventos por conexión: si un cliente envía demasiados de golpe (un jugador o una pestaña en bucle), el servidor los ignora sin procesarlos y le reenvía el estado al cabo de 2 s. Importar una lista de fichas completa sigue cabiendo en el margen.
+- Los tests E2E se ejecutan también en Firefox y en Safari (WebKit) de iPad, gestos táctiles incluidos.
 - Las releases incluyen las atestaciones de procedencia y SBOM como bundles de Sigstore (`.intoto.jsonl`).
+
+### Corregido
+
+- Si dos másters añadían a la vez un personaje o una ficha, podían quedar dos con el mismo id y la ficha de un enemigo mostrarse a los jugadores como aliada. El servidor rechaza el repetido y reenvía el estado a quien lo envió.
+- El servidor descarta las fichas fuera de la cuadrícula, de personajes que no existen o repetidas al cargar una partida o generar la cuadrícula, y al reducir la cuadrícula se quitan las fichas que quedan fuera.
 
 ## [1.2.0] - 2026-10-27
 
@@ -113,7 +117,8 @@ Primera versión estable.
 - Cargar una partida o importar personajes no se sincronizaba con los demás jugadores.
 - El zoom saltaba al llegar a los límites.
 
-[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.2.0...HEAD
+[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/AlexandreColl/DnDMapBattle/releases/tag/v1.0.0
