@@ -6,6 +6,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+### Corregido
+
+- Si un jugador cerraba la pestaña justo al conectarse, el máster podía seguir viéndolo conectado. Ahora el navegador se conecta directamente por WebSocket.
+
 ## [1.3.0] - 2026-10-28
 
 ### Añadido
