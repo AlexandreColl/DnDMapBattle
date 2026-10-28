@@ -14,6 +14,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ### Añadido
 
 - Tests de propiedades con fast-check: secuencias aleatorias de eventos de máster y jugadores comprueban que un evento rechazado no cambia nada, que el estado es coherente, que los jugadores solo tocan a sus aliados y que nunca reciben enemigos ocultos.
+- Límite de eventos por conexión: si un cliente envía demasiados de golpe (un jugador o una pestaña en bucle), el servidor los ignora sin procesarlos y le reenvía el estado al cabo de 2 s. Importar una lista de fichas completa sigue cabiendo en el margen.
 - Los tests E2E se ejecutan también en Firefox y en Safari (WebKit) de iPad, gestos táctiles incluidos.
 - Las releases incluyen las atestaciones de procedencia y SBOM como bundles de Sigstore (`.intoto.jsonl`).
 
