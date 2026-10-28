@@ -6,6 +6,11 @@ import { Server } from "socket.io";
 import { EVENTS, ROLES } from "../public/js/shared/protocol.js";
 import { createGameState, reducers } from "./game.js";
 import {
+  DEFAULT_RATE_LIMIT,
+  createRateLimiter,
+  eventCost,
+} from "./rate-limit.js";
+import {
   authorize,
   playerSnapshot,
   playerView,
@@ -108,15 +113,41 @@ function sendPresence(io) {
   }
 }
 
+// How long a flooding client waits for its board to be resynced.
+const RESYNC_DELAY_MS = 2000;
+
+/**
+ * Drops the events of a client over its rate limit, before any parsing. The
+ * client already applied them on its screen, so it gets a snapshot once it
+ * slows down: one warning and one snapshot per burst, never one per event.
+ */
+function limitRate(socket, state, logger, limit) {
+  const limiter = createRateLimiter(limit);
+  let resync = null;
+  socket.use(([event], next) => {
+    if (limiter.take(eventCost(event))) return next();
+    if (resync) return;
+    logger.warn(
+      `[socket ${socket.id}] demasiados eventos; se ignoran durante ${RESYNC_DELAY_MS / 1000} s`,
+    );
+    resync = setTimeout(() => {
+      resync = null;
+      sendSnapshot(socket, state);
+    }, RESYNC_DELAY_MS);
+  });
+  socket.on("disconnect", () => clearTimeout(resync));
+}
+
 /**
  * @param {import("socket.io").Server} io
  * @param {ReturnType<typeof createGameState>} state
- * @param {{ logger?: Pick<Console, "warn">, dmKey?: string | null }} [options]
+ * @param {{ logger?: Pick<Console, "warn">, dmKey?: string | null,
+ *   rateLimit?: { capacity: number, refillPerSecond: number } }} [options]
  */
 export function registerSocketHandlers(
   io,
   state,
-  { logger = console, dmKey = null } = {},
+  { logger = console, dmKey = null, rateLimit = DEFAULT_RATE_LIMIT } = {},
 ) {
   io.on("connection", (socket) => {
     socket.data.role = roleFor(dmKey, socket.handshake.auth?.dmKey);
@@ -124,6 +155,7 @@ export function registerSocketHandlers(
     sendSnapshot(socket, state);
     sendPresence(io);
     socket.on("disconnect", () => sendPresence(io));
+    limitRate(socket, state, logger, rateLimit);
 
     for (const [event, reduce] of Object.entries(reducers)) {
       socket.on(event, (raw) => {
@@ -150,13 +182,15 @@ export function registerSocketHandlers(
  * on an ephemeral port. Clients that send `dmKey` in the handshake are DMs;
  * without a `dmKey` option every client is.
  * @param {{ publicDir?: string, maxPayloadBytes?: number,
- *   logger?: Pick<Console, "warn">, dmKey?: string | null }} [options]
+ *   logger?: Pick<Console, "warn">, dmKey?: string | null,
+ *   rateLimit?: { capacity: number, refillPerSecond: number } }} [options]
  */
 export function createApp({
   publicDir = DEFAULT_PUBLIC_DIR,
   maxPayloadBytes = 16 * 1024 * 1024,
   logger = console,
   dmKey = null,
+  rateLimit = DEFAULT_RATE_LIMIT,
 } = {}) {
   const app = express();
   app.disable("x-powered-by");
@@ -166,7 +200,7 @@ export function createApp({
   const server = http.createServer(app);
   const io = new Server(server, { maxHttpBufferSize: maxPayloadBytes });
   const state = createGameState();
-  registerSocketHandlers(io, state, { logger, dmKey });
+  registerSocketHandlers(io, state, { logger, dmKey, rateLimit });
 
   return { app, server, io, state };
 }
