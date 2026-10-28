@@ -1,5 +1,7 @@
-// Touch input on a tablet, with real touch events sent through CDP.
+// Touch input on a tablet. Chromium gets real touch events through CDP; the
+// other engines get the pointer events a touch screen would produce.
 import { addCharacter, cell, expect, generateGrid, test } from "./fixtures.js";
+/* global window, document, PointerEvent -- pointerGesture runs in the page */
 
 const tablet = { viewport: { width: 1024, height: 768 }, hasTouch: true };
 
@@ -10,6 +12,11 @@ async function center(locator) {
 
 /** Sends a touch gesture: each step is a list of finger positions. */
 async function touchGesture(page, steps, { holdMs = 0 } = {}) {
+  const engine = page.context().browser()?.browserType().name();
+  if (engine !== "chromium") {
+    await pointerGesture(page, steps, { holdMs });
+    return;
+  }
   const cdp = await page.context().newCDPSession(page);
   const points = (fingers) => fingers.map((p, id) => ({ ...p, id }));
   await cdp.send("Input.dispatchTouchEvent", {
@@ -29,6 +36,44 @@ async function touchGesture(page, steps, { holdMs = 0 } = {}) {
   });
 }
 
+/**
+ * The same gesture as touch pointer events. Like a touch screen, every event
+ * of a finger goes to the element it first touched.
+ */
+async function pointerGesture(page, steps, { holdMs = 0 }) {
+  const send = (type, fingers) =>
+    page.evaluate(
+      ({ type, fingers }) => {
+        const w = /** @type {any} */ (window);
+        w.touchTargets ??= [];
+        fingers.forEach((p, i) => {
+          if (type === "pointerdown") {
+            w.touchTargets[i] = document.elementFromPoint(p.x, p.y);
+          }
+          w.touchTargets[i]?.dispatchEvent(
+            new PointerEvent(type, {
+              bubbles: true,
+              cancelable: true,
+              composed: true,
+              pointerId: 100 + i,
+              pointerType: "touch",
+              isPrimary: i === 0,
+              clientX: p.x,
+              clientY: p.y,
+              button: type === "pointermove" ? -1 : 0,
+              buttons: type === "pointerup" ? 0 : 1,
+            }),
+          );
+        });
+      },
+      { type, fingers },
+    );
+  await send("pointerdown", steps[0]);
+  if (holdMs) await page.waitForTimeout(holdMs);
+  for (const fingers of steps.slice(1)) await send("pointermove", fingers);
+  await send("pointerup", steps.at(-1));
+}
+
 /** One finger moving from `from` to `to` in small steps. */
 function path(from, to, count = 8) {
   return Array.from({ length: count + 1 }, (_, i) => [
@@ -40,8 +85,6 @@ function path(from, to, count = 8) {
 }
 
 test.describe("touch", () => {
-  test.skip(({ browserName }) => browserName !== "chromium", "uses CDP");
-
   test("long press on the roster drags a character onto the map", async ({
     openDm,
   }) => {
