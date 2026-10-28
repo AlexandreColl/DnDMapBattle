@@ -2,7 +2,13 @@
 import { canSend, dmKeyFromUrl } from "./roles.js";
 
 // The DM opens the game with "#dm=KEY"; the server decides the role.
-export const socket = io({ auth: { dmKey: dmKeyFromUrl() } });
+// WebSocket first: on a local network it always works, and a closed tab ends
+// the connection at once. With long-polling first, a tab closed before the
+// upgrade lingered as a ghost player. Polling stays as a fallback.
+export const socket = io({
+  auth: { dmKey: dmKeyFromUrl() },
+  transports: ["websocket", "polling"],
+});
 
 let silenced = 0;
 

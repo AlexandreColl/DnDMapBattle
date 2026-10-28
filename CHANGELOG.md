@@ -8,6 +8,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Corregido
 
+- Si un jugador cerraba la pestaña justo al conectarse, el máster podía seguir viéndolo conectado. Ahora el navegador se conecta directamente por WebSocket.
+
+### Corregido
+
 - Si dos másters añadían a la vez un personaje o una ficha, podían quedar dos con el mismo id y la ficha de un enemigo mostrarse a los jugadores como aliada. El servidor rechaza el repetido y reenvía el estado a quien lo envió.
 - El servidor descarta las fichas fuera de la cuadrícula, de personajes que no existen o repetidas al cargar una partida o generar la cuadrícula, y al reducir la cuadrícula se quitan las fichas que quedan fuera.
 
