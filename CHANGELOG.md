@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.4.0] - 2026-10-31
+
 ### Cambiado
 
 - **Requiere Node.js 26**, la versión LTS actual (soporte hasta abril de 2029). `launcher.bat` avisa si tienes una anterior.
@@ -125,7 +127,8 @@ Primera versión estable.
 - Cargar una partida o importar personajes no se sincronizaba con los demás jugadores.
 - El zoom saltaba al llegar a los límites.
 
-[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.3.0...HEAD
+[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.0.0...v1.1.0
