@@ -3,7 +3,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/AlexandreColl/DnDMapBattle/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/AlexandreColl/DnDMapBattle/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/AlexandreColl/DnDMapBattle?style=for-the-badge&label=OpenSSF%20Scorecard)](https://scorecard.dev/viewer/?uri=github.com/AlexandreColl/DnDMapBattle)
 [![License](https://img.shields.io/badge/license-MIT-e94560?style=for-the-badge)](LICENSE)
-[![Node](https://img.shields.io/badge/node-24%20LTS-339933?style=for-the-badge)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/node-26%20LTS-339933?style=for-the-badge)](https://nodejs.org/)
 [![PRs](https://img.shields.io/badge/PRs-welcome-3FC7EB?style=for-the-badge)](#contribuir)
 
 <br />
@@ -81,7 +81,7 @@ Características principales:
 
 ### Requisitos
 
-- Node.js 24 (LTS) o superior. Con [nvm](https://github.com/nvm-sh/nvm) o [fnm](https://github.com/Schniz/fnm) basta con `nvm use` / `fnm use`: la versión está en `.nvmrc`
+- Node.js 26 (LTS) o superior. Con [nvm](https://github.com/nvm-sh/nvm) o [fnm](https://github.com/Schniz/fnm) basta con `nvm use` / `fnm use`: la versión está en `.nvmrc`
 - pnpm 12 (viene con Node a través de Corepack; la versión exacta está fijada en `package.json`)
   ```sh
   corepack enable
@@ -89,7 +89,7 @@ Características principales:
 
 ### Instalación
 
-**Sin clonar nada (Windows):** descarga `dndmapbattle-X.Y.Z.zip` de la [última release](https://github.com/AlexandreColl/DnDMapBattle/releases/latest), descomprímelo y haz doble clic en `launcher.bat`. Solo necesitas Node.js 24; las dependencias ya vienen incluidas.
+**Sin clonar nada (Windows):** descarga `dndmapbattle-X.Y.Z.zip` de la [última release](https://github.com/AlexandreColl/DnDMapBattle/releases/latest), descomprímelo y haz doble clic en `launcher.bat`. Solo necesitas Node.js 26; las dependencias ya vienen incluidas.
 
 **Desde el código:**
 
