@@ -154,7 +154,7 @@ jobs:
             echo
             echo "---"
             echo
-            echo "**Descarga:** \`dndmapbattle-${TAG#v}.zip\`, descomprímelo y ejecuta \`launcher.bat\` (Node.js 24 o superior)."
+            echo "**Descarga:** \`dndmapbattle-${TAG#v}.zip\`, descomprímelo y ejecuta \`launcher.bat\` (Node.js 26 o superior)."
             echo
             echo "Verifica que el zip se construyó en este repositorio con \`gh attestation verify dndmapbattle-${TAG#v}.zip -R $GH_REPO\` (sin conexión, añade \`--bundle dndmapbattle-${TAG#v}.zip.intoto.jsonl\`)."
           } > notes.md

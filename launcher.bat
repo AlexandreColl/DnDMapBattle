@@ -10,9 +10,9 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-node -e "process.exit(Number(process.versions.node.split('.')[0]) < 24 ? 1 : 0)"
+node -e "process.exit(Number(process.versions.node.split('.')[0]) < 26 ? 1 : 0)"
 if errorlevel 1 (
-  echo Se necesita Node.js 24 o superior. Actualizalo desde https://nodejs.org/
+  echo Se necesita Node.js 26 o superior. Actualizalo desde https://nodejs.org/
   node --version
   pause
   exit /b 1
