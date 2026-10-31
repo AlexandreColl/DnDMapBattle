@@ -11,3 +11,10 @@ minimumReleaseAge: 4320
 # Reject transitive dependencies from git/tarball URLs (pnpm 11+ default,
 # kept explicit).
 blockExoticSubdeps: true
+
+# Security patches that the dependents' ranges do not reach yet. Remove each
+# one once they update.
+overrides:
+  # GHSA-g3hv-75wg-m249 (ReDoS) is fixed only in 11.x; ESLint still asks for
+  # ^10 and uses the same API.
+  minimatch@<11.0.1: ^11.0.2
