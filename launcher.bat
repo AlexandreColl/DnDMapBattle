@@ -19,7 +19,9 @@ if errorlevel 1 (
 )
 if not exist node_modules (
   echo Instalando dependencias...
-  call corepack pnpm install --prod --frozen-lockfile
+  rem Node 26 no longer ships Corepack: npx runs the pnpm pinned in package.json.
+  for /f %%p in ('node -p "require('./package.json').packageManager"') do set "PNPM=%%p"
+  call npx --yes %PNPM% install --prod --frozen-lockfile
   if errorlevel 1 (
     echo No se pudieron instalar las dependencias.
     pause

@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+### Añadido
+
+- Guardado automático: el servidor guarda la partida en `data/partida.json` (o en `SAVE_FILE`) cada pocos segundos y al cerrarse, y la recupera al arrancar. Una partida guardada dañada se aparta como `.bak` y se empieza de cero.
+
+### Corregido
+
+- `launcher.bat` no podía instalar las dependencias desde el código con Node 26, que ya no incluye Corepack. Ahora usa `npx` con la versión de pnpm fijada en `package.json`.
+
 ## [1.4.0] - 2026-10-31
 
 ### Cambiado
