@@ -82,9 +82,9 @@ Características principales:
 ### Requisitos
 
 - Node.js 26 (LTS) o superior. Con [nvm](https://github.com/nvm-sh/nvm) o [fnm](https://github.com/Schniz/fnm) basta con `nvm use` / `fnm use`: la versión está en `.nvmrc`
-- pnpm 12 (viene con Node a través de Corepack; la versión exacta está fijada en `package.json`)
+- pnpm 12 (la versión exacta está fijada en `package.json`). Node 26 ya no incluye Corepack, así que instálalo con npm:
   ```sh
-  corepack enable
+  npm install -g pnpm@12
   ```
 
 ### Instalación
