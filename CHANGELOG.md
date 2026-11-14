@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.5.0] - 2026-11-14
+
 ### Añadido
 
 - Guardado automático: el servidor guarda la partida en `data/partida.json` (o en `SAVE_FILE`) cada pocos segundos y al cerrarse, y la recupera al arrancar. Una partida guardada dañada se aparta como `.bak` y se empieza de cero.
@@ -135,7 +137,8 @@ Primera versión estable.
 - Cargar una partida o importar personajes no se sincronizaba con los demás jugadores.
 - El zoom saltaba al llegar a los límites.
 
-[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.4.0...HEAD
+[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.1.0...v1.2.0
