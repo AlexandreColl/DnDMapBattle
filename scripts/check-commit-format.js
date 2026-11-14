@@ -10,15 +10,22 @@ const titleError = formatError(PR_TITLE);
 if (titleError) problems.push(`Título del PR «${PR_TITLE}»: ${titleError}`);
 
 if (BASE_SHA && HEAD_SHA) {
-  // Merge commits (e.g. updating the branch from GitHub) are not checked.
+  // Merge commits (e.g. updating the branch from GitHub) are not checked,
+  // nor Dependabot's: they come from its own PRs, where this check is skipped,
+  // and reach later PRs such as a release.
   const log = execFileSync(
     "git",
-    ["log", "--no-merges", "--format=%h %s", `${BASE_SHA}..${HEAD_SHA}`],
+    [
+      "log",
+      "--no-merges",
+      "--format=%h%x09%an%x09%s",
+      `${BASE_SHA}..${HEAD_SHA}`,
+    ],
     { encoding: "utf8" },
   );
   for (const line of log.split("\n").filter(Boolean)) {
-    const [sha, ...rest] = line.split(" ");
-    const subject = rest.join(" ");
+    const [sha, author, subject] = line.split("\t");
+    if (author === "dependabot[bot]") continue;
     const error = formatError(subject);
     if (error) problems.push(`Commit ${sha} «${subject}»: ${error}`);
   }
