@@ -1,4 +1,6 @@
 import { networkInterfaces } from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createApp } from "./app.js";
 import { resolveDmKey } from "./dm-key.js";
 
@@ -6,14 +8,28 @@ const PORT = Number(process.env.PORT) || 8080;
 const HOST = process.env.HOST || "0.0.0.0";
 const MAX_PAYLOAD_MB = Number(process.env.MAX_PAYLOAD_MB) || 16;
 const DM_KEY = resolveDmKey(process.env.DM_KEY);
+const SAVE_FILE =
+  process.env.SAVE_FILE ||
+  path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "data",
+    "partida.json",
+  );
 
-const { server, io } = createApp({
+const { server, io, autosave, restored } = createApp({
   maxPayloadBytes: MAX_PAYLOAD_MB * 1024 * 1024,
   dmKey: DM_KEY,
+  saveFile: SAVE_FILE,
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Servidor iniciado en el puerto ${PORT}\n`);
+  console.log(`Servidor iniciado en el puerto ${PORT}`);
+  console.log(
+    restored
+      ? `Partida recuperada de ${SAVE_FILE}\n`
+      : `La partida se guardará en ${SAVE_FILE}\n`,
+  );
   for (const nets of Object.values(networkInterfaces())) {
     for (const net of nets ?? []) {
       if (net.family === "IPv4" && !net.internal) {
@@ -28,9 +44,12 @@ server.listen(PORT, HOST, () => {
 
 function shutdown() {
   console.log("\nCerrando servidor...");
+  autosave.flush();
   // Closes every socket and the underlying HTTP server.
   io.close(() => process.exit(0));
 }
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
+// Closing the console window on Windows.
+process.on("SIGHUP", shutdown);

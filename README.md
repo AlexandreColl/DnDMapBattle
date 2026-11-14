@@ -62,7 +62,7 @@ Características principales:
 - :crossed_swords: Niebla de guerra híbrida: visión automática por personaje, paredes que bloquean la visión y revelado manual
 - :hourglass: Iniciativa y control de turnos
 - :straight_ruler: Medición de distancias entre casillas
-- :floppy_disk: Guardar/cargar partidas y exportar/importar personajes
+- :floppy_disk: Guardado automático en el servidor, además de guardar/cargar partidas y exportar/importar personajes
 - :satellite: Sincronización multijugador en tiempo real sin cuentas ni nube
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
@@ -82,9 +82,9 @@ Características principales:
 ### Requisitos
 
 - Node.js 26 (LTS) o superior. Con [nvm](https://github.com/nvm-sh/nvm) o [fnm](https://github.com/Schniz/fnm) basta con `nvm use` / `fnm use`: la versión está en `.nvmrc`
-- pnpm 12 (viene con Node a través de Corepack; la versión exacta está fijada en `package.json`)
+- pnpm 12 (la versión exacta está fijada en `package.json`). Node 26 ya no incluye Corepack, así que instálalo con npm:
   ```sh
-  corepack enable
+  npm install -g pnpm@12
   ```
 
 ### Instalación
@@ -126,6 +126,8 @@ El panel lateral del máster tiene dos pestañas: **Preparar** (mapa, cuadrícul
 4. **Añade fichas** en _Partida_ con _Nueva ficha_: el editor convierte tus imágenes en fichas circulares con borde de color
 5. **Arrastra las fichas al mapa**: los aliados iluminan el mapa según su radio de visión
 6. **Gestiona los turnos**: escribe la iniciativa junto a cada ficha y avanza con `N`
+
+La partida se guarda sola en `data/partida.json` cada pocos segundos y al cerrar el servidor, así que al volver a arrancarlo sigue donde la dejaste. Para empezar otra, usa _Limpiar todo_. _Guardar_ sigue sirviendo para llevarte una copia (`.dndmap`) o tener varias partidas.
 
 ### Herramientas
 
@@ -184,12 +186,13 @@ El servidor comprueba cada mensaje según el rol y **nunca envía a los jugadore
 
 Variables de entorno opcionales:
 
-| Variable         | Por defecto | Descripción                                             |
-| ---------------- | ----------- | ------------------------------------------------------- |
-| `PORT`           | `8080`      | Puerto HTTP                                             |
-| `HOST`           | `0.0.0.0`   | Interfaz de escucha (`127.0.0.1` = solo local)          |
-| `MAX_PAYLOAD_MB` | `16`        | Tamaño máximo de un mensaje (mapas grandes)             |
-| `DM_KEY`         | aleatoria   | Clave del enlace de máster (6–64 letras, números o `-`) |
+| Variable         | Por defecto         | Descripción                                             |
+| ---------------- | ------------------- | ------------------------------------------------------- |
+| `PORT`           | `8080`              | Puerto HTTP                                             |
+| `HOST`           | `0.0.0.0`           | Interfaz de escucha (`127.0.0.1` = solo local)          |
+| `MAX_PAYLOAD_MB` | `16`                | Tamaño máximo de un mensaje (mapas grandes)             |
+| `DM_KEY`         | aleatoria           | Clave del enlace de máster (6–64 letras, números o `-`) |
+| `SAVE_FILE`      | `data/partida.json` | Fichero del guardado automático                         |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 

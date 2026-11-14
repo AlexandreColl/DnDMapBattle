@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Server } from "socket.io";
 import { EVENTS, ROLES } from "../public/js/shared/protocol.js";
+import { createAutosave } from "./autosave.js";
 import { createGameState, reducers } from "./game.js";
 import {
   DEFAULT_RATE_LIMIT,
@@ -142,12 +143,19 @@ function limitRate(socket, state, logger, limit) {
  * @param {import("socket.io").Server} io
  * @param {ReturnType<typeof createGameState>} state
  * @param {{ logger?: Pick<Console, "warn">, dmKey?: string | null,
- *   rateLimit?: { capacity: number, refillPerSecond: number } }} [options]
+ *   rateLimit?: { capacity: number, refillPerSecond: number },
+ *   onChange?: () => void }} [options] `onChange` runs after each accepted
+ *   change to the state.
  */
 export function registerSocketHandlers(
   io,
   state,
-  { logger = console, dmKey = null, rateLimit = DEFAULT_RATE_LIMIT } = {},
+  {
+    logger = console,
+    dmKey = null,
+    rateLimit = DEFAULT_RATE_LIMIT,
+    onChange = () => {},
+  } = {},
 ) {
   io.on("connection", (socket) => {
     socket.data.role = roleFor(dmKey, socket.handshake.auth?.dmKey);
@@ -164,6 +172,7 @@ export function registerSocketHandlers(
           const payload = reduce(state, raw);
           refreshVision(state);
           broadcast(io, socket, event, payload, state);
+          if (event !== EVENTS.VIEW_CENTERED) onChange();
         } catch (err) {
           logger.warn(
             `[socket ${socket.id}] evento "${event}" rechazado: ${describeError(err)}`,
@@ -180,10 +189,12 @@ export function registerSocketHandlers(
 /**
  * Builds the HTTP + Socket.IO server without starting it, so tests can listen
  * on an ephemeral port. Clients that send `dmKey` in the handshake are DMs;
- * without a `dmKey` option every client is.
+ * without a `dmKey` option every client is. With `saveFile`, the game starts
+ * from that file and every change is saved back to it.
  * @param {{ publicDir?: string, maxPayloadBytes?: number,
  *   logger?: Pick<Console, "warn">, dmKey?: string | null,
- *   rateLimit?: { capacity: number, refillPerSecond: number } }} [options]
+ *   rateLimit?: { capacity: number, refillPerSecond: number },
+ *   saveFile?: string | null }} [options]
  */
 export function createApp({
   publicDir = DEFAULT_PUBLIC_DIR,
@@ -191,6 +202,7 @@ export function createApp({
   logger = console,
   dmKey = null,
   rateLimit = DEFAULT_RATE_LIMIT,
+  saveFile = null,
 } = {}) {
   const app = express();
   app.disable("x-powered-by");
@@ -200,7 +212,16 @@ export function createApp({
   const server = http.createServer(app);
   const io = new Server(server, { maxHttpBufferSize: maxPayloadBytes });
   const state = createGameState();
-  registerSocketHandlers(io, state, { logger, dmKey, rateLimit });
+  const autosave = saveFile
+    ? createAutosave(state, saveFile, { logger })
+    : null;
+  const restored = autosave?.load() ?? false;
+  registerSocketHandlers(io, state, {
+    logger,
+    dmKey,
+    rateLimit,
+    onChange: () => autosave?.schedule(),
+  });
 
-  return { app, server, io, state };
+  return { app, server, io, state, autosave, restored };
 }
