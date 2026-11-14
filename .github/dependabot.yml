@@ -31,3 +31,10 @@ updates:
       default-days: 3
     commit-message:
       prefix: "⬆️ ci(actions):"
+    # One PR a week instead of one per action: with "up to date" required,
+    # merging one leaves the rest out of date. Majors stay apart, as they can
+    # change an action's inputs.
+    groups:
+      actions:
+        patterns: ["*"]
+        update-types: [minor, patch]
