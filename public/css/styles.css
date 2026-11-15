@@ -662,6 +662,7 @@ input[type="text"]:focus {
   cursor: grab;
   z-index: 5;
   transition: box-shadow 0.2s;
+  container-type: size;
 }
 
 .token.enemy {
@@ -683,6 +684,55 @@ input[type="text"]:focus {
 
 .token.dragging {
   opacity: 0.5;
+}
+
+/* Fallen: faded portrait, still on the map and in the turn order. */
+.token.down {
+  filter: grayscale(1) brightness(0.6);
+}
+
+.token-hp {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -9%;
+  height: 12%;
+  min-height: 3px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.token-hp > span {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+}
+
+.token-hp.hurt > span {
+  background: var(--gold);
+}
+
+.token-hp.bloodied > span,
+.token-hp.down > span {
+  background: var(--enemy);
+}
+
+.token-conditions {
+  position: absolute;
+  top: -12%;
+  right: -12%;
+  display: flex;
+  gap: 1px;
+  padding: 1px 2px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.75);
+  /* Scales with the token, like the rest of the board. */
+  font-size: 24cqw;
+  line-height: 1;
+  color: var(--text);
+  pointer-events: none;
 }
 
 /* Follows the pointer while dragging a token or a roster character. */
@@ -808,7 +858,7 @@ body.dragging-piece * {
 /* ─── Token menu ─── */
 .popover {
   position: absolute;
-  width: 200px;
+  width: 232px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -833,6 +883,60 @@ body.dragging-piece * {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
+}
+
+.hp-inputs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+}
+
+.field.inline .hp-inputs input {
+  width: 58px;
+}
+
+.hp-adjust {
+  display: flex;
+  gap: 4px;
+}
+
+.hp-adjust input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.conditions {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  color: var(--text-muted);
+}
+
+.condition {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1;
+}
+
+button.condition {
+  opacity: 0.35;
+  cursor: pointer;
+}
+
+button.condition:hover {
+  opacity: 0.7;
+}
+
+button.condition[aria-pressed="true"] {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+  opacity: 1;
 }
 
 /* ─── Toasts ─── */

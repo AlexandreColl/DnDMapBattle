@@ -39,6 +39,9 @@ describe("game reducers", () => {
       ...hero,
       isEnemy: false,
       initiative: null,
+      hp: null,
+      maxHp: null,
+      conditions: [],
     });
     expect(state.characters).toHaveLength(1);
     expect(state.nextCharId).toBe(2);
@@ -169,6 +172,43 @@ describe("game reducers", () => {
 
     expect(() =>
       apply(state, EVENTS.STATE_FULL, { ...snapshot, cellStates: [] }),
+    ).toThrow();
+  });
+
+  it("keeps hit points consistent and conditions known", () => {
+    apply(state, EVENTS.CHARACTER_ADDED, {
+      character: { ...hero, hp: 50, maxHp: 20, conditions: ["prone", "prone"] },
+      nextCharId: 2,
+    });
+    expect(state.characters[0]).toMatchObject({
+      hp: 20,
+      maxHp: 20,
+      conditions: ["prone"],
+    });
+
+    expect(
+      apply(state, EVENTS.HEALTH_CHANGED, { charId: 1, hp: 7, maxHp: 20 }),
+    ).toEqual({ charId: 1, hp: 7, maxHp: 20 });
+    expect(state.characters[0].hp).toBe(7);
+    // Lowering the maximum caps the current hit points.
+    apply(state, EVENTS.HEALTH_CHANGED, { charId: 1, hp: 7, maxHp: 5 });
+    expect(state.characters[0]).toMatchObject({ hp: 5, maxHp: 5 });
+    apply(state, EVENTS.HEALTH_CHANGED, { charId: 1, hp: 3, maxHp: null });
+    expect(state.characters[0]).toMatchObject({ hp: null, maxHp: null });
+
+    apply(state, EVENTS.CONDITIONS_CHANGED, {
+      charId: 1,
+      conditions: ["stunned", "poisoned"],
+    });
+    expect(state.characters[0].conditions).toEqual(["poisoned", "stunned"]);
+    expect(() =>
+      apply(state, EVENTS.CONDITIONS_CHANGED, {
+        charId: 1,
+        conditions: ["flying"],
+      }),
+    ).toThrow();
+    expect(() =>
+      apply(state, EVENTS.HEALTH_CHANGED, { charId: 1, hp: -1, maxHp: 5 }),
     ).toThrow();
   });
 });

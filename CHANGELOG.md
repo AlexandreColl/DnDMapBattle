@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+### Añadido
+
+- Puntos de golpe y estados en las fichas. Cada ficha puede tener PG máximos; desde su menú se aplica daño o curación y se marcan estados (los de D&D 5e y concentración). Una barra bajo la ficha muestra la vida, y a 0 PG la ficha queda apagada sin salir del mapa ni del turno.
+- Los jugadores llevan la vida y los estados de sus aliados. De los enemigos solo ven sus estados y si están ilesos, heridos, malheridos o caídos: el servidor nunca les envía los PG exactos.
+- Roadmap en el README.
+
 ## [1.5.0] - 2026-11-14
 
 ### Añadido

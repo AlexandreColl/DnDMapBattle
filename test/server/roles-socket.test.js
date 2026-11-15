@@ -126,6 +126,28 @@ describe("roles", () => {
     expect(tokens.map((t) => t.characterId)).toEqual([1]);
   });
 
+  it("tells players how hurt an enemy looks, not its hit points", async () => {
+    const dm = await join(DM_KEY);
+    await setUpTable(dm);
+    const player = await join();
+
+    const view = once(player.socket, EVENTS.PLAYER_VIEW);
+    dm.socket.emit(EVENTS.HEALTH_CHANGED, { charId: 2, hp: 3, maxHp: 15 });
+    const orco = (await view).characters.find((c) => c.id === 2);
+    expect(orco).toMatchObject({ hp: null, maxHp: null, health: "bloodied" });
+
+    // A player cannot heal or hurt an enemy.
+    const restored = once(player.socket, EVENTS.STATE_FULL);
+    player.socket.emit(EVENTS.HEALTH_CHANGED, { charId: 2, hp: 15, maxHp: 15 });
+    await restored;
+    const seenByDm = once(dm.socket, EVENTS.CONDITIONS_CHANGED);
+    player.socket.emit(EVENTS.CONDITIONS_CHANGED, {
+      charId: 1,
+      conditions: ["prone"],
+    });
+    expect(await seenByDm).toEqual({ charId: 1, conditions: ["prone"] });
+  });
+
   it("lets a player move an ally, and the DM sees it", async () => {
     const dm = await join(DM_KEY);
     await setUpTable(dm);

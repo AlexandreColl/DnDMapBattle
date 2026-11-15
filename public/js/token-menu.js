@@ -1,5 +1,15 @@
-// Popover shown when clicking a token: initiative, vision, remove.
+// Popover shown when clicking a token: initiative, vision, hit points,
+// conditions, remove.
 import { $, mapContainer } from "./dom.js";
+import {
+  CONDITION_INFO,
+  HEALTH_LABELS,
+  changeHp,
+  setHealth,
+  toggleCondition,
+} from "./health.js";
+import { characterHealth } from "./lib/health.js";
+import { CONDITIONS } from "./shared/protocol.js";
 import { canControl } from "./roles.js";
 import { state } from "./state.js";
 import { removeToken, tokenElement } from "./tokens.js";
@@ -11,6 +21,58 @@ const nameEl = $("#token-menu-name");
 const initiativeInput = $("#token-menu-initiative");
 const visionEl = $("#token-menu-vision");
 const initiativeField = $("#token-menu-initiative-field");
+const hpEdit = $("#token-menu-hp-edit");
+const hpInput = $("#token-menu-hp");
+const maxHpInput = $("#token-menu-max-hp");
+const healthEl = $("#token-menu-health");
+const hpAdjust = $("#token-menu-hp-adjust");
+const amountInput = $("#token-menu-amount");
+const conditionsEl = $("#token-menu-conditions");
+
+/** Sets an input unless the user is typing in it. */
+function fillInput(input, value) {
+  if (document.activeElement !== input) input.value = value ?? "";
+}
+
+function conditionChip(char, condition, editable) {
+  const { label, icon } = CONDITION_INFO[condition];
+  const chip = document.createElement(editable ? "button" : "span");
+  chip.className = "condition";
+  chip.textContent = icon;
+  chip.title = label;
+  chip.setAttribute("aria-label", label);
+  if (editable) {
+    /** @type {HTMLButtonElement} */ (chip).type = "button";
+    const active = (char.conditions ?? []).includes(condition);
+    chip.setAttribute("aria-pressed", String(active));
+    chip.addEventListener("click", () => toggleCondition(char, condition));
+  }
+  return chip;
+}
+
+/** Hit points and conditions: editable for the DM and allies. */
+function fillHealth(char) {
+  const editable = canControl(char);
+  hpEdit.hidden = !editable;
+  hpAdjust.hidden = !editable || char.maxHp == null;
+  healthEl.hidden = editable;
+  fillInput(hpInput, char.hp);
+  fillInput(maxHpInput, char.maxHp);
+  healthEl.textContent = HEALTH_LABELS[characterHealth(char)] ?? "—";
+
+  // Others' conditions are only listed; with none, a dash.
+  const shown = editable ? CONDITIONS : (char.conditions ?? []);
+  conditionsEl.replaceChildren(
+    ...shown.map((c) => conditionChip(char, c, editable)),
+  );
+  if (shown.length === 0) conditionsEl.textContent = "—";
+}
+
+/** Brings the open menu up to date after a change, here or remote. */
+export function refreshTokenMenu() {
+  const char = !menu.hidden && selectedCharacter();
+  if (char) fillHealth(char);
+}
 
 function selectedCharacter() {
   const token = state.tokens.find((t) => t.id === state.selectedTokenId);
@@ -49,6 +111,8 @@ export function openTokenMenu(tokenId) {
   visionEl.textContent = char.isEnemy
     ? "Enemigo"
     : `${char.visionRadius} casillas`;
+  amountInput.value = "";
+  fillHealth(char);
   menu.hidden = false;
   position(tokenEl);
 }
@@ -65,6 +129,33 @@ export function initTokenMenu() {
     const char = selectedCharacter();
     if (char) setInitiative(char, initiativeInput.value.trim());
   });
+  // Shows the stored values: what was typed may have been capped.
+  function commitHealth(char, hp, maxHp) {
+    setHealth(char, hp, maxHp);
+    hpInput.value = char.hp ?? "";
+    maxHpInput.value = char.maxHp ?? "";
+  }
+  hpInput.addEventListener("change", () => {
+    const char = selectedCharacter();
+    if (char) commitHealth(char, hpInput.value, maxHpInput.value);
+  });
+  maxHpInput.addEventListener("change", () => {
+    const char = selectedCharacter();
+    // A new maximum starts at full health; a lower one caps the current.
+    if (char) commitHealth(char, char.hp ?? maxHpInput.value, maxHpInput.value);
+  });
+  /** Damage (sign -1) or healing (sign 1) by the amount typed. */
+  function bindHpButton(id, sign) {
+    $(id).addEventListener("click", () => {
+      const char = selectedCharacter();
+      const amount = parseInt(amountInput.value, 10);
+      if (!char || !(amount > 0)) return;
+      changeHp(char, sign * amount);
+      amountInput.value = "";
+    });
+  }
+  bindHpButton("#token-menu-damage", -1);
+  bindHpButton("#token-menu-heal", 1);
   $("#token-menu-remove").addEventListener("click", () => {
     const tokenId = state.selectedTokenId;
     closeTokenMenu();
