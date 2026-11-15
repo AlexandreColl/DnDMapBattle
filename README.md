@@ -268,7 +268,7 @@ Cada mensaje que llega por WebSocket se valida en el servidor antes de aplicarse
 - [ ] Criaturas grandes que ocupan varias casillas (2×2, 3×3)
 - [ ] Plantillas de área para hechizos: círculos, conos y líneas
 - [ ] Tirador de dados compartido, con tiradas públicas u ocultas del máster
-- [ ] Selector de idioma, con dos idiomas más además del español
+- [ ] Selector de idioma: inglés y catalán, además del español
 
 Los cambios ya publicados están en el [CHANGELOG](CHANGELOG.md).
 
