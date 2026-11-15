@@ -44,6 +44,7 @@
     <li><a href="#uso">Uso</a></li>
     <li><a href="#multijugador">Multijugador</a></li>
     <li><a href="#desarrollo">Desarrollo</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contribuir">Contribuir</a></li>
     <li><a href="#licencia">Licencia</a></li>
     <li><a href="#contacto">Contacto</a></li>
@@ -255,6 +256,18 @@ e2e/                    Tests E2E: dos jugadores, táctil y accesibilidad
 ```
 
 Cada mensaje que llega por WebSocket se valida en el servidor antes de aplicarse y reenviarse; los mensajes no válidos se descartan y se registran en la consola.
+
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
+
+## Roadmap
+
+- [ ] Vida y estados en las fichas, con la vida exacta de los enemigos solo para el máster
+- [ ] Criaturas grandes que ocupan varias casillas (2×2, 3×3)
+- [ ] Plantillas de área para hechizos: círculos, conos y líneas
+- [ ] Tirador de dados compartido, con tiradas públicas u ocultas del máster
+- [ ] Selector de idioma, con dos idiomas más además del español
+
+Los cambios ya publicados están en el [CHANGELOG](CHANGELOG.md).
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
