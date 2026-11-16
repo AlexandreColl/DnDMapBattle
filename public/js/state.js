@@ -11,7 +11,7 @@ export const state = {
   cellStates: [], // 2D: CELL.HIDDEN | CELL.VISIBLE | CELL.REVEALED
   wallCells: [], // 2D boolean: true = wall
   // { id, name, imageUrl, visionRadius, isEnemy, initiative, hp, maxHp,
-  //   conditions, health }; players get `health` instead of enemy hp
+  //   conditions, health, size }; players get `health` instead of enemy hp
   characters: [],
   tokens: [], // { id, characterId, row, col }
   nextCharId: 1,

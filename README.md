@@ -63,6 +63,7 @@ Características principales:
 - :crossed_swords: Niebla de guerra híbrida: visión automática por personaje, paredes que bloquean la visión y revelado manual
 - :hourglass: Iniciativa y control de turnos
 - :heart: Puntos de golpe y estados (envenenado, derribado…) en cada ficha
+- :dragon: Criaturas grandes que ocupan 2×2, 3×3 o 4×4 casillas
 - :straight_ruler: Medición de distancias entre casillas
 - :floppy_disk: Guardado automático en el servidor, además de guardar/cargar partidas y exportar/importar personajes
 - :satellite: Sincronización multijugador en tiempo real sin cuentas ni nube
@@ -126,7 +127,7 @@ El panel lateral del máster tiene dos pestañas: **Preparar** (mapa, cuadrícul
 1. **Carga un mapa** en _Preparar_: cualquier imagen sirve
 2. **Genera la cuadrícula**: configura columnas y filas, o pulsa _Ajustar al mapa_ para obtener celdas cuadradas
 3. **Pinta las paredes** con la herramienta de paredes (`W`): bloquean la visión
-4. **Añade fichas** en _Partida_ con _Nueva ficha_: el editor convierte tus imágenes en fichas circulares con borde de color
+4. **Añade fichas** en _Partida_ con _Nueva ficha_: el editor convierte tus imágenes en fichas circulares con borde de color; las criaturas grandes ocupan 2×2, 3×3 o 4×4 casillas
 5. **Arrastra las fichas al mapa**: los aliados iluminan el mapa según su radio de visión
 6. **Gestiona los turnos**: escribe la iniciativa junto a cada ficha y avanza con `N`
 7. **Lleva la vida y los estados**: pon los PG máximos al crear la ficha; luego haz clic en ella para aplicar daño o curación y marcar estados
@@ -270,7 +271,7 @@ Los textos de la interfaz no se escriben en el código: van en `public/js/locale
 ## Roadmap
 
 - [x] Vida y estados en las fichas, con la vida exacta de los enemigos solo para el máster
-- [ ] Criaturas grandes que ocupan varias casillas (2×2, 3×3)
+- [x] Criaturas grandes que ocupan varias casillas (2×2, 3×3, 4×4)
 - [ ] Plantillas de área para hechizos: círculos, conos y líneas
 - [ ] Tirador de dados compartido, con tiradas públicas u ocultas del máster
 - [x] Selector de idioma: inglés y catalán, además del español

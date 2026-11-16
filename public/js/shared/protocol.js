@@ -17,6 +17,7 @@ export const EVENTS = Object.freeze({
   INITIATIVE_CHANGED: "initiative:changed",
   HEALTH_CHANGED: "health:changed",
   CONDITIONS_CHANGED: "conditions:changed",
+  SIZE_CHANGED: "size:changed",
   TURN_CHANGED: "turn:changed",
   // Server → client only.
   SESSION: "session", // { role } right after connecting
@@ -78,6 +79,8 @@ export const LIMITS = Object.freeze({
   minInitiative: -99,
   maxInitiative: 999,
   maxHp: 9999,
+  // Cells per side: 1 (small or medium), 2 (large), 3 (huge), 4 (gargantuan).
+  maxSize: 4,
   minZoom: 0.1,
   maxZoom: 5,
 });

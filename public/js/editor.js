@@ -1,6 +1,6 @@
 // Token editor dialog: turns a picture into a round token with a colored rim.
 import { $, $$ } from "./dom.js";
-import { addCharacter } from "./characters.js";
+import { addCharacter, sizeOptions } from "./characters.js";
 import { t } from "./i18n.js";
 import { clamp } from "./lib/geometry.js";
 import { normalizeHealth } from "./lib/health.js";
@@ -44,6 +44,7 @@ const visionLabel = $("#editor-vision-label");
 const visionInput = $("#editor-vision");
 const initiativeInput = $("#editor-initiative");
 const maxHpInput = $("#editor-max-hp");
+const sizeSelect = $("#editor-size");
 
 const editor = {
   image: null,
@@ -188,12 +189,14 @@ function confirmToken(e) {
     initiative: parseInitiative(initiativeInput.value.trim()),
     ...normalizeHealth(null, maxHpInput.value),
     conditions: [],
+    size: Number(sizeSelect.value),
   });
   dialog.close();
   toast(t("editor.joined", { name }), { kind: "success" });
 }
 
 export function initEditor() {
+  sizeSelect.replaceChildren(...sizeOptions());
   swatches.prepend(
     ...CLASS_COLORS.map(([color, classKey]) => {
       const swatch = document.createElement("button");

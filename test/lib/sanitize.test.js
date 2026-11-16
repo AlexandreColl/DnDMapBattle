@@ -53,6 +53,7 @@ describe("sanitize", () => {
       maxHp: null,
       conditions: [],
       health: null,
+      size: 1,
     });
     expect(normalizeCharacter({ id: 1, name: "x", imageUrl: "http://x" })).toBe(
       null,

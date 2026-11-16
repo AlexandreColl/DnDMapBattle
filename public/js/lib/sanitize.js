@@ -5,6 +5,7 @@ import {
   normalizeConditions,
   normalizeHealth,
 } from "./health.js";
+import { characterSize } from "./size.js";
 
 const CELL_VALUES = new Set(Object.values(CELL));
 
@@ -63,6 +64,7 @@ export function normalizeCharacter(raw, id = raw?.id) {
     initiative: parseInitiative(raw.initiative),
     ...normalizeHealth(raw.hp, raw.maxHp),
     conditions: normalizeConditions(raw.conditions),
+    size: characterSize(raw),
     // Players get only how hurt an enemy looks, not its hit points.
     health: raw.maxHp == null ? characterHealth(raw) : null,
   };

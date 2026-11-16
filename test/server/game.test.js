@@ -42,6 +42,7 @@ describe("game reducers", () => {
       hp: null,
       maxHp: null,
       conditions: [],
+      size: 1,
     });
     expect(state.characters).toHaveLength(1);
     expect(state.nextCharId).toBe(2);
@@ -210,5 +211,42 @@ describe("game reducers", () => {
     expect(() =>
       apply(state, EVENTS.HEALTH_CHANGED, { charId: 1, hp: -1, maxHp: 5 }),
     ).toThrow();
+  });
+
+  it("keeps large tokens whole on the grid", () => {
+    // 3×4 grid: a 2×2 ogre fits with its corner at 1,2 but not at 2,2.
+    const ogre = { id: 2, name: "Ogro", imageUrl: IMG, isEnemy: true, size: 2 };
+    apply(state, EVENTS.CHARACTER_ADDED, { character: ogre, nextCharId: 3 });
+    const place = (row, col) =>
+      apply(state, EVENTS.TOKEN_PLACED, {
+        characterId: 2,
+        row,
+        col,
+        token: { id: 1, characterId: 2, row, col },
+        nextTokenId: 2,
+      });
+    expect(() => place(2, 2)).toThrow(/fuera/);
+    expect(() => place(1, 3)).toThrow(/fuera/);
+    place(1, 2);
+
+    // Growing to 3×3 moves it back inside; 4×4 does not fit a 3×4 grid.
+    apply(state, EVENTS.SIZE_CHANGED, { charId: 2, size: 3 });
+    expect(state.tokens[0]).toMatchObject({ row: 0, col: 1 });
+    expect(state.characters[0].size).toBe(3);
+    expect(() =>
+      apply(state, EVENTS.SIZE_CHANGED, { charId: 2, size: 4 }),
+    ).toThrow(/cabe/);
+    expect(state.characters[0].size).toBe(3);
+
+    // A smaller grid drops the tokens that no longer fit.
+    apply(state, EVENTS.GRID_GENERATED, {
+      gridRows: 2,
+      gridCols: 2,
+      cellStates: createMatrix(2, 2, "hidden"),
+      wallCells: createMatrix(2, 2, false),
+      tokens: state.tokens,
+      nextTokenId: 2,
+    });
+    expect(state.tokens).toEqual([]);
   });
 });

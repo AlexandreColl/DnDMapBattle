@@ -126,6 +126,12 @@ export const ca = {
   "menu.heal": "Curar",
   "menu.conditions": "Estats",
   "menu.remove": "Treure del mapa",
+  "size.label": "Mida",
+  "size.1": "Petita o mitjana (1×1)",
+  "size.2": "Gran (2×2)",
+  "size.3": "Enorme (3×3)",
+  "size.4": "Gegantina (4×4)",
+  "size.noRoom": "No hi cap a la quadrícula",
   "token.hp": "{hp}/{maxHp} PV",
 
   "health.unhurt": "Il·lès",

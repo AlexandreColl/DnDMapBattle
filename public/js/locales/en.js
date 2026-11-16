@@ -123,6 +123,12 @@ export const en = {
   "menu.heal": "Heal",
   "menu.conditions": "Conditions",
   "menu.remove": "Remove from map",
+  "size.label": "Size",
+  "size.1": "Small or medium (1×1)",
+  "size.2": "Large (2×2)",
+  "size.3": "Huge (3×3)",
+  "size.4": "Gargantuan (4×4)",
+  "size.noRoom": "It does not fit on the grid",
   "token.hp": "{hp}/{maxHp} HP",
 
   "health.unhurt": "Unhurt",

@@ -3,13 +3,14 @@ import { $, $$, revokeIfBlob } from "./dom.js";
 import { makeDraggable } from "./drag.js";
 import { calculateVision } from "./grid.js";
 import { t } from "./i18n.js";
+import { characterSize, coveredCells, resizeCharacter } from "./lib/size.js";
 import { canControl, isDm } from "./roles.js";
-import { CELL, EVENTS } from "./shared/protocol.js";
+import { CELL, EVENTS, LIMITS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { state } from "./state.js";
 import { renderTokens } from "./tokens.js";
 import { paintAvatar, setInitiative } from "./turns.js";
-import { confirmDialog, icon } from "./ui.js";
+import { confirmDialog, icon, toast } from "./ui.js";
 
 const allies = $("#roster-allies");
 const enemies = $("#roster-enemies");
@@ -94,12 +95,15 @@ export function renderCharacters() {
   refreshRosterState();
 }
 
-/** Whether players can see this enemy: on the map, outside the fog. */
+/** Whether players can see this enemy: on the map, partly outside the fog. */
 function visibleToPlayers(char) {
   if (!char?.isEnemy) return true;
   const token = state.tokens.find((t) => t.characterId === char.id);
-  const cell = token && state.cellStates[token.row]?.[token.col];
-  return Boolean(cell) && cell !== CELL.HIDDEN;
+  if (!token) return false;
+  return coveredCells(token, characterSize(char)).some(({ row, col }) => {
+    const cell = state.cellStates[row]?.[col];
+    return Boolean(cell) && cell !== CELL.HIDDEN;
+  });
 }
 
 /**
@@ -124,6 +128,27 @@ export function addCharacter(char) {
   emit(EVENTS.CHARACTER_ADDED, {
     character: char,
     nextCharId: state.nextCharId,
+  });
+}
+
+/** Changes a creature's size; its token moves back inside if needed. */
+export function setSize(char, size) {
+  if (!resizeCharacter(state, char.id, size)) {
+    toast(t("size.noRoom"), { kind: "error" });
+    return;
+  }
+  renderTokens();
+  calculateVision();
+  emit(EVENTS.SIZE_CHANGED, { charId: char.id, size });
+}
+
+/** Options for a size <select>: "Large (2×2)" and so on. */
+export function sizeOptions() {
+  return Array.from({ length: LIMITS.maxSize }, (_, i) => {
+    const option = document.createElement("option");
+    option.value = String(i + 1);
+    option.textContent = t(`size.${i + 1}`);
+    return option;
   });
 }
 
