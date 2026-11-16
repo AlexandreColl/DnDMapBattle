@@ -24,3 +24,6 @@ dist/
 
 # Autosave (pnpm start / launcher.bat)
 data/
+
+# Claude Code (local settings, never versioned)
+.claude/
