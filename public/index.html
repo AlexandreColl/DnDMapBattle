@@ -257,6 +257,47 @@
           <span>Visión</span>
           <span id="token-menu-vision"></span>
         </div>
+        <div class="field inline" id="token-menu-hp-field">
+          <span>Vida</span>
+          <span class="hp-inputs" id="token-menu-hp-edit">
+            <input
+              type="number"
+              id="token-menu-hp"
+              min="0"
+              max="9999"
+              placeholder="—"
+              aria-label="Puntos de golpe"
+            />
+            <span aria-hidden="true">/</span>
+            <input
+              type="number"
+              id="token-menu-max-hp"
+              min="1"
+              max="9999"
+              placeholder="—"
+              aria-label="Puntos de golpe máximos"
+            />
+          </span>
+          <span id="token-menu-health"></span>
+        </div>
+        <div class="hp-adjust" id="token-menu-hp-adjust">
+          <input
+            type="number"
+            id="token-menu-amount"
+            min="1"
+            max="9999"
+            placeholder="0"
+            aria-label="Cantidad"
+          />
+          <button type="button" class="btn danger" id="token-menu-damage">
+            Daño
+          </button>
+          <button type="button" class="btn" id="token-menu-heal">Curar</button>
+        </div>
+        <div class="field">
+          <span>Estados</span>
+          <div class="conditions" id="token-menu-conditions"></div>
+        </div>
         <button class="btn danger" id="token-menu-remove" data-dm-only>
           Quitar del mapa
         </button>
@@ -330,6 +371,16 @@
                   id="editor-initiative"
                   min="-99"
                   max="999"
+                  placeholder="—"
+                />
+              </label>
+              <label class="field">
+                <span>PG máx.</span>
+                <input
+                  type="number"
+                  id="editor-max-hp"
+                  min="1"
+                  max="9999"
                   placeholder="—"
                 />
               </label>

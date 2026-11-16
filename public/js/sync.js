@@ -12,6 +12,7 @@ import { $ } from "./dom.js";
 import { applyFog } from "./fog.js";
 import { calculateVision, generateGrid } from "./grid.js";
 import { matrixMatches } from "./lib/geometry.js";
+import { normalizeConditions, normalizeHealth } from "./lib/health.js";
 import {
   isCellState,
   normalizeCharacter,
@@ -195,6 +196,20 @@ export function initSync() {
     char.initiative = initiative;
     renderCharacters();
     renderTurnTracker();
+  });
+
+  onRemote(EVENTS.HEALTH_CHANGED, ({ charId, hp, maxHp }) => {
+    const char = state.characters.find((c) => c.id === charId);
+    if (!char) return;
+    Object.assign(char, normalizeHealth(hp, maxHp));
+    renderTokens();
+  });
+
+  onRemote(EVENTS.CONDITIONS_CHANGED, ({ charId, conditions }) => {
+    const char = state.characters.find((c) => c.id === charId);
+    if (!char) return;
+    char.conditions = normalizeConditions(conditions);
+    renderTokens();
   });
 
   onRemote(EVENTS.TURN_CHANGED, ({ charId }) => {

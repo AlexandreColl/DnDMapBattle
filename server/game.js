@@ -1,5 +1,9 @@
 import { EVENTS, LIMITS } from "../public/js/shared/protocol.js";
 import { matrixMatches } from "../public/js/lib/geometry.js";
+import {
+  normalizeConditions,
+  normalizeHealth,
+} from "../public/js/lib/health.js";
 import { schemas } from "./validation.js";
 
 export class RejectedEventError extends Error {}
@@ -45,6 +49,15 @@ function assertInGrid(state, row, col) {
 /** Smallest id above `sent`, `current` and every id in `items`. */
 function nextId(current, sent, items) {
   return Math.max(current, sent, ...items.map((item) => item.id + 1));
+}
+
+/** `char` with consistent hit points and no repeated conditions. */
+function withHealth(char) {
+  return {
+    ...char,
+    ...normalizeHealth(char.hp, char.maxHp),
+    conditions: normalizeConditions(char.conditions),
+  };
 }
 
 /** The first character with each id. */
@@ -95,7 +108,7 @@ export const reducers = {
     ) {
       reject("wallCells no coincide con la cuadrícula");
     }
-    data.characters = uniqueCharacters(data.characters);
+    data.characters = uniqueCharacters(data.characters).map(withHealth);
     data.tokens = tokensOnBoard(
       data.tokens,
       data.characters,
@@ -147,6 +160,7 @@ export const reducers = {
     if (state.characters.some((c) => c.id === data.character.id)) {
       reject("ya hay un personaje con ese id");
     }
+    data.character = withHealth(data.character);
     state.characters.push(data.character);
     state.nextCharId = nextId(state.nextCharId, data.nextCharId, [
       data.character,
@@ -221,6 +235,22 @@ export const reducers = {
     const char = state.characters.find((c) => c.id === data.charId);
     if (char) char.initiative = data.initiative;
     return data;
+  },
+
+  [EVENTS.HEALTH_CHANGED](state, raw) {
+    const data = schemas.healthChanged.parse(raw);
+    const health = normalizeHealth(data.hp, data.maxHp);
+    const char = state.characters.find((c) => c.id === data.charId);
+    if (char) Object.assign(char, health);
+    return { charId: data.charId, ...health };
+  },
+
+  [EVENTS.CONDITIONS_CHANGED](state, raw) {
+    const data = schemas.conditionsChanged.parse(raw);
+    const conditions = normalizeConditions(data.conditions);
+    const char = state.characters.find((c) => c.id === data.charId);
+    if (char) char.conditions = conditions;
+    return { charId: data.charId, conditions };
   },
 
   [EVENTS.TURN_CHANGED](state, raw) {

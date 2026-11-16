@@ -48,6 +48,10 @@ describe("sanitize", () => {
       visionRadius: 5,
       isEnemy: false,
       initiative: 0,
+      hp: null,
+      maxHp: null,
+      conditions: [],
+      health: null,
     });
     expect(normalizeCharacter({ id: 1, name: "x", imageUrl: "http://x" })).toBe(
       null,

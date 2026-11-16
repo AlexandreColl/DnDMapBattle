@@ -1,5 +1,6 @@
 // DM and player roles: who may send what, and what each player may see.
 import { timingSafeEqual } from "node:crypto";
+import { healthLevel } from "../public/js/lib/health.js";
 import { computeVision } from "../public/js/lib/vision.js";
 import {
   CELL,
@@ -50,8 +51,14 @@ export function authorize(role, event, state, raw) {
       throw new RejectedEventError("la ficha es de otro personaje");
     }
   }
-  if (event === EVENTS.INITIATIVE_CHANGED) {
-    const data = schemas.initiativeChanged.parse(raw);
+  // Initiative, hit points and conditions: allies only.
+  const charEvents = {
+    [EVENTS.INITIATIVE_CHANGED]: schemas.initiativeChanged,
+    [EVENTS.HEALTH_CHANGED]: schemas.healthChanged,
+    [EVENTS.CONDITIONS_CHANGED]: schemas.conditionsChanged,
+  };
+  if (charEvents[event]) {
+    const data = charEvents[event].parse(raw);
     if (!allyOf(state, data.charId)) {
       throw new RejectedEventError("los jugadores solo cambian aliados");
     }
@@ -84,7 +91,8 @@ function visibleTokens(state) {
 
 /**
  * What a player may see. Enemies off the map or in the fog are left out, and
- * so is enemy initiative. Portraits in `known` (character ids the player
+ * so are enemy initiative and hit points: players only get how hurt an enemy
+ * looks (`health`). Portraits in `known` (character ids the player
  * already has) are omitted to keep updates small.
  * @param {ReturnType<typeof import("./game.js").createGameState>} state
  * @param {Set<number>} [known]
@@ -95,7 +103,15 @@ export function playerView(state, known = new Set()) {
   const characters = state.characters
     .filter((c) => !c.isEnemy || onBoard.has(c.id))
     .map((c) => {
-      const char = c.isEnemy ? { ...c, initiative: null } : { ...c };
+      const char = c.isEnemy
+        ? {
+            ...c,
+            initiative: null,
+            hp: null,
+            maxHp: null,
+            health: healthLevel(c.hp, c.maxHp),
+          }
+        : { ...c };
       if (known.has(c.id)) delete char.imageUrl;
       return char;
     });

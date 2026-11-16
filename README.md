@@ -44,6 +44,7 @@
     <li><a href="#uso">Uso</a></li>
     <li><a href="#multijugador">Multijugador</a></li>
     <li><a href="#desarrollo">Desarrollo</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contribuir">Contribuir</a></li>
     <li><a href="#licencia">Licencia</a></li>
     <li><a href="#contacto">Contacto</a></li>
@@ -61,6 +62,7 @@ Características principales:
 - :joystick: Carga cualquier imagen como mapa y coloca fichas arrastrándolas
 - :crossed_swords: Niebla de guerra híbrida: visión automática por personaje, paredes que bloquean la visión y revelado manual
 - :hourglass: Iniciativa y control de turnos
+- :heart: Puntos de golpe y estados (envenenado, derribado…) en cada ficha
 - :straight_ruler: Medición de distancias entre casillas
 - :floppy_disk: Guardado automático en el servidor, además de guardar/cargar partidas y exportar/importar personajes
 - :satellite: Sincronización multijugador en tiempo real sin cuentas ni nube
@@ -126,6 +128,7 @@ El panel lateral del máster tiene dos pestañas: **Preparar** (mapa, cuadrícul
 4. **Añade fichas** en _Partida_ con _Nueva ficha_: el editor convierte tus imágenes en fichas circulares con borde de color
 5. **Arrastra las fichas al mapa**: los aliados iluminan el mapa según su radio de visión
 6. **Gestiona los turnos**: escribe la iniciativa junto a cada ficha y avanza con `N`
+7. **Lleva la vida y los estados**: pon los PG máximos al crear la ficha; luego haz clic en ella para aplicar daño o curación y marcar estados
 
 La partida se guarda sola en `data/partida.json` cada pocos segundos y al cerrar el servidor, así que al volver a arrancarlo sigue donde la dejaste. Para empezar otra, usa _Limpiar todo_. _Guardar_ sigue sirviendo para llevarte una copia (`.dndmap`) o tener varias partidas.
 
@@ -171,8 +174,9 @@ Conecta tablets y móviles al mismo mapa en tiempo real.
 | ----------------------------------- | ----------------------------------------- | ------------------------------------------- |
 | Mapa, cuadrícula, paredes, archivos | ✅                                        | ❌                                          |
 | Niebla                              | Semitransparente; puede revelar casillas  | Opaca                                       |
-| Fichas aliadas                      | Mover, quitar, iniciativa                 | Mover e iniciativa                          |
+| Fichas aliadas                      | Mover, quitar, iniciativa, vida, estados  | Mover, iniciativa, vida, estados            |
 | Enemigos                            | Todos                                     | Solo los que la compañía ve, sin iniciativa |
+| Vida de los enemigos                | Exacta                                    | Solo ileso, herido, malherido o caído       |
 | Turnos                              | Empezar y pasar turno                     | Ver el turno actual                         |
 | Zoom y encuadre                     | Propio; puede centrar a todos en su vista | Propio                                      |
 
@@ -255,6 +259,18 @@ e2e/                    Tests E2E: dos jugadores, táctil y accesibilidad
 ```
 
 Cada mensaje que llega por WebSocket se valida en el servidor antes de aplicarse y reenviarse; los mensajes no válidos se descartan y se registran en la consola.
+
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
+
+## Roadmap
+
+- [x] Vida y estados en las fichas, con la vida exacta de los enemigos solo para el máster
+- [ ] Criaturas grandes que ocupan varias casillas (2×2, 3×3)
+- [ ] Plantillas de área para hechizos: círculos, conos y líneas
+- [ ] Tirador de dados compartido, con tiradas públicas u ocultas del máster
+- [ ] Selector de idioma: inglés y catalán, además del español
+
+Los cambios ya publicados están en el [CHANGELOG](CHANGELOG.md).
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 

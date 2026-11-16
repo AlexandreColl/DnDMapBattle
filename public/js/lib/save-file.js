@@ -11,6 +11,9 @@ function exportCharacter(c) {
     visionRadius: c.visionRadius,
     isEnemy: c.isEnemy === true,
     initiative: c.initiative ?? null,
+    hp: c.hp ?? null,
+    maxHp: c.maxHp ?? null,
+    conditions: c.conditions ?? [],
   };
 }
 

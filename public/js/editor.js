@@ -2,6 +2,7 @@
 import { $, $$ } from "./dom.js";
 import { addCharacter } from "./characters.js";
 import { clamp } from "./lib/geometry.js";
+import { normalizeHealth } from "./lib/health.js";
 import {
   cleanName,
   parseInitiative,
@@ -41,6 +42,7 @@ const swatches = $("#editor-swatches");
 const visionLabel = $("#editor-vision-label");
 const visionInput = $("#editor-vision");
 const initiativeInput = $("#editor-initiative");
+const maxHpInput = $("#editor-max-hp");
 
 const editor = {
   image: null,
@@ -183,6 +185,8 @@ function confirmToken(e) {
     visionRadius: parseVisionRadius(visionInput.value),
     isEnemy: editor.isEnemy,
     initiative: parseInitiative(initiativeInput.value.trim()),
+    ...normalizeHealth(null, maxHpInput.value),
+    conditions: [],
   });
   dialog.close();
   toast(`${name} se une a la mesa`, { kind: "success" });

@@ -1,5 +1,10 @@
 import { CELL, LIMITS } from "../shared/protocol.js";
 import { clamp } from "./geometry.js";
+import {
+  characterHealth,
+  normalizeConditions,
+  normalizeHealth,
+} from "./health.js";
 
 const CELL_VALUES = new Set(Object.values(CELL));
 
@@ -56,6 +61,10 @@ export function normalizeCharacter(raw, id = raw?.id) {
     visionRadius: parseVisionRadius(raw.visionRadius),
     isEnemy: raw.isEnemy === true,
     initiative: parseInitiative(raw.initiative),
+    ...normalizeHealth(raw.hp, raw.maxHp),
+    conditions: normalizeConditions(raw.conditions),
+    // Players get only how hurt an enemy looks, not its hit points.
+    health: raw.maxHp == null ? characterHealth(raw) : null,
   };
 }
 

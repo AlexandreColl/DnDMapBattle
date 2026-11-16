@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CELL, LIMITS } from "../public/js/shared/protocol.js";
+import { CELL, CONDITIONS, LIMITS } from "../public/js/shared/protocol.js";
 
 // Only base64 image data URLs are accepted for maps and character portraits.
 const DATA_IMAGE_RE = /^data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/]+=*$/i;
@@ -22,6 +22,11 @@ const initiative = z
   .max(LIMITS.maxInitiative)
   .nullable();
 
+const hp = z.number().int().min(0).max(LIMITS.maxHp);
+const maxHp = hp.min(1);
+const conditions = z.array(z.enum(CONDITIONS)).max(CONDITIONS.length);
+
+// Hit points and conditions are made consistent by the reducers.
 export const character = z.object({
   id,
   name: z.string().trim().min(1).max(LIMITS.maxNameLength),
@@ -34,6 +39,9 @@ export const character = z.object({
     .default(LIMITS.defaultVisionRadius),
   isEnemy: z.boolean().default(false),
   initiative: initiative.default(null),
+  hp: hp.nullable().default(null),
+  maxHp: maxHp.nullable().default(null),
+  conditions: conditions.default([]),
 });
 
 export const token = z.object({
@@ -97,5 +105,11 @@ export const schemas = {
     span: z.number().min(0.01).max(100),
   }),
   initiativeChanged: z.object({ charId: id, initiative }),
+  healthChanged: z.object({
+    charId: id,
+    hp: hp.nullable(),
+    maxHp: maxHp.nullable(),
+  }),
+  conditionsChanged: z.object({ charId: id, conditions }),
   turnChanged: z.object({ charId: id.nullable() }),
 };
