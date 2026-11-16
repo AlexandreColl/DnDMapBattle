@@ -6,8 +6,14 @@ const CONDITION_SET = new Set(CONDITIONS);
 const LEVELS = new Set(Object.values(HEALTH));
 
 function hitPoints(value, min) {
-  if (value == null || value === "") return null;
-  const n = typeof value === "number" ? value : parseInt(value, 10);
+  // Numbers, or text from an input; anything else (even an object that
+  // cannot become text) is no value.
+  const n =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? parseInt(value, 10)
+        : NaN;
   if (!Number.isFinite(n)) return null;
   return clamp(Math.trunc(n), min, LIMITS.maxHp);
 }
