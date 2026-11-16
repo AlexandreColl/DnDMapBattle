@@ -14,6 +14,7 @@ import { calculateVision, generateGrid } from "./grid.js";
 import { t } from "./i18n.js";
 import { matrixMatches } from "./lib/geometry.js";
 import { normalizeConditions, normalizeHealth } from "./lib/health.js";
+import { resizeCharacter } from "./lib/size.js";
 import {
   isCellState,
   normalizeCharacter,
@@ -215,6 +216,12 @@ export function initSync() {
     if (!char) return;
     char.conditions = normalizeConditions(conditions);
     renderTokens();
+  });
+
+  onRemote(EVENTS.SIZE_CHANGED, ({ charId, size }) => {
+    if (!resizeCharacter(state, charId, size)) return;
+    renderTokens();
+    calculateVision();
   });
 
   onRemote(EVENTS.TURN_CHANGED, ({ charId }) => {

@@ -11,6 +11,11 @@ import {
   ROLES,
 } from "../../public/js/shared/protocol.js";
 import {
+  characterSize,
+  coveredCells,
+  fitsGrid,
+} from "../../public/js/lib/size.js";
+import {
   RejectedEventError,
   createGameState,
   reducers,
@@ -53,6 +58,7 @@ const character = fc.record({
   hp,
   maxHp,
   conditions,
+  size: fc.integer({ min: 1, max: 3 }),
 });
 const token = fc.record({
   id: tokenId,
@@ -120,6 +126,10 @@ const action = fc.oneof(
   on(EVENTS.HEALTH_CHANGED, fc.record({ charId, hp, maxHp }), 2),
   on(EVENTS.CONDITIONS_CHANGED, fc.record({ charId, conditions })),
   on(
+    EVENTS.SIZE_CHANGED,
+    fc.record({ charId, size: fc.integer({ min: 1, max: 5 }) }),
+  ),
+  on(
     EVENTS.TURN_CHANGED,
     fc.record({ charId: fc.option(charId, { nil: null }) }),
   ),
@@ -177,9 +187,9 @@ function expectConsistent(state) {
   expect(unique(state.tokens.map((t) => t.id))).toBe(true);
   expect(unique(state.tokens.map((t) => t.characterId))).toBe(true);
   for (const t of state.tokens) {
-    expect(charIds).toContain(t.characterId);
-    expect(t.row).toBeLessThan(rows);
-    expect(t.col).toBeLessThan(cols);
+    const char = state.characters.find((c) => c.id === t.characterId);
+    expect(char).toBeDefined();
+    expect(fitsGrid(t.row, t.col, characterSize(char), rows, cols)).toBe(true);
   }
   for (const c of state.characters) {
     if (c.maxHp == null) expect(c.hp).toBeNull();
@@ -249,7 +259,12 @@ describe("propiedades del servidor", () => {
           );
           for (const t of view.tokens) {
             if (enemies.has(t.characterId)) {
-              expect(state.cellStates[t.row][t.col]).not.toBe(CELL.HIDDEN);
+              // At least one of the cells it covers is in sight.
+              const char = state.characters.find((c) => c.id === t.characterId);
+              const seen = coveredCells(t, characterSize(char)).map(
+                ({ row, col }) => state.cellStates[row][col],
+              );
+              expect(seen.some((cell) => cell !== CELL.HIDDEN)).toBe(true);
             }
           }
           const onBoard = new Set(view.tokens.map((t) => t.characterId));

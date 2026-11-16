@@ -1,6 +1,7 @@
 // DM and player roles: who may send what, and what each player may see.
 import { timingSafeEqual } from "node:crypto";
 import { healthLevel } from "../public/js/lib/health.js";
+import { characterSize, coveredCells } from "../public/js/lib/size.js";
 import { computeVision } from "../public/js/lib/vision.js";
 import {
   CELL,
@@ -78,14 +79,19 @@ export function refreshVision(state) {
   });
 }
 
-/** Allies are always visible; enemies only on a visible or revealed cell. */
+/**
+ * Allies are always visible; enemies only with a cell they cover visible or
+ * revealed.
+ */
 function visibleTokens(state) {
   return state.tokens.filter((token) => {
     const char = state.characters.find((c) => c.id === token.characterId);
     if (!char) return false;
     if (!char.isEnemy) return true;
-    const cell = state.cellStates[token.row]?.[token.col];
-    return cell != null && cell !== CELL.HIDDEN;
+    return coveredCells(token, characterSize(char)).some(({ row, col }) => {
+      const cell = state.cellStates[row]?.[col];
+      return cell != null && cell !== CELL.HIDDEN;
+    });
   });
 }
 

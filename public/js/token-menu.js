@@ -1,5 +1,6 @@
 // Popover shown when clicking a token: initiative, vision, hit points,
 // conditions, remove.
+import { setSize, sizeOptions } from "./characters.js";
 import { $, mapContainer } from "./dom.js";
 import {
   CONDITION_ICONS,
@@ -11,6 +12,7 @@ import {
 } from "./health.js";
 import { t } from "./i18n.js";
 import { characterHealth } from "./lib/health.js";
+import { characterSize } from "./lib/size.js";
 import { CONDITIONS } from "./shared/protocol.js";
 import { canControl } from "./roles.js";
 import { state } from "./state.js";
@@ -30,6 +32,8 @@ const healthEl = $("#token-menu-health");
 const hpAdjust = $("#token-menu-hp-adjust");
 const amountInput = $("#token-menu-amount");
 const conditionsEl = $("#token-menu-conditions");
+const sizeSelect = $("#token-menu-size");
+const sizeText = $("#token-menu-size-text");
 
 /** Sets an input unless the user is typing in it. */
 function fillInput(input, value) {
@@ -71,10 +75,19 @@ function fillHealth(char) {
   if (shown.length === 0) conditionsEl.textContent = "—";
 }
 
+function fillSize(char) {
+  const size = characterSize(char);
+  sizeSelect.value = String(size);
+  sizeText.textContent = t(`size.${size}`);
+}
+
 /** Brings the open menu up to date after a change, here or remote. */
 export function refreshTokenMenu() {
   const char = !menu.hidden && selectedCharacter();
-  if (char) fillHealth(char);
+  if (char) {
+    fillHealth(char);
+    fillSize(char);
+  }
 }
 
 function selectedCharacter() {
@@ -116,6 +129,7 @@ export function openTokenMenu(tokenId) {
     : t("menu.visionCells", { count: char.visionRadius });
   amountInput.value = "";
   fillHealth(char);
+  fillSize(char);
   menu.hidden = false;
   position(tokenEl);
 }
@@ -128,6 +142,13 @@ export function closeTokenMenu() {
 }
 
 export function initTokenMenu() {
+  sizeSelect.replaceChildren(...sizeOptions());
+  sizeSelect.addEventListener("change", () => {
+    const char = selectedCharacter();
+    if (char) setSize(char, Number(sizeSelect.value));
+    // Shows the stored size: a refused change keeps the old one.
+    if (char) fillSize(char);
+  });
   initiativeInput.addEventListener("change", () => {
     const char = selectedCharacter();
     if (char) setInitiative(char, initiativeInput.value.trim());

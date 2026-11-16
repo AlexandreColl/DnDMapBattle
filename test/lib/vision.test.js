@@ -66,4 +66,17 @@ describe("computeVision", () => {
     expect(result[0][0]).toBe(R);
     expect(result[4][4]).toBe(H);
   });
+
+  it("lets a large ally see from every cell it covers", () => {
+    const result = computeVision(
+      board({
+        tokens: [{ id: 1, characterId: 1, row: 1, col: 1 }],
+        characters: [{ ...ally, size: 2 }],
+      }),
+    );
+    // Covers 1,1 to 2,2 and sees one cell around each of them.
+    expect(result[0]).toEqual([H, V, V, H, H]);
+    expect(result[2]).toEqual([V, V, V, V, H]);
+    expect(result[3]).toEqual([H, V, V, H, H]);
+  });
 });

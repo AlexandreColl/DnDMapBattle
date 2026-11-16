@@ -10,6 +10,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 - Puntos de golpe y estados en las fichas. Cada ficha puede tener PG máximos; desde su menú se aplica daño o curación y se marcan estados (los de D&D 5e y concentración). Una barra bajo la ficha muestra la vida, y a 0 PG la ficha queda apagada sin salir del mapa ni del turno.
 - Los jugadores llevan la vida y los estados de sus aliados. De los enemigos solo ven sus estados y si están ilesos, heridos, malheridos o caídos: el servidor nunca les envía los PG exactos.
+- Criaturas grandes: al crear una ficha se elige su tamaño (1×1, 2×2, 3×3 o 4×4 casillas) y el máster puede cambiarlo desde su menú. La ficha se centra en la casilla donde se suelta y nunca sale de la cuadrícula; un aliado grande ve desde todas sus casillas, y un enemigo grande aparece en cuanto se ve cualquiera de las suyas.
 - La interfaz está en español, inglés y catalán. Cada dispositivo usa el idioma de su navegador y se puede cambiar con el selector al pie del panel lateral; la elección se recuerda.
 - Roadmap en el README.
 

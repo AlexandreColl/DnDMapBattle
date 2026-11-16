@@ -127,6 +127,12 @@ export const es = {
   "menu.heal": "Curar",
   "menu.conditions": "Estados",
   "menu.remove": "Quitar del mapa",
+  "size.label": "Tamaño",
+  "size.1": "Pequeño o mediano (1×1)",
+  "size.2": "Grande (2×2)",
+  "size.3": "Enorme (3×3)",
+  "size.4": "Gargantuesco (4×4)",
+  "size.noRoom": "No cabe en la cuadrícula",
   "token.hp": "{hp}/{maxHp} PG",
 
   "health.unhurt": "Ileso",

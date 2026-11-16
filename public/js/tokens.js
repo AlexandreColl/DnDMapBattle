@@ -9,6 +9,7 @@ import { t } from "./i18n.js";
 import { characterHealth } from "./lib/health.js";
 import { canControl, isDm } from "./roles.js";
 import { cssUrl } from "./lib/sanitize.js";
+import { anchorFor, characterSize } from "./lib/size.js";
 import { EVENTS, HEALTH } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { state } from "./state.js";
@@ -82,6 +83,8 @@ function createTokenElement(token, char) {
   el.dataset.tokenId = token.id;
   el.dataset.charId = char.id;
   el.style.backgroundImage = cssUrl(char.imageUrl);
+  // Large creatures spread over the cells right and below their anchor.
+  el.style.setProperty("--size", String(characterSize(char)));
   el.classList.toggle("down", characterHealth(char) === HEALTH.DOWN);
   el.title = tokenTitle(char);
   el.append(...[healthBar(char), conditionBadges(char)].filter((part) => part));
@@ -147,7 +150,10 @@ function syncPlacedToken(token) {
   });
 }
 
-/** Drop from the roster (place/move) or from another cell (move). */
+/**
+ * Drop from the roster (place/move) or from another cell (move). A large
+ * token centers on the cell it is dropped on.
+ */
 export function placeOnCell(row, col, kind, id) {
   let token;
   if (kind === "char") {
@@ -162,8 +168,13 @@ export function placeOnCell(row, col, kind, id) {
   }
   if (!token) return;
 
-  token.row = row;
-  token.col = col;
+  const char = state.characters.find((c) => c.id === token.characterId);
+  const size = characterSize(char);
+  if (size > state.gridRows || size > state.gridCols) return;
+  Object.assign(
+    token,
+    anchorFor(row, col, size, state.gridRows, state.gridCols),
+  );
   syncPlacedToken(token);
 }
 

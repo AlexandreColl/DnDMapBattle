@@ -17,6 +17,7 @@ function exportCharacter(c) {
     hp: c.hp ?? null,
     maxHp: c.maxHp ?? null,
     conditions: c.conditions ?? [],
+    size: c.size ?? 1,
   };
 }
 

@@ -42,6 +42,7 @@ export const character = z.object({
   hp: hp.nullable().default(null),
   maxHp: maxHp.nullable().default(null),
   conditions: conditions.default([]),
+  size: z.number().int().min(1).max(LIMITS.maxSize).default(1),
 });
 
 export const token = z.object({
@@ -111,5 +112,9 @@ export const schemas = {
     maxHp: maxHp.nullable(),
   }),
   conditionsChanged: z.object({ charId: id, conditions }),
+  sizeChanged: z.object({
+    charId: id,
+    size: z.number().int().min(1).max(LIMITS.maxSize),
+  }),
   turnChanged: z.object({ charId: id.nullable() }),
 };

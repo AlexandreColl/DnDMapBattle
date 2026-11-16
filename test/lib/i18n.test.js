@@ -10,7 +10,7 @@ import {
 import { ca } from "../../public/js/locales/ca.js";
 import { en } from "../../public/js/locales/en.js";
 import { es } from "../../public/js/locales/es.js";
-import { CONDITIONS, HEALTH } from "../../public/js/shared/protocol.js";
+import { CONDITIONS, HEALTH, LIMITS } from "../../public/js/shared/protocol.js";
 
 const PUBLIC = path.join(import.meta.dirname, "../../public");
 const AVAILABLE = ["es", "en", "ca"];
@@ -55,9 +55,10 @@ function usedKeys() {
   }
   const lib = fs.readFileSync(path.join(dir, "lib/save-file.js"), "utf8");
   for (const m of lib.matchAll(/SaveFileError\("([^"]+)"\)/g)) keys.add(m[1]);
-  // Built from constants: condition.<id> and health.<level>.
+  // Built from constants: condition.<id>, health.<level> and size.<n>.
   for (const c of CONDITIONS) keys.add(`condition.${c}`);
   for (const level of Object.values(HEALTH)) keys.add(`health.${level}`);
+  for (let n = 1; n <= LIMITS.maxSize; n++) keys.add(`size.${n}`);
   return keys;
 }
 
