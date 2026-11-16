@@ -4,7 +4,8 @@ import { $$, cellElement, gridOverlay } from "./dom.js";
 import { makeDraggable } from "./drag.js";
 import { redrawFog } from "./fog.js";
 import { calculateVision } from "./grid.js";
-import { CONDITION_INFO, HEALTH_LABELS } from "./health.js";
+import { CONDITION_ICONS, conditionLabel, healthLabel } from "./health.js";
+import { t } from "./i18n.js";
 import { characterHealth } from "./lib/health.js";
 import { canControl, isDm } from "./roles.js";
 import { cssUrl } from "./lib/sanitize.js";
@@ -51,7 +52,7 @@ function conditionBadges(char) {
   const shown = conditions.length > MAX_BADGES ? MAX_BADGES - 1 : MAX_BADGES;
   for (const condition of conditions.slice(0, shown)) {
     const badge = document.createElement("span");
-    badge.textContent = CONDITION_INFO[condition].icon;
+    badge.textContent = CONDITION_ICONS[condition];
     badges.append(badge);
   }
   if (conditions.length > shown) {
@@ -67,11 +68,9 @@ function tokenTitle(char) {
   const level = characterHealth(char);
   const health =
     char.maxHp != null
-      ? `${char.hp}/${char.maxHp} PG`
-      : level && HEALTH_LABELS[level];
-  const conditions = (char.conditions ?? []).map(
-    (c) => CONDITION_INFO[c].label,
-  );
+      ? t("token.hp", { hp: char.hp, maxHp: char.maxHp })
+      : healthLabel(level);
+  const conditions = (char.conditions ?? []).map(conditionLabel);
   return [char.name, health, ...conditions].filter(Boolean).join(" · ");
 }
 

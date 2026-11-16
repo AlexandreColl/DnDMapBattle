@@ -8,26 +8,52 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <nav id="toolbar" aria-label="Herramientas">
-      <button class="tool active" data-tool="move" title="Mover (V)">
+    <nav
+      id="toolbar"
+      aria-label="Herramientas"
+      data-i18n-aria-label="toolbar.label"
+    >
+      <button
+        class="tool active"
+        data-tool="move"
+        title="Mover (V)"
+        data-i18n-title="tool.move.title"
+      >
         <svg class="icon"><use href="icons.svg#i-hand-move" /></svg>
       </button>
-      <button class="tool" data-tool="measure" title="Medir (M)">
+      <button
+        class="tool"
+        data-tool="measure"
+        title="Medir (M)"
+        data-i18n-title="tool.measure.title"
+      >
         <svg class="icon"><use href="icons.svg#i-ruler-measure" /></svg>
       </button>
       <button
         class="tool"
         data-tool="reveal"
         title="Revelar niebla (F)"
+        data-i18n-title="tool.reveal.title"
         data-dm-only
       >
         <svg class="icon"><use href="icons.svg#i-eye" /></svg>
       </button>
-      <button class="tool" data-tool="walls" title="Paredes (W)" data-dm-only>
+      <button
+        class="tool"
+        data-tool="walls"
+        title="Paredes (W)"
+        data-i18n-title="tool.walls.title"
+        data-dm-only
+      >
         <svg class="icon"><use href="icons.svg#i-wall" /></svg>
       </button>
       <div class="spacer"></div>
-      <button id="sidebar-toggle" class="tool" title="Mostrar u ocultar panel">
+      <button
+        id="sidebar-toggle"
+        class="tool"
+        title="Mostrar u ocultar panel"
+        data-i18n-title="sidebar.toggle"
+      >
         <svg class="icon">
           <use href="icons.svg#i-layout-sidebar-left-collapse" />
         </svg>
@@ -37,38 +63,50 @@
     <aside id="sidebar">
       <header id="sidebar-header">
         <img src="logo.png" alt="" id="sidebar-logo" />
-        <h1>Mesa de batalla</h1>
+        <h1 data-i18n="sidebar.title">Mesa de batalla</h1>
         <span id="role-badge" class="role-badge" hidden></span>
       </header>
 
       <div class="segmented" role="tablist" data-dm-only>
-        <button role="tab" data-panel="setup" aria-selected="false">
+        <button
+          role="tab"
+          data-panel="setup"
+          aria-selected="false"
+          data-i18n="panel.setup"
+        >
           Preparar
         </button>
-        <button role="tab" data-panel="play" aria-selected="true">
+        <button
+          role="tab"
+          data-panel="play"
+          aria-selected="true"
+          data-i18n="panel.play"
+        >
           Partida
         </button>
       </div>
 
       <div class="panel" id="panel-setup" hidden>
         <section>
-          <h2>Mapa</h2>
+          <h2 data-i18n="map.heading">Mapa</h2>
           <input type="file" id="map-upload" accept="image/*" hidden />
           <label for="map-upload" class="map-pick" id="map-pick">
             <span class="map-thumb" id="map-thumb"></span>
             <span class="map-meta">
-              <span id="map-name">Cargar mapa</span>
-              <span class="muted" id="grid-info">Cualquier imagen</span>
+              <span id="map-name" data-i18n="map.load">Cargar mapa</span>
+              <span class="muted" id="grid-info" data-i18n="map.anyImage"
+                >Cualquier imagen</span
+              >
             </span>
             <svg class="icon muted"><use href="icons.svg#i-photo" /></svg>
           </label>
         </section>
 
         <section>
-          <h2>Cuadrícula</h2>
+          <h2 data-i18n="grid.heading">Cuadrícula</h2>
           <div class="field-row">
             <label class="field">
-              <span>Cols</span>
+              <span data-i18n="grid.cols">Cols</span>
               <input
                 type="number"
                 id="grid-cols"
@@ -78,7 +116,7 @@
               />
             </label>
             <label class="field">
-              <span>Filas</span>
+              <span data-i18n="grid.rows">Filas</span>
               <input
                 type="number"
                 id="grid-rows"
@@ -89,11 +127,15 @@
             </label>
           </div>
           <div class="btn-row">
-            <button id="grid-generate" class="btn">Generar</button>
+            <button id="grid-generate" class="btn" data-i18n="grid.generate">
+              Generar
+            </button>
             <button
               id="grid-fit"
               class="btn"
               title="Calcula las filas para que cada celda sea cuadrada"
+              data-i18n-title="grid.fitTitle"
+              data-i18n="grid.fit"
             >
               Ajustar al mapa
             </button>
@@ -101,35 +143,37 @@
         </section>
 
         <section>
-          <h2>Paredes</h2>
-          <p class="hint">
+          <h2 data-i18n="walls.heading">Paredes</h2>
+          <p class="hint" data-i18n="walls.hint">
             Con la herramienta de paredes (W), arrastra para pintar. Mayús +
             arrastrar para borrar.
           </p>
-          <button id="clear-walls" class="btn danger">Limpiar paredes</button>
+          <button id="clear-walls" class="btn danger" data-i18n="walls.clear">
+            Limpiar paredes
+          </button>
         </section>
 
         <section>
-          <h2>Archivo</h2>
+          <h2 data-i18n="file.heading">Archivo</h2>
           <div class="btn-row">
             <button id="save-state" class="btn">
               <svg class="icon"><use href="icons.svg#i-device-floppy" /></svg>
-              Guardar
+              <span data-i18n="file.save">Guardar</span>
             </button>
             <button id="load-state" class="btn">
               <svg class="icon"><use href="icons.svg#i-folder-open" /></svg>
-              Cargar
+              <span data-i18n="file.load">Cargar</span>
             </button>
           </div>
           <input type="file" id="load-input" accept=".dndmap" hidden />
           <div class="btn-row">
             <button id="export-chars" class="btn">
               <svg class="icon"><use href="icons.svg#i-file-export" /></svg>
-              Exportar fichas
+              <span data-i18n="file.exportChars">Exportar fichas</span>
             </button>
             <button id="import-chars" class="btn">
               <svg class="icon"><use href="icons.svg#i-file-import" /></svg>
-              Importar fichas
+              <span data-i18n="file.importChars">Importar fichas</span>
             </button>
           </div>
           <input
@@ -140,41 +184,46 @@
           />
           <button id="clear-all" class="btn danger">
             <svg class="icon"><use href="icons.svg#i-trash" /></svg>
-            Limpiar todo
+            <span data-i18n="file.clearAll">Limpiar todo</span>
           </button>
         </section>
 
         <button class="btn primary" id="start-play">
-          Empezar partida
+          <span data-i18n="setup.startPlay">Empezar partida</span>
           <svg class="icon"><use href="icons.svg#i-chevrons-right" /></svg>
         </button>
       </div>
 
       <div class="panel" id="panel-play">
         <section data-dm-only>
-          <h2>Jugadores conectados</h2>
+          <h2 data-i18n="presence.heading">Jugadores conectados</h2>
           <p class="presence" id="presence">
             <span class="presence-dots" id="presence-dots"></span>
-            <span id="presence-text">Ningún jugador</span>
+            <span id="presence-text" data-i18n="presence.none"
+              >Ningún jugador</span
+            >
           </p>
           <button class="btn subtle" id="center-all">
             <svg class="icon"><use href="icons.svg#i-focus-centered" /></svg>
-            Centrar a todos aquí
+            <span data-i18n="view.centerAll">Centrar a todos aquí</span>
           </button>
         </section>
 
         <section>
-          <h2>Turno actual</h2>
+          <h2 data-i18n="turn.heading">Turno actual</h2>
           <div class="turn-card" id="turn-card">
             <span class="avatar" id="turn-avatar"></span>
             <span class="turn-meta">
               <span id="turn-display">—</span>
-              <span class="muted" id="turn-sub">Sin iniciativa</span>
+              <span class="muted" id="turn-sub" data-i18n="turn.none"
+                >Sin iniciativa</span
+              >
             </span>
             <button
               class="btn icon-btn primary"
               id="turn-next"
               title="Siguiente turno (N)"
+              data-i18n-title="turn.next"
               data-dm-only
             >
               <svg class="icon"><use href="icons.svg#i-chevrons-right" /></svg>
@@ -182,25 +231,42 @@
           </div>
           <button class="btn subtle" id="turn-start" data-dm-only>
             <svg class="icon"><use href="icons.svg#i-player-play" /></svg>
-            Empezar desde el primero
+            <span data-i18n="turn.start">Empezar desde el primero</span>
           </button>
         </section>
 
         <section>
-          <h2>Compañía</h2>
-          <div class="roster" id="roster-allies"></div>
+          <h2 data-i18n="roster.allies">Compañía</h2>
+          <div
+            class="roster"
+            id="roster-allies"
+            data-empty="Nadie todavía"
+            data-i18n-data-empty="roster.empty"
+          ></div>
           <h2 id="enemies-title">Enemigos</h2>
-          <div class="roster" id="roster-enemies"></div>
+          <div
+            class="roster"
+            id="roster-enemies"
+            data-empty="Nadie todavía"
+            data-i18n-data-empty="roster.empty"
+          ></div>
           <button class="btn subtle" id="char-add" data-dm-only>
             <svg class="icon"><use href="icons.svg#i-user-plus" /></svg>
-            Nueva ficha
+            <span data-i18n="roster.add">Nueva ficha</span>
           </button>
-          <p class="hint" data-player-only>
+          <p class="hint" data-player-only data-i18n="roster.playerHint">
             Arrastra a tu compañía; el máster controla el mapa, la niebla y los
             enemigos.
           </p>
         </section>
       </div>
+
+      <footer id="sidebar-footer">
+        <label class="field inline">
+          <span data-i18n="language">Idioma</span>
+          <select id="language-select"></select>
+        </label>
+      </footer>
     </aside>
 
     <main id="map-container">
@@ -216,15 +282,23 @@
         </div>
       </div>
 
-      <div id="initiative-bar" aria-label="Orden de iniciativa"></div>
+      <div
+        id="initiative-bar"
+        aria-label="Orden de iniciativa"
+        data-i18n-aria-label="turn.bar"
+      ></div>
 
       <div id="empty-state">
-        <p class="empty-title" data-dm-only>Prepara la mesa</p>
-        <p class="muted" data-dm-only>
+        <p class="empty-title" data-dm-only data-i18n="empty.dmTitle">
+          Prepara la mesa
+        </p>
+        <p class="muted" data-dm-only data-i18n="empty.dmText">
           Carga un mapa y genera la cuadrícula desde la pestaña Preparar.
         </p>
-        <p class="empty-title" data-player-only>Esperando al máster</p>
-        <p class="muted" data-player-only>
+        <p class="empty-title" data-player-only data-i18n="empty.playerTitle">
+          Esperando al máster
+        </p>
+        <p class="muted" data-player-only data-i18n="empty.playerText">
           La partida aparecerá aquí cuando el máster prepare la mesa.
         </p>
       </div>
@@ -232,11 +306,17 @@
       <div id="mode-hint" class="pill"></div>
 
       <div id="zoom-controls" class="pill">
-        <button id="zoom-out" title="Alejar">
+        <button id="zoom-out" title="Alejar" data-i18n-title="zoom.out">
           <svg class="icon"><use href="icons.svg#i-minus" /></svg>
         </button>
-        <button id="zoom-reset" title="Restablecer vista">100%</button>
-        <button id="zoom-in" title="Acercar">
+        <button
+          id="zoom-reset"
+          title="Restablecer vista"
+          data-i18n-title="zoom.reset"
+        >
+          100%
+        </button>
+        <button id="zoom-in" title="Acercar" data-i18n-title="zoom.in">
           <svg class="icon"><use href="icons.svg#i-plus" /></svg>
         </button>
       </div>
@@ -245,20 +325,25 @@
         <div class="popover-head">
           <span class="avatar" id="token-menu-avatar"></span>
           <strong id="token-menu-name"></strong>
-          <button class="icon-btn ghost" id="token-menu-close" title="Cerrar">
+          <button
+            class="icon-btn ghost"
+            id="token-menu-close"
+            title="Cerrar"
+            data-i18n-title="menu.close"
+          >
             <svg class="icon"><use href="icons.svg#i-x" /></svg>
           </button>
         </div>
         <label class="field inline" id="token-menu-initiative-field">
-          <span>Iniciativa</span>
+          <span data-i18n="menu.initiative">Iniciativa</span>
           <input type="number" id="token-menu-initiative" placeholder="—" />
         </label>
         <div class="field inline">
-          <span>Visión</span>
+          <span data-i18n="menu.vision">Visión</span>
           <span id="token-menu-vision"></span>
         </div>
         <div class="field inline" id="token-menu-hp-field">
-          <span>Vida</span>
+          <span data-i18n="menu.hp">Vida</span>
           <span class="hp-inputs" id="token-menu-hp-edit">
             <input
               type="number"
@@ -267,6 +352,7 @@
               max="9999"
               placeholder="—"
               aria-label="Puntos de golpe"
+              data-i18n-aria-label="menu.hpLabel"
             />
             <span aria-hidden="true">/</span>
             <input
@@ -276,6 +362,7 @@
               max="9999"
               placeholder="—"
               aria-label="Puntos de golpe máximos"
+              data-i18n-aria-label="menu.maxHpLabel"
             />
           </span>
           <span id="token-menu-health"></span>
@@ -288,17 +375,35 @@
             max="9999"
             placeholder="0"
             aria-label="Cantidad"
+            data-i18n-aria-label="menu.amount"
           />
-          <button type="button" class="btn danger" id="token-menu-damage">
+          <button
+            type="button"
+            class="btn danger"
+            id="token-menu-damage"
+            data-i18n="menu.damage"
+          >
             Daño
           </button>
-          <button type="button" class="btn" id="token-menu-heal">Curar</button>
+          <button
+            type="button"
+            class="btn"
+            id="token-menu-heal"
+            data-i18n="menu.heal"
+          >
+            Curar
+          </button>
         </div>
         <div class="field">
-          <span>Estados</span>
+          <span data-i18n="menu.conditions">Estados</span>
           <div class="conditions" id="token-menu-conditions"></div>
         </div>
-        <button class="btn danger" id="token-menu-remove" data-dm-only>
+        <button
+          class="btn danger"
+          id="token-menu-remove"
+          data-dm-only
+          data-i18n="menu.remove"
+        >
           Quitar del mapa
         </button>
       </div>
@@ -308,7 +413,7 @@
 
     <dialog id="token-editor">
       <form method="dialog" id="editor-form">
-        <h2>Nueva ficha</h2>
+        <h2 data-i18n="editor.title">Nueva ficha</h2>
         <div class="editor-layout">
           <div class="editor-preview">
             <input type="file" id="char-upload" accept="image/*" hidden />
@@ -316,46 +421,58 @@
               <canvas id="editor-canvas" width="300" height="300"></canvas>
               <span class="editor-drop-text" id="editor-drop-text">
                 <svg class="icon"><use href="icons.svg#i-photo" /></svg>
-                Elegir imagen
+                <span data-i18n="editor.chooseImage">Elegir imagen</span>
               </span>
             </label>
-            <span class="hint"
+            <span class="hint" data-i18n="editor.hint"
               >Rueda: zoom · arrastrar: encuadre · doble clic: otra imagen</span
             >
           </div>
           <div class="editor-controls">
             <label class="field">
-              <span>Nombre</span>
+              <span data-i18n="editor.name">Nombre</span>
               <input
                 type="text"
                 id="char-name"
                 placeholder="Nombre del personaje"
+                data-i18n-placeholder="editor.namePlaceholder"
                 maxlength="60"
                 autocomplete="off"
               />
             </label>
             <div class="segmented" id="editor-side">
-              <button type="button" data-enemy="false" aria-pressed="true">
+              <button
+                type="button"
+                data-enemy="false"
+                aria-pressed="true"
+                data-i18n="editor.ally"
+              >
                 Aliado
               </button>
-              <button type="button" data-enemy="true" aria-pressed="false">
+              <button
+                type="button"
+                data-enemy="true"
+                aria-pressed="false"
+                data-i18n="editor.enemy"
+              >
                 Enemigo
               </button>
             </div>
             <div class="field">
-              <span>Color del borde</span>
+              <span data-i18n="editor.borderColor">Color del borde</span>
               <div class="swatches" id="editor-swatches">
                 <input
                   type="color"
                   id="editor-color"
                   value="#e3b955"
                   title="Color personalizado"
+                  data-i18n-title="editor.customColor"
                 />
               </div>
             </div>
             <div class="field-row">
               <label class="field" id="editor-vision-label">
-                <span>Visión</span>
+                <span data-i18n="editor.vision">Visión</span>
                 <input
                   type="number"
                   id="editor-vision"
@@ -365,7 +482,7 @@
                 />
               </label>
               <label class="field">
-                <span>Iniciativa</span>
+                <span data-i18n="editor.initiative">Iniciativa</span>
                 <input
                   type="number"
                   id="editor-initiative"
@@ -375,7 +492,7 @@
                 />
               </label>
               <label class="field">
-                <span>PG máx.</span>
+                <span data-i18n="editor.maxHp">PG máx.</span>
                 <input
                   type="number"
                   id="editor-max-hp"
@@ -388,10 +505,20 @@
           </div>
         </div>
         <div class="dialog-actions">
-          <button type="button" class="btn subtle" id="editor-cancel">
+          <button
+            type="button"
+            class="btn subtle"
+            id="editor-cancel"
+            data-i18n="editor.cancel"
+          >
             Cancelar
           </button>
-          <button type="submit" class="btn primary" id="editor-confirm">
+          <button
+            type="submit"
+            class="btn primary"
+            id="editor-confirm"
+            data-i18n="editor.confirm"
+          >
             Añadir ficha
           </button>
         </div>
@@ -403,8 +530,15 @@
         <h2 id="confirm-title"></h2>
         <p id="confirm-message"></p>
         <div class="dialog-actions">
-          <button value="cancel" class="btn subtle">Cancelar</button>
-          <button value="ok" class="btn danger" id="confirm-ok">
+          <button value="cancel" class="btn subtle" data-i18n="confirm.cancel">
+            Cancelar
+          </button>
+          <button
+            value="ok"
+            class="btn danger"
+            id="confirm-ok"
+            data-i18n="confirm.ok"
+          >
             Confirmar
           </button>
         </div>

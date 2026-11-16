@@ -1,5 +1,6 @@
 // Distance measurement between two cells (local only, not synced).
 import { $, $$, cellElement, gridOverlay, mapWrapper } from "./dom.js";
+import { t } from "./i18n.js";
 import { cellDistance } from "./lib/geometry.js";
 import { state } from "./state.js";
 import { resetHint, setHint } from "./tools.js";
@@ -61,7 +62,7 @@ function updateMeasurement() {
   if (posA) placeAt(markerA, posA);
 
   if (!b) {
-    setHint("Medir · haz clic en otra casilla");
+    setHint(t("measure.next"));
     return;
   }
 
@@ -76,8 +77,8 @@ function updateMeasurement() {
   line.style.width = `${Math.hypot(dx, dy)}px`;
   line.style.transform = `rotate(${(Math.atan2(dy, dx) * 180) / Math.PI}deg)`;
 
-  const text = `${cellDistance(a, b).toFixed(1)} casillas`;
+  const text = t("measure.cells", { count: cellDistance(a, b).toFixed(1) });
   label.textContent = text;
   placeAt(label, { x: (posA.x + posB.x) / 2, y: (posA.y + posB.y) / 2 - 18 });
-  setHint(`Distancia: ${text}`);
+  setHint(t("measure.distance", { distance: text }));
 }

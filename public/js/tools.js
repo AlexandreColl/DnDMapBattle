@@ -1,5 +1,6 @@
 // Exclusive map tools: move, measure, reveal fog and paint walls.
 import { $, $$, mapContainer } from "./dom.js";
+import { t } from "./i18n.js";
 import { clearMeasurement } from "./measure.js";
 import { isDm } from "./roles.js";
 import { state } from "./state.js";
@@ -8,18 +9,18 @@ import { icon } from "./ui.js";
 import { applyWallCells } from "./walls.js";
 
 const TOOLS = {
-  move: { icon: "hand-move", hint: "Mover · arrastra fichas o el mapa" },
+  move: { icon: "hand-move", hint: "tool.move.hint" },
   measure: {
     icon: "ruler-measure",
-    hint: "Medir · haz clic en dos casillas",
+    hint: "tool.measure.hint",
   },
   reveal: {
     icon: "eye",
-    hint: "Revelar niebla · clic para revelar u ocultar una casilla",
+    hint: "tool.reveal.hint",
   },
   walls: {
     icon: "wall",
-    hint: "Paredes · arrastra para pintar, Mayús para borrar · Esc para salir",
+    hint: "tool.walls.hint",
   },
 };
 
@@ -34,7 +35,7 @@ export function setHint(text) {
 }
 
 export function resetHint() {
-  setHint(TOOLS[state.tool].hint);
+  setHint(t(TOOLS[state.tool].hint));
 }
 
 /** Tools a player may use; the rest change the board for everyone. */

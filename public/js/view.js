@@ -2,6 +2,7 @@
 // everyone to the area they are looking at.
 import { $, gridOverlay, mapContainer, mapWrapper } from "./dom.js";
 import { cancelDrag } from "./drag.js";
+import { t } from "./i18n.js";
 import { clamp } from "./lib/geometry.js";
 import { EVENTS, LIMITS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
@@ -78,7 +79,7 @@ export function centerEveryone() {
     y: clamp((centerY - grid.top) / grid.height, 0, 1),
     span: clamp(width / state.zoom / grid.width, 0.01, 100),
   });
-  toast("Has centrado a todos en tu vista", { kind: "success" });
+  toast(t("view.centered"), { kind: "success" });
 }
 
 /** Frames the area the DM sent with `centerEveryone`. */
@@ -95,7 +96,7 @@ export function applyCenter({ x, y, span }) {
   state.panX = width / 2 - (grid.left + x * grid.width) * state.zoom;
   state.panY = height / 2 - (grid.top + y * grid.height) * state.zoom;
   applyTransform();
-  toast("El máster te ha llevado a su vista");
+  toast(t("view.broughtByDm"));
 }
 
 // Pointers currently pressed on the map, by pointerId → { x, y }.

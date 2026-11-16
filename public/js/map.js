@@ -12,6 +12,7 @@ import {
   updateGridInfo,
   updateGridLayout,
 } from "./grid.js";
+import { t } from "./i18n.js";
 import { cssUrl, isSafeImageUrl } from "./lib/sanitize.js";
 import { EVENTS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
@@ -22,7 +23,7 @@ const mapName = $("#map-name");
 
 function showMapInPicker(src, name) {
   thumb.style.backgroundImage = src ? cssUrl(src) : "";
-  mapName.textContent = src ? name || "Mapa cargado" : "Cargar mapa";
+  mapName.textContent = src ? name || t("map.loaded") : t("map.load");
 }
 
 /**
