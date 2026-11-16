@@ -9,6 +9,7 @@ import {
   updateGridInfo,
   updateGridLayout,
 } from "./grid.js";
+import { t } from "./i18n.js";
 import { fitMatrix } from "./lib/geometry.js";
 import {
   isCellState,
@@ -146,10 +147,9 @@ export function hasBoardData(data) {
 export function initBoard() {
   $("#clear-all").addEventListener("click", async () => {
     const ok = await confirmDialog({
-      title: "Limpiar todo",
-      message:
-        "Se borrarán el mapa, la cuadrícula y todas las fichas para todos los jugadores.",
-      confirmLabel: "Limpiar todo",
+      title: t("file.clearAll"),
+      message: t("file.clearAllMessage"),
+      confirmLabel: t("file.clearAll"),
     });
     if (!ok) return;
     resetBoard();

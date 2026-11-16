@@ -2,12 +2,14 @@
 // conditions, remove.
 import { $, mapContainer } from "./dom.js";
 import {
-  CONDITION_INFO,
-  HEALTH_LABELS,
+  CONDITION_ICONS,
+  conditionLabel,
+  healthLabel,
   changeHp,
   setHealth,
   toggleCondition,
 } from "./health.js";
+import { t } from "./i18n.js";
 import { characterHealth } from "./lib/health.js";
 import { CONDITIONS } from "./shared/protocol.js";
 import { canControl } from "./roles.js";
@@ -35,7 +37,8 @@ function fillInput(input, value) {
 }
 
 function conditionChip(char, condition, editable) {
-  const { label, icon } = CONDITION_INFO[condition];
+  const label = conditionLabel(condition);
+  const icon = CONDITION_ICONS[condition];
   const chip = document.createElement(editable ? "button" : "span");
   chip.className = "condition";
   chip.textContent = icon;
@@ -58,7 +61,7 @@ function fillHealth(char) {
   healthEl.hidden = editable;
   fillInput(hpInput, char.hp);
   fillInput(maxHpInput, char.maxHp);
-  healthEl.textContent = HEALTH_LABELS[characterHealth(char)] ?? "—";
+  healthEl.textContent = healthLabel(characterHealth(char)) ?? "—";
 
   // Others' conditions are only listed; with none, a dash.
   const shown = editable ? CONDITIONS : (char.conditions ?? []);
@@ -109,8 +112,8 @@ export function openTokenMenu(tokenId) {
   // Players do not see or change enemy initiative.
   initiativeField.hidden = !canControl(char);
   visionEl.textContent = char.isEnemy
-    ? "Enemigo"
-    : `${char.visionRadius} casillas`;
+    ? t("menu.enemy")
+    : t("menu.visionCells", { count: char.visionRadius });
   amountInput.value = "";
   fillHealth(char);
   menu.hidden = false;

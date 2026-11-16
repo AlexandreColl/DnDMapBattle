@@ -1,6 +1,7 @@
 // Wall painting. Walls block line of sight in the vision calculation.
 import { $, $$, cellElement, cellFromTarget, gridOverlay } from "./dom.js";
 import { calculateVision } from "./grid.js";
+import { t } from "./i18n.js";
 import { EVENTS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { state } from "./state.js";
@@ -88,9 +89,9 @@ export function initWalls() {
   $("#clear-walls").addEventListener("click", async () => {
     if (!state.gridRows) return;
     const ok = await confirmDialog({
-      title: "Limpiar paredes",
-      message: "Se borrarán todas las paredes del mapa.",
-      confirmLabel: "Limpiar",
+      title: t("walls.clear"),
+      message: t("walls.confirmMessage"),
+      confirmLabel: t("walls.confirm"),
     });
     if (!ok) return;
     state.wallCells = state.wallCells.map((row) => row.map(() => false));

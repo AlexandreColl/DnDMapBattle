@@ -333,6 +333,21 @@ input[type="text"]:focus {
   border-bottom: 1px solid var(--line);
 }
 
+#sidebar-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+#language-select {
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-1);
+  color: var(--text);
+  font: inherit;
+}
+
 #sidebar-logo {
   width: 30px;
   height: 30px;
@@ -478,7 +493,7 @@ input[type="text"]:focus {
 }
 
 .roster:empty::before {
-  content: "Nadie todavía";
+  content: attr(data-empty);
   color: var(--text-faint);
   font-size: 12px;
   padding: 2px 6px;

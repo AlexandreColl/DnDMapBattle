@@ -66,6 +66,7 @@ Características principales:
 - :straight_ruler: Medición de distancias entre casillas
 - :floppy_disk: Guardado automático en el servidor, además de guardar/cargar partidas y exportar/importar personajes
 - :satellite: Sincronización multijugador en tiempo real sin cuentas ni nube
+- :globe_with_meridians: En español, inglés y catalán
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
@@ -154,6 +155,7 @@ La partida se guarda sola en `data/partida.json` cada pocos segundos y al cerrar
 | Destapar celda (máster)  | Clic central o `Mayús + clic`                  |
 | Centrar a todos (máster) | _Centrar a todos aquí_ en _Partida_            |
 | Ocultar panel            | Botón inferior de la barra de herramientas     |
+| Idioma                   | Selector al pie del panel lateral              |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
@@ -249,6 +251,7 @@ public/                 Cliente (servido tal cual, sin build)
   js/main.js            Punto de entrada
   js/lib/               Lógica pura y testeable (visión, geometría, iniciativa, ficheros)
   js/shared/protocol.js Eventos y límites compartidos con el servidor
+  js/locales/           Textos de la interfaz: es (referencia), en, ca
 server/
   index.js              Arranque
   app.js                Express + Socket.IO
@@ -260,6 +263,8 @@ e2e/                    Tests E2E: dos jugadores, táctil y accesibilidad
 
 Cada mensaje que llega por WebSocket se valida en el servidor antes de aplicarse y reenviarse; los mensajes no válidos se descartan y se registran en la consola.
 
+Los textos de la interfaz no se escriben en el código: van en `public/js/locales/` con una clave (`t("turn.of", { name })` en JS, `data-i18n="..."` en el HTML). Un texto nuevo se añade en los tres idiomas; los tests fallan si falta alguno o si sobra uno que ya no se usa.
+
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
 ## Roadmap
@@ -268,7 +273,7 @@ Cada mensaje que llega por WebSocket se valida en el servidor antes de aplicarse
 - [ ] Criaturas grandes que ocupan varias casillas (2×2, 3×3)
 - [ ] Plantillas de área para hechizos: círculos, conos y líneas
 - [ ] Tirador de dados compartido, con tiradas públicas u ocultas del máster
-- [ ] Selector de idioma: inglés y catalán, además del español
+- [x] Selector de idioma: inglés y catalán, además del español
 
 Los cambios ya publicados están en el [CHANGELOG](CHANGELOG.md).
 

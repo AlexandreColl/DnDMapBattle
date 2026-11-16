@@ -7,6 +7,7 @@ import {
   parseInitiative,
 } from "../../public/js/lib/sanitize.js";
 import {
+  SaveFileError,
   buildSaveData,
   parseCharactersFile,
   parseSaveFile,
@@ -91,9 +92,11 @@ describe("save files", () => {
   });
 
   it("rejects files without a valid grid", () => {
-    expect(() => parseSaveFile("{}")).toThrow("Formato no válido");
+    expect(() => parseSaveFile("{}")).toThrow(
+      new SaveFileError("file.invalidFormat"),
+    );
     expect(() => parseSaveFile('{"version":1,"gridRows":0}')).toThrow(
-      "Tamaño de cuadrícula",
+      new SaveFileError("file.invalidGrid"),
     );
   });
 

@@ -1,38 +1,41 @@
 // Hit points and conditions: how they are shown, and the changes made here.
+import { t } from "./i18n.js";
 import {
   adjustHp,
   normalizeConditions,
   normalizeHealth,
 } from "./lib/health.js";
-import { EVENTS, HEALTH } from "./shared/protocol.js";
+import { EVENTS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { renderTokens } from "./tokens.js";
 
-export const CONDITION_INFO = Object.freeze({
-  blinded: { label: "Cegado", icon: "🙈" },
-  charmed: { label: "Hechizado", icon: "💖" },
-  deafened: { label: "Ensordecido", icon: "🔇" },
-  frightened: { label: "Asustado", icon: "😱" },
-  grappled: { label: "Agarrado", icon: "✊" },
-  incapacitated: { label: "Incapacitado", icon: "💫" },
-  invisible: { label: "Invisible", icon: "👻" },
-  paralyzed: { label: "Paralizado", icon: "⚡" },
-  petrified: { label: "Petrificado", icon: "🗿" },
-  poisoned: { label: "Envenenado", icon: "🤢" },
-  prone: { label: "Derribado", icon: "🛌" },
-  restrained: { label: "Apresado", icon: "⛓️" },
-  stunned: { label: "Aturdido", icon: "😵" },
-  unconscious: { label: "Inconsciente", icon: "💤" },
-  exhausted: { label: "Agotado", icon: "🥱" },
-  concentrating: { label: "Concentrado", icon: "🔮" },
+export const CONDITION_ICONS = Object.freeze({
+  blinded: "🙈",
+  charmed: "💖",
+  deafened: "🔇",
+  frightened: "😱",
+  grappled: "✊",
+  incapacitated: "💫",
+  invisible: "👻",
+  paralyzed: "⚡",
+  petrified: "🗿",
+  poisoned: "🤢",
+  prone: "🛌",
+  restrained: "⛓️",
+  stunned: "😵",
+  unconscious: "💤",
+  exhausted: "🥱",
+  concentrating: "🔮",
 });
 
-export const HEALTH_LABELS = Object.freeze({
-  [HEALTH.UNHURT]: "Ileso",
-  [HEALTH.HURT]: "Herido",
-  [HEALTH.BLOODIED]: "Malherido",
-  [HEALTH.DOWN]: "Caído",
-});
+export function conditionLabel(condition) {
+  return t(`condition.${condition}`);
+}
+
+/** "Unhurt", "Hurt"… for a HEALTH level, or null without one. */
+export function healthLabel(level) {
+  return level ? t(`health.${level}`) : null;
+}
 
 export function setHealth(char, hp, maxHp) {
   Object.assign(char, normalizeHealth(hp, maxHp));
