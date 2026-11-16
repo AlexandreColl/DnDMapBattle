@@ -14,6 +14,11 @@ describe("hit points", () => {
     expect(normalizeHealth(5, null)).toEqual({ hp: null, maxHp: null });
     expect(normalizeHealth(5, "")).toEqual({ hp: null, maxHp: null });
     expect(normalizeHealth(5, "abc")).toEqual({ hp: null, maxHp: null });
+    // Found by fast-check: an object that cannot become text.
+    expect(normalizeHealth(1, { toString: 1 })).toEqual({
+      hp: null,
+      maxHp: null,
+    });
   });
 
   it("starts at the maximum and never goes above it", () => {
