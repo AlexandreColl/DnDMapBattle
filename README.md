@@ -284,7 +284,7 @@ Los textos de la interfaz no se escriben en el código: van en `public/js/locale
 - [x] Criaturas grandes que ocupan varias casillas (2×2, 3×3, 4×4)
 - [ ] Plantillas de área para hechizos: círculos, conos y líneas
 - [ ] Tirador de dados compartido, con tiradas públicas u ocultas del máster
-- [ ] Más clases en el editor de fichas, con las de D&D que faltan (bárbaro, bardo, clérigo, hechicero…)
+- [ ] Más variantes de clases de Warcraft en el editor de fichas, cada una con su color de borde
 - [x] Selector de idioma: inglés y catalán, además del español
 
 Los cambios ya publicados están en el [CHANGELOG](CHANGELOG.md).
