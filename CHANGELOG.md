@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.6.0] - 2026-11-24
+
 ### Añadido
 
 - Puntos de golpe y estados en las fichas. Cada ficha puede tener PG máximos; desde su menú se aplica daño o curación y se marcan estados (los de D&D 5e y concentración). Una barra bajo la ficha muestra la vida, y a 0 PG la ficha queda apagada sin salir del mapa ni del turno.
@@ -153,7 +155,8 @@ Primera versión estable.
 - Cargar una partida o importar personajes no se sincronizaba con los demás jugadores.
 - El zoom saltaba al llegar a los límites.
 
-[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.5.0...HEAD
+[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.2.0...v1.3.0
