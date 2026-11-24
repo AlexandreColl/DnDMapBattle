@@ -57,6 +57,10 @@ DnD Map Battle es una herramienta digital para Dungeon Masters que permite gesti
 
 Todo funciona en local, sin cuentas ni servidores externos. La sincronización multijugador se realiza en tiempo real a través de WebSocket, permitiendo que el DM y los jugadores compartan la misma vista desde sus dispositivos conectados a la misma red WiFi.
 
+<p align="center">
+  <img src="docs/screenshots/master.jpg" alt="Vista del máster: una cripta con fichas, niebla semitransparente, barra de iniciativa y panel de partida" width="900">
+</p>
+
 Características principales:
 
 - :joystick: Carga cualquier imagen como mapa y coloca fichas arrastrándolas
@@ -68,6 +72,11 @@ Características principales:
 - :floppy_disk: Guardado automático en el servidor, además de guardar/cargar partidas y exportar/importar personajes
 - :satellite: Sincronización multijugador en tiempo real sin cuentas ni nube
 - :globe_with_meridians: En español, inglés y catalán
+
+| Lo que ve un jugador                                                                                                                       | Menú de ficha                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| ![Vista del jugador: niebla opaca, sin el esqueleto oculto ni los PG de los enemigos](docs/screenshots/jugador.jpg)                        | ![Menú de ficha con iniciativa, tamaño, vida, daño y curación y estados](docs/screenshots/menu-ficha.jpg) |
+| La niebla es opaca y los enemigos que nadie ve no llegan al navegador. De los visibles solo se sabe si están ilesos, heridos o malheridos. | Iniciativa, tamaño, vida y estados de cada ficha. El jugador solo los edita en sus aliados.               |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
@@ -216,6 +225,7 @@ Variables de entorno opcionales:
 | `pnpm format`        | Formatea el código con Prettier                            |
 | `pnpm check`         | Lint + formato + tipos + tests unitarios                   |
 | `pnpm audit`         | Busca vulnerabilidades en las dependencias                 |
+| `pnpm screenshots`   | Regenera las capturas del README en `docs/screenshots`     |
 
 Antes del primer `pnpm test:e2e`, descarga los navegadores con `pnpm exec playwright install chromium firefox webkit`. Para probar solo uno: `pnpm test:e2e --project=chromium`.
 
