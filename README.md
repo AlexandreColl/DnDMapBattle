@@ -44,6 +44,7 @@
     <li><a href="#uso">Uso</a></li>
     <li><a href="#multijugador">Multijugador</a></li>
     <li><a href="#desarrollo">Desarrollo</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contribuir">Contribuir</a></li>
     <li><a href="#licencia">Licencia</a></li>
     <li><a href="#contacto">Contacto</a></li>
@@ -56,14 +57,26 @@ DnD Map Battle es una herramienta digital para Dungeon Masters que permite gesti
 
 Todo funciona en local, sin cuentas ni servidores externos. La sincronización multijugador se realiza en tiempo real a través de WebSocket, permitiendo que el DM y los jugadores compartan la misma vista desde sus dispositivos conectados a la misma red WiFi.
 
+<p align="center">
+  <img src="docs/screenshots/master.jpg" alt="Vista del máster: una cripta con fichas, niebla semitransparente, barra de iniciativa y panel de partida" width="900">
+</p>
+
 Características principales:
 
 - :joystick: Carga cualquier imagen como mapa y coloca fichas arrastrándolas
 - :crossed_swords: Niebla de guerra híbrida: visión automática por personaje, paredes que bloquean la visión y revelado manual
 - :hourglass: Iniciativa y control de turnos
+- :heart: Puntos de golpe y estados (envenenado, derribado…) en cada ficha
+- :dragon: Criaturas grandes que ocupan 2×2, 3×3 o 4×4 casillas
 - :straight_ruler: Medición de distancias entre casillas
 - :floppy_disk: Guardado automático en el servidor, además de guardar/cargar partidas y exportar/importar personajes
 - :satellite: Sincronización multijugador en tiempo real sin cuentas ni nube
+- :globe_with_meridians: En español, inglés y catalán
+
+| Lo que ve un jugador                                                                                                                       | Menú de ficha                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| ![Vista del jugador: niebla opaca, sin el esqueleto oculto ni los PG de los enemigos](docs/screenshots/jugador.jpg)                        | ![Menú de ficha con iniciativa, tamaño, vida, daño y curación y estados](docs/screenshots/menu-ficha.jpg) |
+| La niebla es opaca y los enemigos que nadie ve no llegan al navegador. De los visibles solo se sabe si están ilesos, heridos o malheridos. | Iniciativa, tamaño, vida y estados de cada ficha. El jugador solo los edita en sus aliados.               |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
@@ -123,9 +136,10 @@ El panel lateral del máster tiene dos pestañas: **Preparar** (mapa, cuadrícul
 1. **Carga un mapa** en _Preparar_: cualquier imagen sirve
 2. **Genera la cuadrícula**: configura columnas y filas, o pulsa _Ajustar al mapa_ para obtener celdas cuadradas
 3. **Pinta las paredes** con la herramienta de paredes (`W`): bloquean la visión
-4. **Añade fichas** en _Partida_ con _Nueva ficha_: el editor convierte tus imágenes en fichas circulares con borde de color
+4. **Añade fichas** en _Partida_ con _Nueva ficha_: el editor convierte tus imágenes en fichas circulares con borde de color; las criaturas grandes ocupan 2×2, 3×3 o 4×4 casillas
 5. **Arrastra las fichas al mapa**: los aliados iluminan el mapa según su radio de visión
 6. **Gestiona los turnos**: escribe la iniciativa junto a cada ficha y avanza con `N`
+7. **Lleva la vida y los estados**: pon los PG máximos al crear la ficha; luego haz clic en ella para aplicar daño o curación y marcar estados
 
 La partida se guarda sola en `data/partida.json` cada pocos segundos y al cerrar el servidor, así que al volver a arrancarlo sigue donde la dejaste. Para empezar otra, usa _Limpiar todo_. _Guardar_ sigue sirviendo para llevarte una copia (`.dndmap`) o tener varias partidas.
 
@@ -151,6 +165,7 @@ La partida se guarda sola en `data/partida.json` cada pocos segundos y al cerrar
 | Destapar celda (máster)  | Clic central o `Mayús + clic`                  |
 | Centrar a todos (máster) | _Centrar a todos aquí_ en _Partida_            |
 | Ocultar panel            | Botón inferior de la barra de herramientas     |
+| Idioma                   | Selector al pie del panel lateral              |
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
@@ -171,8 +186,9 @@ Conecta tablets y móviles al mismo mapa en tiempo real.
 | ----------------------------------- | ----------------------------------------- | ------------------------------------------- |
 | Mapa, cuadrícula, paredes, archivos | ✅                                        | ❌                                          |
 | Niebla                              | Semitransparente; puede revelar casillas  | Opaca                                       |
-| Fichas aliadas                      | Mover, quitar, iniciativa                 | Mover e iniciativa                          |
+| Fichas aliadas                      | Mover, quitar, iniciativa, vida, estados  | Mover, iniciativa, vida, estados            |
 | Enemigos                            | Todos                                     | Solo los que la compañía ve, sin iniciativa |
+| Vida de los enemigos                | Exacta                                    | Solo ileso, herido, malherido o caído       |
 | Turnos                              | Empezar y pasar turno                     | Ver el turno actual                         |
 | Zoom y encuadre                     | Propio; puede centrar a todos en su vista | Propio                                      |
 
@@ -209,6 +225,7 @@ Variables de entorno opcionales:
 | `pnpm format`        | Formatea el código con Prettier                            |
 | `pnpm check`         | Lint + formato + tipos + tests unitarios                   |
 | `pnpm audit`         | Busca vulnerabilidades en las dependencias                 |
+| `pnpm screenshots`   | Regenera las capturas del README en `docs/screenshots`     |
 
 Antes del primer `pnpm test:e2e`, descarga los navegadores con `pnpm exec playwright install chromium firefox webkit`. Para probar solo uno: `pnpm test:e2e --project=chromium`.
 
@@ -245,6 +262,7 @@ public/                 Cliente (servido tal cual, sin build)
   js/main.js            Punto de entrada
   js/lib/               Lógica pura y testeable (visión, geometría, iniciativa, ficheros)
   js/shared/protocol.js Eventos y límites compartidos con el servidor
+  js/locales/           Textos de la interfaz: es (referencia), en, ca
 server/
   index.js              Arranque
   app.js                Express + Socket.IO
@@ -255,6 +273,20 @@ e2e/                    Tests E2E: dos jugadores, táctil y accesibilidad
 ```
 
 Cada mensaje que llega por WebSocket se valida en el servidor antes de aplicarse y reenviarse; los mensajes no válidos se descartan y se registran en la consola.
+
+Los textos de la interfaz no se escriben en el código: van en `public/js/locales/` con una clave (`t("turn.of", { name })` en JS, `data-i18n="..."` en el HTML). Un texto nuevo se añade en los tres idiomas; los tests fallan si falta alguno o si sobra uno que ya no se usa.
+
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
+
+## Roadmap
+
+- [x] Vida y estados en las fichas, con la vida exacta de los enemigos solo para el máster
+- [x] Criaturas grandes que ocupan varias casillas (2×2, 3×3, 4×4)
+- [ ] Plantillas de área para hechizos: círculos, conos y líneas
+- [ ] Tirador de dados compartido, con tiradas públicas u ocultas del máster
+- [x] Selector de idioma: inglés y catalán, además del español
+
+Los cambios ya publicados están en el [CHANGELOG](CHANGELOG.md).
 
 <p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 

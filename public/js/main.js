@@ -3,6 +3,7 @@ import { $ } from "./dom.js";
 import { initDrag } from "./drag.js";
 import { initEditor } from "./editor.js";
 import { initGrid } from "./grid.js";
+import { LANGUAGES, language, setLanguage, translatePage } from "./i18n.js";
 import { initMap } from "./map.js";
 import { initPanels } from "./panels.js";
 import { initPersistence } from "./persistence.js";
@@ -15,6 +16,23 @@ import { SHORTCUTS, initTools, setTool } from "./tools.js";
 import { advanceTurn, initTurns } from "./turns.js";
 import { initView } from "./view.js";
 import { initWalls } from "./walls.js";
+
+/** Translates the page and fills the language selector. */
+function initLanguage() {
+  translatePage();
+  const select = $("#language-select");
+  select.replaceChildren(
+    ...Object.entries(LANGUAGES).map(([code, name]) => {
+      const option = document.createElement("option");
+      option.value = code;
+      option.textContent = name;
+      option.lang = code;
+      return option;
+    }),
+  );
+  select.value = language;
+  select.addEventListener("change", () => setLanguage(select.value));
+}
 
 function isTyping(target) {
   return target.closest?.("input, textarea, select, [contenteditable]");
@@ -53,6 +71,7 @@ function preventBrowserDefaults() {
   });
 }
 
+initLanguage();
 initPanels();
 initView();
 initDrag();

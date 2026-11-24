@@ -2,13 +2,15 @@
 import { $, $$, revokeIfBlob } from "./dom.js";
 import { makeDraggable } from "./drag.js";
 import { calculateVision } from "./grid.js";
+import { t } from "./i18n.js";
+import { characterSize, coveredCells, resizeCharacter } from "./lib/size.js";
 import { canControl, isDm } from "./roles.js";
-import { CELL, EVENTS } from "./shared/protocol.js";
+import { CELL, EVENTS, LIMITS } from "./shared/protocol.js";
 import { emit } from "./socket.js";
 import { state } from "./state.js";
 import { renderTokens } from "./tokens.js";
 import { paintAvatar, setInitiative } from "./turns.js";
-import { confirmDialog, icon } from "./ui.js";
+import { confirmDialog, icon, toast } from "./ui.js";
 
 const allies = $("#roster-allies");
 const enemies = $("#roster-enemies");
@@ -20,7 +22,7 @@ function createCharacterItem(char) {
   item.dataset.charId = char.id;
   const controllable = canControl(char);
   item.classList.toggle("locked", !controllable);
-  if (controllable) item.title = "Arrastra al mapa para colocar";
+  if (controllable) item.title = t("roster.dragHint");
 
   const avatar = document.createElement("span");
   avatar.className = "avatar";
@@ -34,7 +36,7 @@ function createCharacterItem(char) {
   initiative.type = "number";
   initiative.className = "char-initiative";
   initiative.placeholder = "—";
-  initiative.title = "Iniciativa";
+  initiative.title = t("roster.initiative");
   initiative.value = char.initiative ?? "";
   initiative.addEventListener("change", () =>
     setInitiative(char, initiative.value.trim()),
@@ -42,14 +44,14 @@ function createCharacterItem(char) {
 
   const removeBtn = document.createElement("button");
   removeBtn.className = "icon-btn ghost remove-char";
-  removeBtn.title = "Eliminar ficha";
+  removeBtn.title = t("roster.remove");
   removeBtn.append(icon("x"));
   removeBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
     const ok = await confirmDialog({
-      title: `Eliminar a ${char.name}`,
-      message: "La ficha desaparecerá de la lista y del mapa.",
-      confirmLabel: "Eliminar",
+      title: t("roster.removeTitle", { name: char.name }),
+      message: t("roster.removeMessage"),
+      confirmLabel: t("roster.removeConfirm"),
     });
     if (ok) removeCharacter(char.id);
   });
@@ -62,7 +64,7 @@ function createCharacterItem(char) {
   hiddenMark.classList.add("hidden-mark");
   hiddenMark.setAttribute("aria-hidden", "false");
   hiddenMark.setAttribute("role", "img");
-  hiddenMark.setAttribute("aria-label", "Oculto para los jugadores");
+  hiddenMark.setAttribute("aria-label", t("roster.hidden"));
 
   item.append(avatar, name, hiddenMark, initiative, removeBtn);
 
@@ -79,7 +81,7 @@ function createCharacterItem(char) {
 
 export function renderCharacters() {
   // Players only get the enemies they can see.
-  enemiesTitle.textContent = isDm() ? "Enemigos" : "A la vista";
+  enemiesTitle.textContent = isDm() ? t("roster.enemies") : t("roster.inSight");
   const items = state.characters.map((char) => [
     char,
     createCharacterItem(char),
@@ -93,12 +95,15 @@ export function renderCharacters() {
   refreshRosterState();
 }
 
-/** Whether players can see this enemy: on the map, outside the fog. */
+/** Whether players can see this enemy: on the map, partly outside the fog. */
 function visibleToPlayers(char) {
   if (!char?.isEnemy) return true;
   const token = state.tokens.find((t) => t.characterId === char.id);
-  const cell = token && state.cellStates[token.row]?.[token.col];
-  return Boolean(cell) && cell !== CELL.HIDDEN;
+  if (!token) return false;
+  return coveredCells(token, characterSize(char)).some(({ row, col }) => {
+    const cell = state.cellStates[row]?.[col];
+    return Boolean(cell) && cell !== CELL.HIDDEN;
+  });
 }
 
 /**
@@ -123,6 +128,27 @@ export function addCharacter(char) {
   emit(EVENTS.CHARACTER_ADDED, {
     character: char,
     nextCharId: state.nextCharId,
+  });
+}
+
+/** Changes a creature's size; its token moves back inside if needed. */
+export function setSize(char, size) {
+  if (!resizeCharacter(state, char.id, size)) {
+    toast(t("size.noRoom"), { kind: "error" });
+    return;
+  }
+  renderTokens();
+  calculateVision();
+  emit(EVENTS.SIZE_CHANGED, { charId: char.id, size });
+}
+
+/** Options for a size <select>: "Large (2×2)" and so on. */
+export function sizeOptions() {
+  return Array.from({ length: LIMITS.maxSize }, (_, i) => {
+    const option = document.createElement("option");
+    option.value = String(i + 1);
+    option.textContent = t(`size.${i + 1}`);
+    return option;
   });
 }
 

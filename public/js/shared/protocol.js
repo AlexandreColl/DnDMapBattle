@@ -15,6 +15,9 @@ export const EVENTS = Object.freeze({
   // The DM brings everyone to the area they are looking at.
   VIEW_CENTERED: "view:centered",
   INITIATIVE_CHANGED: "initiative:changed",
+  HEALTH_CHANGED: "health:changed",
+  CONDITIONS_CHANGED: "conditions:changed",
+  SIZE_CHANGED: "size:changed",
   TURN_CHANGED: "turn:changed",
   // Server → client only.
   SESSION: "session", // { role } right after connecting
@@ -28,7 +31,37 @@ export const ROLES = Object.freeze({ DM: "dm", PLAYER: "player" });
 export const PLAYER_EVENTS = Object.freeze([
   EVENTS.TOKEN_PLACED,
   EVENTS.INITIATIVE_CHANGED,
+  EVENTS.HEALTH_CHANGED,
+  EVENTS.CONDITIONS_CHANGED,
 ]);
+
+/** The D&D 5e conditions, plus concentration. */
+export const CONDITIONS = Object.freeze([
+  "blinded",
+  "charmed",
+  "deafened",
+  "frightened",
+  "grappled",
+  "incapacitated",
+  "invisible",
+  "paralyzed",
+  "petrified",
+  "poisoned",
+  "prone",
+  "restrained",
+  "stunned",
+  "unconscious",
+  "exhausted",
+  "concentrating",
+]);
+
+/** How hurt a character looks, without its exact hit points. */
+export const HEALTH = Object.freeze({
+  UNHURT: "unhurt",
+  HURT: "hurt",
+  BLOODIED: "bloodied",
+  DOWN: "down",
+});
 
 export const CELL = Object.freeze({
   HIDDEN: "hidden",
@@ -45,6 +78,9 @@ export const LIMITS = Object.freeze({
   defaultVisionRadius: 5,
   minInitiative: -99,
   maxInitiative: 999,
+  maxHp: 9999,
+  // Cells per side: 1 (small or medium), 2 (large), 3 (huge), 4 (gargantuan).
+  maxSize: 4,
   minZoom: 0.1,
   maxZoom: 5,
 });

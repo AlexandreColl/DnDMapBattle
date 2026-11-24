@@ -1,7 +1,9 @@
 // Token editor dialog: turns a picture into a round token with a colored rim.
 import { $, $$ } from "./dom.js";
-import { addCharacter } from "./characters.js";
+import { addCharacter, sizeOptions } from "./characters.js";
+import { t } from "./i18n.js";
 import { clamp } from "./lib/geometry.js";
+import { normalizeHealth } from "./lib/health.js";
 import {
   cleanName,
   parseInitiative,
@@ -15,19 +17,18 @@ const TOKEN_BORDER = 10;
 
 // Border colors by class (World of Warcraft palette, familiar to many players).
 const CLASS_COLORS = [
-  ["#C41E3A", "Caballero de la muerte"],
-  ["#A330C9", "Cazador de demonios"],
-  ["#FF7C0A", "Druida"],
-  ["#33937F", "Evocador"],
-  ["#AAD372", "Cazador"],
-  ["#3FC7EB", "Mago"],
-  ["#00FF98", "Monje"],
-  ["#F48CBA", "Paladín"],
-  ["#FFFFFF", "Sacerdote"],
-  ["#FFF468", "Pícaro"],
-  ["#0070DD", "Chamán"],
-  ["#8788EE", "Brujo"],
-  ["#C69B6D", "Guerrero"],
+  ["#C41E3A", "class.deathKnight"],
+  ["#A330C9", "class.demonHunter"],
+  ["#FF7C0A", "class.druid"],
+  ["#AAD372", "class.hunter"],
+  ["#3FC7EB", "class.mage"],
+  ["#00FF98", "class.monk"],
+  ["#F48CBA", "class.paladin"],
+  ["#FFFFFF", "class.priest"],
+  ["#FFF468", "class.rogue"],
+  ["#0070DD", "class.shaman"],
+  ["#8788EE", "class.warlock"],
+  ["#C69B6D", "class.warrior"],
 ];
 
 const dialog = $("#token-editor");
@@ -41,6 +42,8 @@ const swatches = $("#editor-swatches");
 const visionLabel = $("#editor-vision-label");
 const visionInput = $("#editor-vision");
 const initiativeInput = $("#editor-initiative");
+const maxHpInput = $("#editor-max-hp");
+const sizeSelect = $("#editor-size");
 
 const editor = {
   image: null,
@@ -152,7 +155,7 @@ function loadImage(file) {
   };
   img.onerror = () => {
     URL.revokeObjectURL(url);
-    toast("No se pudo leer la imagen", { kind: "error" });
+    toast(t("editor.imageFailed"), { kind: "error" });
   };
   img.src = url;
 }
@@ -166,10 +169,10 @@ function openEditor() {
 function confirmToken(e) {
   e.preventDefault();
   if (!editor.image) {
-    toast("Elige una imagen para la ficha", { kind: "error" });
+    toast(t("editor.noImage"), { kind: "error" });
     return;
   }
-  const name = cleanName(nameInput.value);
+  const name = cleanName(nameInput.value, t("editor.defaultName"));
   addCharacter({
     id: state.nextCharId,
     name,
@@ -183,18 +186,22 @@ function confirmToken(e) {
     visionRadius: parseVisionRadius(visionInput.value),
     isEnemy: editor.isEnemy,
     initiative: parseInitiative(initiativeInput.value.trim()),
+    ...normalizeHealth(null, maxHpInput.value),
+    conditions: [],
+    size: Number(sizeSelect.value),
   });
   dialog.close();
-  toast(`${name} se une a la mesa`, { kind: "success" });
+  toast(t("editor.joined", { name }), { kind: "success" });
 }
 
 export function initEditor() {
+  sizeSelect.replaceChildren(...sizeOptions());
   swatches.prepend(
-    ...CLASS_COLORS.map(([color, label]) => {
+    ...CLASS_COLORS.map(([color, classKey]) => {
       const swatch = document.createElement("button");
       swatch.type = "button";
       swatch.className = "swatch";
-      swatch.title = label;
+      swatch.title = t(classKey);
       swatch.dataset.color = color;
       swatch.style.background = color;
       swatch.addEventListener("click", () => setColor(color));

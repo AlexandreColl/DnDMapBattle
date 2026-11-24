@@ -3,6 +3,9 @@ import { normalizeCharacter } from "./sanitize.js";
 
 export const SAVE_VERSION = 1;
 
+/** A file that is not a valid save. The message is a translation key. */
+export class SaveFileError extends Error {}
+
 function exportCharacter(c) {
   return {
     id: c.id,
@@ -11,6 +14,10 @@ function exportCharacter(c) {
     visionRadius: c.visionRadius,
     isEnemy: c.isEnemy === true,
     initiative: c.initiative ?? null,
+    hp: c.hp ?? null,
+    maxHp: c.maxHp ?? null,
+    conditions: c.conditions ?? [],
+    size: c.size ?? 1,
   };
 }
 
@@ -36,21 +43,21 @@ export function buildSaveData(state) {
   };
 }
 
-/** Parses a `.dndmap` file. Throws an Error with a user-facing message. */
+/** Parses a `.dndmap` file. Throws a SaveFileError when it is not one. */
 export function parseSaveFile(text) {
   const data = JSON.parse(text);
   if (!data || typeof data !== "object" || !data.version) {
-    throw new Error("Formato no válido");
+    throw new SaveFileError("file.invalidFormat");
   }
   const rows = data.gridRows;
   const cols = data.gridCols;
   const validSize = (n) =>
     Number.isInteger(n) && n > 0 && n <= LIMITS.maxGridSize;
   if (!validSize(rows) || !validSize(cols)) {
-    throw new Error("Tamaño de cuadrícula no válido");
+    throw new SaveFileError("file.invalidGrid");
   }
   if (!Array.isArray(data.characters) || !Array.isArray(data.tokens)) {
-    throw new Error("Faltan personajes o fichas");
+    throw new SaveFileError("file.missingData");
   }
   return data;
 }
@@ -65,7 +72,7 @@ export function buildCharactersExport(characters) {
  */
 export function parseCharactersFile(text, firstId) {
   const raw = JSON.parse(text);
-  if (!Array.isArray(raw)) throw new Error("Formato no válido");
+  if (!Array.isArray(raw)) throw new SaveFileError("file.invalidFormat");
   const characters = [];
   let id = firstId;
   for (const entry of raw.slice(0, LIMITS.maxCharacters)) {

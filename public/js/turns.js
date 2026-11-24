@@ -1,6 +1,7 @@
 // Initiative order and turn tracking.
 import { $, $$ } from "./dom.js";
 import { renderCharacters } from "./characters.js";
+import { t } from "./i18n.js";
 import {
   getInitiativeEntries,
   nextTurn,
@@ -49,7 +50,10 @@ function renderInitiativeBar(list) {
       const item = document.createElement("button");
       item.className = "initiative-item";
       item.classList.toggle("current-turn", state.currentTurnId === char.id);
-      item.title = `${char.name} (iniciativa ${char.initiative})`;
+      item.title = t("turn.barItem", {
+        name: char.name,
+        value: char.initiative,
+      });
       item.addEventListener("click", () => openTokenMenu(token.id));
 
       const avatar = document.createElement("span");
@@ -91,17 +95,17 @@ export function renderTurnTracker() {
 
   // Character names come from other players: always set as text.
   if (state.hiddenTurn && !current) {
-    turnDisplay.textContent = "Turno enemigo";
-    turnSub.textContent = "Fuera de vuestra vista";
+    turnDisplay.textContent = t("turn.enemy");
+    turnSub.textContent = t("turn.outOfSight");
   } else {
     turnDisplay.textContent = current ? current.name : "—";
     turnSub.textContent = current
       ? current.initiative != null
-        ? `Iniciativa ${current.initiative}`
-        : "Turno enemigo"
+        ? t("turn.initiative", { value: current.initiative })
+        : t("turn.enemy")
       : isDm()
-        ? "Coloca fichas con iniciativa"
-        : "El máster aún no ha empezado";
+        ? t("turn.placeTokens")
+        : t("turn.notStarted");
   }
   paintAvatar(turnAvatar, current);
   renderInitiativeBar(list);
@@ -111,8 +115,8 @@ export function renderTurnTracker() {
 export function announceTurn() {
   const char = state.characters.find((c) => c.id === state.currentTurnId);
   const text = char
-    ? `Turno de ${char.name}`
-    : state.hiddenTurn && "Turno enemigo";
+    ? t("turn.of", { name: char.name })
+    : state.hiddenTurn && t("turn.enemy");
   if (text) toast(text, { kind: "turn", duration: 2500 });
 }
 
@@ -126,7 +130,7 @@ function changeTurn(charId) {
 export function advanceTurn() {
   const list = entries();
   if (list.length === 0) {
-    toast("No hay personajes con iniciativa en el mapa", { kind: "error" });
+    toast(t("turn.noneOnMap"), { kind: "error" });
     return;
   }
   changeTurn(nextTurn(list, state.currentTurnId));
@@ -136,7 +140,7 @@ export function initTurns() {
   $("#turn-start").addEventListener("click", () => {
     const list = entries();
     if (list.length === 0) {
-      toast("No hay personajes con iniciativa en el mapa", { kind: "error" });
+      toast(t("turn.noneOnMap"), { kind: "error" });
       return;
     }
     changeTurn(list[0].char.id);

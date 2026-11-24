@@ -4,7 +4,17 @@ import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { ZodError } from "zod";
 import { matrixMatches } from "../../public/js/lib/geometry.js";
-import { CELL, EVENTS, ROLES } from "../../public/js/shared/protocol.js";
+import {
+  CELL,
+  CONDITIONS,
+  EVENTS,
+  ROLES,
+} from "../../public/js/shared/protocol.js";
+import {
+  characterSize,
+  coveredCells,
+  fitsGrid,
+} from "../../public/js/lib/size.js";
 import {
   RejectedEventError,
   createGameState,
@@ -26,6 +36,9 @@ const charId = fc.integer({ min: 1, max: 5 });
 const tokenId = fc.integer({ min: 1, max: 5 });
 const index = fc.integer({ min: 0, max: 4 });
 const cellState = fc.constantFrom(...Object.values(CELL));
+const hp = fc.option(fc.integer({ min: 0, max: 30 }), { nil: null });
+const maxHp = fc.option(fc.integer({ min: 1, max: 30 }), { nil: null });
+const conditions = fc.array(fc.constantFrom(...CONDITIONS), { maxLength: 4 });
 
 const matrixOf = (rows, cols, cell) =>
   fc.array(fc.array(cell, { minLength: cols, maxLength: cols }), {
@@ -42,6 +55,10 @@ const character = fc.record({
   visionRadius: fc.integer({ min: 1, max: 3 }),
   isEnemy: fc.boolean(),
   initiative: fc.option(fc.integer({ min: -5, max: 30 }), { nil: null }),
+  hp,
+  maxHp,
+  conditions,
+  size: fc.integer({ min: 1, max: 3 }),
 });
 const token = fc.record({
   id: tokenId,
@@ -106,6 +123,12 @@ const action = fc.oneof(
     }),
     2,
   ),
+  on(EVENTS.HEALTH_CHANGED, fc.record({ charId, hp, maxHp }), 2),
+  on(EVENTS.CONDITIONS_CHANGED, fc.record({ charId, conditions })),
+  on(
+    EVENTS.SIZE_CHANGED,
+    fc.record({ charId, size: fc.integer({ min: 1, max: 5 }) }),
+  ),
   on(
     EVENTS.TURN_CHANGED,
     fc.record({ charId: fc.option(charId, { nil: null }) }),
@@ -164,9 +187,14 @@ function expectConsistent(state) {
   expect(unique(state.tokens.map((t) => t.id))).toBe(true);
   expect(unique(state.tokens.map((t) => t.characterId))).toBe(true);
   for (const t of state.tokens) {
-    expect(charIds).toContain(t.characterId);
-    expect(t.row).toBeLessThan(rows);
-    expect(t.col).toBeLessThan(cols);
+    const char = state.characters.find((c) => c.id === t.characterId);
+    expect(char).toBeDefined();
+    expect(fitsGrid(t.row, t.col, characterSize(char), rows, cols)).toBe(true);
+  }
+  for (const c of state.characters) {
+    if (c.maxHp == null) expect(c.hp).toBeNull();
+    else expect(c.hp).toBeGreaterThanOrEqual(0);
+    if (c.maxHp != null) expect(c.hp).toBeLessThanOrEqual(c.maxHp);
   }
   for (const id of charIds) expect(id).toBeLessThan(state.nextCharId);
   for (const t of state.tokens) expect(t.id).toBeLessThan(state.nextTokenId);
@@ -183,7 +211,9 @@ function beyondPlayers(state) {
     nextTokenId: null,
     tokens: state.tokens.filter((t) => !allies.has(t.characterId)),
     characters: state.characters.map((c) =>
-      allies.has(c.id) ? { ...c, initiative: null } : c,
+      allies.has(c.id)
+        ? { ...c, initiative: null, hp: null, maxHp: null, conditions: null }
+        : c,
     ),
   };
 }
@@ -207,7 +237,7 @@ describe("propiedades del servidor", () => {
     );
   });
 
-  it("un jugador solo cambia fichas e iniciativa de aliados", () => {
+  it("un jugador solo cambia fichas, iniciativa, vida y estados de aliados", () => {
     fc.assert(
       fc.property(commands, (cmds) =>
         play(cmds, ({ before, state, cmd, accepted }) => {
@@ -219,7 +249,7 @@ describe("propiedades del servidor", () => {
     );
   });
 
-  it("un jugador nunca ve enemigos en la niebla ni su iniciativa", () => {
+  it("un jugador nunca ve enemigos en la niebla, ni su iniciativa ni su vida", () => {
     fc.assert(
       fc.property(commands, (cmds) =>
         play(cmds, ({ state }) => {
@@ -229,7 +259,12 @@ describe("propiedades del servidor", () => {
           );
           for (const t of view.tokens) {
             if (enemies.has(t.characterId)) {
-              expect(state.cellStates[t.row][t.col]).not.toBe(CELL.HIDDEN);
+              // At least one of the cells it covers is in sight.
+              const char = state.characters.find((c) => c.id === t.characterId);
+              const seen = coveredCells(t, characterSize(char)).map(
+                ({ row, col }) => state.cellStates[row][col],
+              );
+              expect(seen.some((cell) => cell !== CELL.HIDDEN)).toBe(true);
             }
           }
           const onBoard = new Set(view.tokens.map((t) => t.characterId));
@@ -237,6 +272,8 @@ describe("propiedades del servidor", () => {
             if (enemies.has(c.id)) {
               expect(onBoard.has(c.id)).toBe(true);
               expect(c.initiative).toBeNull();
+              expect(c.hp).toBeNull();
+              expect(c.maxHp).toBeNull();
             }
           }
           if (view.currentTurnId != null) {

@@ -2,11 +2,13 @@
 import { applyFullState, snapshotState } from "./board.js";
 import { addCharacter } from "./characters.js";
 import { $, downloadJson, readFileAsText } from "./dom.js";
+import { t } from "./i18n.js";
 import {
   buildCharactersExport,
   buildSaveData,
   parseCharactersFile,
   parseSaveFile,
+  SaveFileError,
 } from "./lib/save-file.js";
 import { showPanel } from "./panels.js";
 import { EVENTS } from "./shared/protocol.js";
@@ -14,13 +16,18 @@ import { emit, withoutEmitting } from "./socket.js";
 import { state } from "./state.js";
 import { toast } from "./ui.js";
 
+/** A save file error in this language; others (bad JSON) as they come. */
+function errorMessage(err) {
+  return err instanceof SaveFileError ? t(err.message) : err.message;
+}
+
 function saveGame() {
   if (state.gridRows === 0 || state.gridCols === 0) {
-    toast("Genera una cuadrícula antes de guardar", { kind: "error" });
+    toast(t("file.needGrid"), { kind: "error" });
     return;
   }
   downloadJson(buildSaveData(state), "partida.dndmap");
-  toast("Partida guardada", { kind: "success" });
+  toast(t("file.saved"), { kind: "success" });
 }
 
 async function loadGame(file) {
@@ -29,15 +36,17 @@ async function loadGame(file) {
     withoutEmitting(() => applyFullState(data, { restoreView: true }));
     emit(EVENTS.STATE_FULL, snapshotState());
     showPanel("play");
-    toast("Partida cargada", { kind: "success" });
+    toast(t("file.loaded"), { kind: "success" });
   } catch (err) {
-    toast(`No se pudo cargar la partida: ${err.message}`, { kind: "error" });
+    toast(t("file.loadFailed", { error: errorMessage(err) }), {
+      kind: "error",
+    });
   }
 }
 
 function exportCharacters() {
   if (state.characters.length === 0) {
-    toast("No hay fichas para exportar", { kind: "error" });
+    toast(t("file.noChars"), { kind: "error" });
     return;
   }
   downloadJson(buildCharactersExport(state.characters), "personajes.dndchars");
@@ -47,16 +56,16 @@ async function importCharacters(file) {
   try {
     const text = await readFileAsText(file);
     const characters = parseCharactersFile(text, state.nextCharId);
-    if (characters.length === 0) throw new Error("no hay fichas válidas");
+    if (characters.length === 0) throw new SaveFileError("file.noValidChars");
     characters.forEach(addCharacter);
     toast(
       characters.length === 1
-        ? "1 ficha importada"
-        : `${characters.length} fichas importadas`,
+        ? t("file.importedOne")
+        : t("file.importedMany", { count: characters.length }),
       { kind: "success" },
     );
   } catch (err) {
-    toast(`No se pudieron importar las fichas: ${err.message}`, {
+    toast(t("file.importFailed", { error: errorMessage(err) }), {
       kind: "error",
     });
   }

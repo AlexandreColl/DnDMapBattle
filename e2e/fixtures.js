@@ -88,11 +88,11 @@ export async function generateGrid(page, rows, cols) {
 /**
  * Creates a character through the editor dialog.
  * @param {Page} page
- * @param {{ name: string, enemy?: boolean, initiative?: number, vision?: number }} character
+ * @param {{ name: string, enemy?: boolean, initiative?: number, vision?: number, maxHp?: number, size?: number }} character
  */
 export async function addCharacter(
   page,
-  { name, enemy = false, initiative, vision },
+  { name, enemy = false, initiative, vision, maxHp, size },
 ) {
   await page.locator('[data-panel="play"]').click();
   await page.locator("#char-add").click();
@@ -107,6 +107,10 @@ export async function addCharacter(
   if (vision != null) await page.locator("#editor-vision").fill(String(vision));
   if (initiative != null) {
     await page.locator("#editor-initiative").fill(String(initiative));
+  }
+  if (maxHp != null) await page.locator("#editor-max-hp").fill(String(maxHp));
+  if (size != null) {
+    await page.locator("#editor-size").selectOption(String(size));
   }
   await page.locator("#editor-confirm").click();
   await expect(page.locator(".char-item", { hasText: name })).toBeVisible();

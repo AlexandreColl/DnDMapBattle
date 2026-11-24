@@ -10,7 +10,9 @@ export const state = {
   gridCols: 0,
   cellStates: [], // 2D: CELL.HIDDEN | CELL.VISIBLE | CELL.REVEALED
   wallCells: [], // 2D boolean: true = wall
-  characters: [], // { id, name, imageUrl, visionRadius, isEnemy, initiative }
+  // { id, name, imageUrl, visionRadius, isEnemy, initiative, hp, maxHp,
+  //   conditions, health, size }; players get `health` instead of enemy hp
+  characters: [],
   tokens: [], // { id, characterId, row, col }
   nextCharId: 1,
   nextTokenId: 1,

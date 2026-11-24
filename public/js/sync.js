@@ -11,7 +11,10 @@ import { refreshRosterState, renderCharacters } from "./characters.js";
 import { $ } from "./dom.js";
 import { applyFog } from "./fog.js";
 import { calculateVision, generateGrid } from "./grid.js";
+import { t } from "./i18n.js";
 import { matrixMatches } from "./lib/geometry.js";
+import { normalizeConditions, normalizeHealth } from "./lib/health.js";
+import { resizeCharacter } from "./lib/size.js";
 import {
   isCellState,
   normalizeCharacter,
@@ -39,7 +42,9 @@ function applyRole(role) {
   const badge = $("#role-badge");
   badge.hidden = false;
   badge.className = `role-badge ${state.role}`;
-  badge.replaceChildren(...(isDm() ? [icon("crown"), "Máster"] : ["Jugador"]));
+  badge.replaceChildren(
+    ...(isDm() ? [icon("crown"), t("role.dm")] : [t("role.player")]),
+  );
   if (!isDm()) {
     showPanel("play");
     setTool("move");
@@ -57,8 +62,10 @@ function renderPresence({ players }) {
   );
   $("#presence-text").textContent =
     players === 0
-      ? "Ningún jugador"
-      : `${players} ${players === 1 ? "jugador" : "jugadores"}`;
+      ? t("presence.none")
+      : players === 1
+        ? t("presence.one")
+        : t("presence.many", { count: players });
 }
 
 /** Applies what the server lets a player see after each change. */
@@ -195,6 +202,26 @@ export function initSync() {
     char.initiative = initiative;
     renderCharacters();
     renderTurnTracker();
+  });
+
+  onRemote(EVENTS.HEALTH_CHANGED, ({ charId, hp, maxHp }) => {
+    const char = state.characters.find((c) => c.id === charId);
+    if (!char) return;
+    Object.assign(char, normalizeHealth(hp, maxHp));
+    renderTokens();
+  });
+
+  onRemote(EVENTS.CONDITIONS_CHANGED, ({ charId, conditions }) => {
+    const char = state.characters.find((c) => c.id === charId);
+    if (!char) return;
+    char.conditions = normalizeConditions(conditions);
+    renderTokens();
+  });
+
+  onRemote(EVENTS.SIZE_CHANGED, ({ charId, size }) => {
+    if (!resizeCharacter(state, charId, size)) return;
+    renderTokens();
+    calculateVision();
   });
 
   onRemote(EVENTS.TURN_CHANGED, ({ charId }) => {

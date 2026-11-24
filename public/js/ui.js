@@ -1,6 +1,7 @@
 // Small UI primitives: icons, toasts and a confirmation dialog that replace
 // the browser's alert() and confirm().
 import { $ } from "./dom.js";
+import { t } from "./i18n.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -40,7 +41,7 @@ const confirmDialogEl = $("#confirm-dialog");
 export function confirmDialog({
   title,
   message = "",
-  confirmLabel = "Confirmar",
+  confirmLabel = t("confirm.ok"),
 }) {
   $("#confirm-title").textContent = title;
   $("#confirm-message").textContent = message;

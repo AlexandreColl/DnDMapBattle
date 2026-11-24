@@ -1,5 +1,14 @@
 import { EVENTS, LIMITS } from "../public/js/shared/protocol.js";
 import { matrixMatches } from "../public/js/lib/geometry.js";
+import {
+  normalizeConditions,
+  normalizeHealth,
+} from "../public/js/lib/health.js";
+import {
+  characterSize,
+  fitsGrid,
+  resizeCharacter,
+} from "../public/js/lib/size.js";
 import { schemas } from "./validation.js";
 
 export class RejectedEventError extends Error {}
@@ -36,8 +45,10 @@ function assertGrid(state, m, label) {
   }
 }
 
-function assertInGrid(state, row, col) {
-  if (row >= state.gridRows || col >= state.gridCols) {
+function assertFits(state, row, col, char) {
+  if (
+    !fitsGrid(row, col, characterSize(char), state.gridRows, state.gridCols)
+  ) {
     reject("posición fuera de la cuadrícula");
   }
 }
@@ -47,6 +58,15 @@ function nextId(current, sent, items) {
   return Math.max(current, sent, ...items.map((item) => item.id + 1));
 }
 
+/** `char` with consistent hit points and no repeated conditions. */
+function withHealth(char) {
+  return {
+    ...char,
+    ...normalizeHealth(char.hp, char.maxHp),
+    conditions: normalizeConditions(char.conditions),
+  };
+}
+
 /** The first character with each id. */
 function uniqueCharacters(characters) {
   const ids = new Set();
@@ -54,19 +74,18 @@ function uniqueCharacters(characters) {
 }
 
 /**
- * Tokens on the grid, of a known character, with no repeated id and at most
+ * Tokens whole on the grid, of a known character, with no repeated id and at most
  * one per character. Clients send consistent boards; this keeps a stale
  * client or an old save from breaking what the role filter relies on.
  */
 function tokensOnBoard(tokens, characters, rows, cols) {
-  const charIds = new Set(characters.map((c) => c.id));
+  const sizes = new Map(characters.map((c) => [c.id, characterSize(c)]));
   const ids = new Set();
   const owners = new Set();
   return tokens.filter((t) => {
     const keep =
-      t.row < rows &&
-      t.col < cols &&
-      charIds.has(t.characterId) &&
+      sizes.has(t.characterId) &&
+      fitsGrid(t.row, t.col, sizes.get(t.characterId), rows, cols) &&
       !ids.has(t.id) &&
       !owners.has(t.characterId);
     if (keep) {
@@ -95,7 +114,7 @@ export const reducers = {
     ) {
       reject("wallCells no coincide con la cuadrícula");
     }
-    data.characters = uniqueCharacters(data.characters);
+    data.characters = uniqueCharacters(data.characters).map(withHealth);
     data.tokens = tokensOnBoard(
       data.tokens,
       data.characters,
@@ -147,6 +166,7 @@ export const reducers = {
     if (state.characters.some((c) => c.id === data.character.id)) {
       reject("ya hay un personaje con ese id");
     }
+    data.character = withHealth(data.character);
     state.characters.push(data.character);
     state.nextCharId = nextId(state.nextCharId, data.nextCharId, [
       data.character,
@@ -164,10 +184,9 @@ export const reducers = {
 
   [EVENTS.TOKEN_PLACED](state, raw) {
     const data = schemas.tokenPlaced.parse(raw);
-    assertInGrid(state, data.row, data.col);
-    if (!state.characters.some((c) => c.id === data.characterId)) {
-      reject("personaje desconocido");
-    }
+    const char = state.characters.find((c) => c.id === data.characterId);
+    if (!char) reject("personaje desconocido");
+    assertFits(state, data.row, data.col, char);
     const existing = state.tokens.find(
       (t) => t.characterId === data.characterId,
     );
@@ -220,6 +239,31 @@ export const reducers = {
     const data = schemas.initiativeChanged.parse(raw);
     const char = state.characters.find((c) => c.id === data.charId);
     if (char) char.initiative = data.initiative;
+    return data;
+  },
+
+  [EVENTS.HEALTH_CHANGED](state, raw) {
+    const data = schemas.healthChanged.parse(raw);
+    const health = normalizeHealth(data.hp, data.maxHp);
+    const char = state.characters.find((c) => c.id === data.charId);
+    if (char) Object.assign(char, health);
+    return { charId: data.charId, ...health };
+  },
+
+  [EVENTS.CONDITIONS_CHANGED](state, raw) {
+    const data = schemas.conditionsChanged.parse(raw);
+    const conditions = normalizeConditions(data.conditions);
+    const char = state.characters.find((c) => c.id === data.charId);
+    if (char) char.conditions = conditions;
+    return { charId: data.charId, conditions };
+  },
+
+  // A token that no longer fits moves back inside the grid.
+  [EVENTS.SIZE_CHANGED](state, raw) {
+    const data = schemas.sizeChanged.parse(raw);
+    if (!resizeCharacter(state, data.charId, data.size)) {
+      reject("no cabe en la cuadrícula");
+    }
     return data;
   },
 

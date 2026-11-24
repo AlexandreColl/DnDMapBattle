@@ -29,6 +29,9 @@ function game() {
         visionRadius: 2,
         isEnemy: false,
         initiative: 12,
+        hp: 9,
+        maxHp: 12,
+        conditions: ["concentrating"],
       },
       {
         id: 2,
@@ -37,6 +40,9 @@ function game() {
         visionRadius: 5,
         isEnemy: true,
         initiative: 15,
+        hp: 4,
+        maxHp: 15,
+        conditions: ["prone"],
       },
       {
         id: 3,
@@ -124,6 +130,17 @@ describe("authorize", () => {
     ).toThrow(/aliados/);
   });
 
+  it("lets players change hit points and conditions of allies only", () => {
+    const health = (charId) => ({ charId, hp: 1, maxHp: 10 });
+    const conditions = (charId) => ({ charId, conditions: ["prone"] });
+    expect(asPlayer(EVENTS.HEALTH_CHANGED, health(1))).not.toThrow();
+    expect(asPlayer(EVENTS.CONDITIONS_CHANGED, conditions(1))).not.toThrow();
+    expect(asPlayer(EVENTS.HEALTH_CHANGED, health(2))).toThrow(/aliados/);
+    expect(asPlayer(EVENTS.CONDITIONS_CHANGED, conditions(2))).toThrow(
+      /aliados/,
+    );
+  });
+
   it("rejects a new ally token that reuses an enemy token id", () => {
     expect(asPlayer(EVENTS.TOKEN_PLACED, place(1, 2, 2))).toThrow(/otro/);
   });
@@ -166,6 +183,14 @@ describe("playerView", () => {
     const [aria, orco] = playerView(game()).characters;
     expect(aria.initiative).toBe(12);
     expect(orco.initiative).toBeNull();
+  });
+
+  it("shows how hurt an enemy looks, never its hit points", () => {
+    const [aria, orco] = playerView(game()).characters;
+    expect(aria).toMatchObject({ hp: 9, maxHp: 12 });
+    expect(orco).toMatchObject({ hp: null, maxHp: null, health: "bloodied" });
+    expect(orco.conditions).toEqual(["prone"]);
+    expect(JSON.stringify(orco)).not.toMatch(/"(hp|maxHp)":d/);
   });
 
   it("omits portraits the player already has", () => {

@@ -6,6 +6,24 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.6.0] - 2026-11-24
+
+### Añadido
+
+- Puntos de golpe y estados en las fichas. Cada ficha puede tener PG máximos; desde su menú se aplica daño o curación y se marcan estados (los de D&D 5e y concentración). Una barra bajo la ficha muestra la vida, y a 0 PG la ficha queda apagada sin salir del mapa ni del turno.
+- Los jugadores llevan la vida y los estados de sus aliados. De los enemigos solo ven sus estados y si están ilesos, heridos, malheridos o caídos: el servidor nunca les envía los PG exactos.
+- Criaturas grandes: al crear una ficha se elige su tamaño (1×1, 2×2, 3×3 o 4×4 casillas) y el máster puede cambiarlo desde su menú. La ficha se centra en la casilla donde se suelta y nunca sale de la cuadrícula; un aliado grande ve desde todas sus casillas, y un enemigo grande aparece en cuanto se ve cualquiera de las suyas.
+- La interfaz está en español, inglés y catalán. Cada dispositivo usa el idioma de su navegador y se puede cambiar con el selector al pie del panel lateral; la elección se recuerda.
+- Roadmap y capturas en el README. `pnpm screenshots` las regenera con un mapa y unas fichas de ejemplo dibujados por el propio script.
+
+### Cambiado
+
+- El editor de fichas ya no ofrece la clase Evocador. Las fichas ya creadas con su color no cambian.
+
+### Corregido
+
+- El selector de tamaño del menú de ficha cortaba el texto.
+
 ## [1.5.0] - 2026-11-14
 
 ### Añadido
@@ -137,7 +155,8 @@ Primera versión estable.
 - Cargar una partida o importar personajes no se sincronizaba con los demás jugadores.
 - El zoom saltaba al llegar a los límites.
 
-[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.5.0...HEAD
+[Sin publicar]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/AlexandreColl/DnDMapBattle/compare/v1.2.0...v1.3.0

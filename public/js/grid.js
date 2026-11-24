@@ -2,6 +2,7 @@
 import { refreshRosterState } from "./characters.js";
 import { $, gridOverlay, mapWrapper } from "./dom.js";
 import { applyFog, placeFog } from "./fog.js";
+import { t } from "./i18n.js";
 import {
   colsForSquareCells,
   computeGridRect,
@@ -156,7 +157,7 @@ export function updateGridLayout() {
 export function updateGridInfo() {
   gridInfo.classList.remove("ok");
   if (!state.imageNaturalWidth) {
-    gridInfo.textContent = state.mapImage ? "" : "Cualquier imagen";
+    gridInfo.textContent = state.mapImage ? "" : t("map.anyImage");
     return;
   }
   const rows = state.gridRows || readGridInput(gridRowsInput, 0);
@@ -167,7 +168,11 @@ export function updateGridInfo() {
     state.imageNaturalWidth,
     state.imageNaturalHeight,
   );
-  gridInfo.textContent = `${state.imageNaturalWidth} × ${state.imageNaturalHeight} · ${square ? "celdas cuadradas" : "celdas rectangulares"}`;
+  gridInfo.textContent = t("grid.info", {
+    width: state.imageNaturalWidth,
+    height: state.imageNaturalHeight,
+    cells: t(square ? "grid.squareCells" : "grid.rectCells"),
+  });
   gridInfo.classList.toggle("ok", square);
 }
 
@@ -192,7 +197,7 @@ function generateAndSync(rows, cols) {
 /** Sets rows so cells are square for the current columns and map. */
 export function autoFitGrid(generate = true) {
   if (!state.imageNaturalWidth || !state.imageNaturalHeight) {
-    toast("Carga un mapa primero", { kind: "error" });
+    toast(t("map.needed"), { kind: "error" });
     return;
   }
   const cols = readGridInput(gridColsInput, state.gridCols || 20);
