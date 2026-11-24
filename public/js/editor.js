@@ -20,7 +20,6 @@ const CLASS_COLORS = [
   ["#C41E3A", "class.deathKnight"],
   ["#A330C9", "class.demonHunter"],
   ["#FF7C0A", "class.druid"],
-  ["#33937F", "class.evoker"],
   ["#AAD372", "class.hunter"],
   ["#3FC7EB", "class.mage"],
   ["#00FF98", "class.monk"],

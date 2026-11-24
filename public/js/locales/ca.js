@@ -177,7 +177,6 @@ export const ca = {
   "class.deathKnight": "Cavaller de la mort",
   "class.demonHunter": "Caçador de dimonis",
   "class.druid": "Druida",
-  "class.evoker": "Evocador",
   "class.hunter": "Caçador",
   "class.mage": "Mag",
   "class.monk": "Monjo",

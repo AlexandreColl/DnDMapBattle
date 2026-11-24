@@ -14,6 +14,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - La interfaz está en español, inglés y catalán. Cada dispositivo usa el idioma de su navegador y se puede cambiar con el selector al pie del panel lateral; la elección se recuerda.
 - Roadmap y capturas en el README. `pnpm screenshots` las regenera con un mapa y unas fichas de ejemplo dibujados por el propio script.
 
+### Cambiado
+
+- El editor de fichas ya no ofrece la clase Evocador. Las fichas ya creadas con su color no cambian.
+
 ### Corregido
 
 - El selector de tamaño del menú de ficha cortaba el texto.

@@ -173,7 +173,6 @@ export const en = {
   "class.deathKnight": "Death knight",
   "class.demonHunter": "Demon hunter",
   "class.druid": "Druid",
-  "class.evoker": "Evoker",
   "class.hunter": "Hunter",
   "class.mage": "Mage",
   "class.monk": "Monk",
