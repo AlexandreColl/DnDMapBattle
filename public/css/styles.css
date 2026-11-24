@@ -227,7 +227,7 @@ input[type="text"]:focus {
 
 .field.inline select {
   min-width: 0;
-  max-width: 62%;
+  max-width: 80%;
 }
 
 .segmented {
@@ -882,7 +882,7 @@ body.dragging-piece * {
 /* ─── Token menu ─── */
 .popover {
   position: absolute;
-  width: 232px;
+  width: 256px;
   display: flex;
   flex-direction: column;
   gap: 8px;
